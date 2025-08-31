@@ -327,7 +327,7 @@ pub async fn _download_files_internal(
     // Create progress tracker
     let progress_tracker = ProgressTracker::new(items, file_sizes.clone());
 
-    // save file under Jan data folder
+    // save file under app data folder
     let jan_data_folder = get_jan_data_folder_path(app.clone());
 
     // Collect download tasks for parallel execution
@@ -339,7 +339,7 @@ pub async fn _download_files_internal(
 
         if !save_path.starts_with(&jan_data_folder) {
             return Err(format!(
-                "Path {} is outside of Jan data folder {}",
+                "Path {} is outside of app data folder {}",
                 save_path.display(),
                 jan_data_folder.display()
             ));

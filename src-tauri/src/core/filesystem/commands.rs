@@ -133,7 +133,7 @@ pub fn write_yaml(
     let save_path = jan_utils::normalize_path(&jan_data_folder.join(save_path));
     if !save_path.starts_with(&jan_data_folder) {
         return Err(format!(
-            "Error: save path {} is not under jan_data_folder {}",
+            "Error: save path {} is not under app data folder {}",
             save_path.to_string_lossy(),
             jan_data_folder.to_string_lossy(),
         ));
@@ -150,7 +150,7 @@ pub fn read_yaml(app: tauri::AppHandle, path: &str) -> Result<serde_json::Value,
     let path = jan_utils::normalize_path(&jan_data_folder.join(path));
     if !path.starts_with(&jan_data_folder) {
         return Err(format!(
-            "Error: path {} is not under jan_data_folder {}",
+            "Error: path {} is not under app data folder {}",
             path.to_string_lossy(),
             jan_data_folder.to_string_lossy(),
         ));
@@ -167,7 +167,7 @@ pub fn decompress(app: tauri::AppHandle, path: &str, output_dir: &str) -> Result
     let path_buf = jan_utils::normalize_path(&jan_data_folder.join(path));
     if !path_buf.starts_with(&jan_data_folder) {
         return Err(format!(
-            "Error: path {} is not under jan_data_folder {}",
+            "Error: path {} is not under app data folder {}",
             path_buf.to_string_lossy(),
             jan_data_folder.to_string_lossy(),
         ));
@@ -176,7 +176,7 @@ pub fn decompress(app: tauri::AppHandle, path: &str, output_dir: &str) -> Result
     let output_dir_buf = jan_utils::normalize_path(&jan_data_folder.join(output_dir));
     if !output_dir_buf.starts_with(&jan_data_folder) {
         return Err(format!(
-            "Error: output directory {} is not under jan_data_folder {}",
+            "Error: output directory {} is not under app data folder {}",
             output_dir_buf.to_string_lossy(),
             jan_data_folder.to_string_lossy(),
         ));
