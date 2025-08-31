@@ -1,6 +1,6 @@
-# Jan - Local AI Assistant
+# Salesbox.AI Agent - Local AI Assistant
 
-![Jan AI](docs/src/pages/docs/_assets/jan-app.png)
+![Salesbox.AI Agent](docs/src/pages/docs/_assets/jan-app.png)
 
 <p align="center">
   <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
@@ -19,7 +19,7 @@
   - <a href="https://discord.gg/AsJ8krTT3N">Discord</a>
 </p>
 
-Jan is an AI assistant that can run 100% offline on your device. Download and run LLMs with
+Salesbox.AI Agent is an AI assistant that can run 100% offline on your device. Download and run LLMs with
 **full control** and **privacy**.
 
 ## Installation
@@ -54,7 +54,7 @@ The easiest way to get started is by downloading one of the following versions f
   </tr>
 </table>
 
-Download from [jan.ai](https://jan.ai/) or [GitHub Releases](https://github.com/menloresearch/jan/releases).
+Download from [salesbox.ai](https://salesbox.ai/) or [GitHub Releases](https://github.com/salesbox-ai/salesbox-ai-agent/releases).
 
 
 ## Features
@@ -80,8 +80,8 @@ For those who enjoy the scenic route:
 ### Run with Make
 
 ```bash
-git clone https://github.com/menloresearch/jan
-cd jan
+git clone https://github.com/salesbox-ai/salesbox-ai-agent
+cd salesbox-ai-agent
 make dev
 ```
 
@@ -98,8 +98,8 @@ This handles everything: installs dependencies, builds core components, and laun
 You can also run with [mise](https://mise.jdx.dev/), which is a bit easier as it ensures Node.js, Rust, and other dependency versions are automatically managed:
 
 ```bash
-git clone https://github.com/menloresearch/jan
-cd jan
+git clone https://github.com/salesbox-ai/salesbox-ai-agent
+cd salesbox-ai-agent
 
 # Install mise (if not already installed)
 curl https://mise.run | sh
@@ -134,15 +134,15 @@ yarn dev
 - **Windows**: 10+ with GPU support for NVIDIA/AMD/Intel Arc
 - **Linux**: Most distributions work, GPU acceleration available
 
-For detailed compatibility, check our [installation guides](https://jan.ai/docs/desktop/mac).
+For detailed compatibility, check our [installation guides](https://salesbox.ai/docs/desktop/mac).
 
 ## Troubleshooting
 
 If things go sideways:
 
-1. Check our [troubleshooting docs](https://jan.ai/docs/troubleshooting)
+1. Check our [troubleshooting docs](https://salesbox.ai/docs/troubleshooting)
 2. Copy your error logs and system specs
-3. Ask for help in our [Discord](https://discord.gg/FTk2MvZwJH) `#🆘|jan-help` channel
+3. Ask for help in our [Discord](https://discord.gg/FTk2MvZwJH) `#🆘|salesbox-ai-help` channel
 
 
 ## Contributing
@@ -151,16 +151,16 @@ Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full spiel
 
 ## Links
 
-- [Documentation](https://jan.ai/docs) - The manual you should read
-- [API Reference](https://jan.ai/api-reference) - For the technically inclined
-- [Changelog](https://jan.ai/changelog) - What we broke and fixed
+- [Documentation](https://salesbox.ai/docs) - The manual you should read
+- [API Reference](https://salesbox.ai/api-reference) - For the technically inclined
+- [Changelog](https://salesbox.ai/changelog) - What we broke and fixed
 - [Discord](https://discord.gg/FTk2MvZwJH) - Where the community lives
 
 ## Contact
 
-- **Bugs**: [GitHub Issues](https://github.com/menloresearch/jan/issues)
-- **Business**: hello@jan.ai
-- **Jobs**: hr@jan.ai
+- **Bugs**: [GitHub Issues](https://github.com/salesbox-ai/salesbox-ai-agent/issues)
+- **Business**: hello@salesbox.ai
+- **Jobs**: hr@salesbox.ai
 - **General Discussion**: [Discord](https://discord.gg/FTk2MvZwJH)
 
 ## License

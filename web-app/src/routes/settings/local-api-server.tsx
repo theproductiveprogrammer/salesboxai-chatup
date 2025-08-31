@@ -188,7 +188,7 @@ function LocalAPIServer() {
           windowKey.logsWindowLocalApiServer,
           {
             url: route.localApiServerlogs,
-            title: 'Local API server Logs - Jan',
+            title: 'Local API server Logs - Salesbox.AI Agent',
             width: 800,
             height: 600,
             resizable: true,

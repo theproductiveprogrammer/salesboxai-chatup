@@ -1,8 +1,8 @@
-# Contributing to Jan
+# Contributing to Salesbox.AI Agent
 
-First off, thank you for considering contributing to Jan. It's people like you that make Jan such an amazing project.
+First off, thank you for considering contributing to Salesbox.AI Agent. It's people like you that make Salesbox.AI Agent such an amazing project.
 
-Jan is an AI assistant that can run 100% offline on your device. Think ChatGPT, but private, local, and under your complete control. If you're thinking about contributing, you're already awesome - let's make AI accessible to everyone, one commit at a time.
+Salesbox.AI Agent is an AI assistant that can run 100% offline on your device. Think ChatGPT, but private, local, and under your complete control. If you're thinking about contributing, you're already awesome - let's make AI accessible to everyone, one commit at a time.
 
 ## Quick Links to Component Guides
 
@@ -12,9 +12,9 @@ Jan is an AI assistant that can run 100% offline on your device. Think ChatGPT, 
 - **[Tauri Backend](./src-tauri/CONTRIBUTING.md)** - Rust native integration
 - **[Tauri Plugins](./src-tauri/plugins/CONTRIBUTING.md)** - Hardware and system plugins
 
-## How Jan Actually Works
+## How Salesbox.AI Agent Actually Works
 
-Jan is a desktop app that runs local AI models. Here's how the components actually connect:
+Salesbox.AI Agent is a desktop app that runs local AI models. Here's how the components actually connect:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -144,15 +144,15 @@ jan/
 
 **Option 1: The Easy Way (Make)**
 ```bash
-git clone https://github.com/menloresearch/jan
-cd jan
+git clone https://github.com/salesbox-ai/salesbox-ai-agent
+cd salesbox-ai-agent
 make dev
 ```
 
 **Option 2: The Easier Way (Mise)**
 ```bash
-git clone https://github.com/menloresearch/jan
-cd jan
+git clone https://github.com/salesbox-ai/salesbox-ai-agent
+cd salesbox-ai-agent
 
 # Install mise
 curl https://mise.run | sh
@@ -166,8 +166,8 @@ mise dev        # runs the full development setup
 
 ### Reporting Bugs
 
-- **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/menloresearch/jan/issues)
-- If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/menloresearch/jan/issues/new)
+- **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/salesbox-ai/salesbox-ai-agent/issues)
+- If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/salesbox-ai/salesbox-ai-agent/issues/new)
 - Include your system specs and error logs - it helps a ton
 
 ### Suggesting Enhancements
@@ -238,10 +238,10 @@ docs: update installation instructions
 
 If things go sideways:
 
-1. **Check our [troubleshooting docs](https://jan.ai/docs/troubleshooting)**
+1. **Check our [troubleshooting docs](https://salesbox.ai/docs/troubleshooting)**
 2. **Clear everything and start fresh:** `make clean` then `make dev`
 3. **Copy your error logs and system specs**
-4. **Ask for help in our [Discord](https://discord.gg/FTk2MvZwJH)** `#🆘|jan-help` channel
+4. **Ask for help in our [Discord](https://discord.gg/FTk2MvZwJH)** `#🆘|salesbox-ai-help` channel
 
 Common issues:
 - **Build failures**: Check Node.js and Rust versions

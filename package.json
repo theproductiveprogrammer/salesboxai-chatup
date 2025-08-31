@@ -1,5 +1,5 @@
 {
-  "name": "jan-app",
+  "name": "salesbox-ai-agent",
   "private": true,
   "workspaces": {
     "packages": [
@@ -8,7 +8,7 @@
     ]
   },
   "scripts": {
-    "lint": "yarn workspace @janhq/web-app lint",
+    "lint": "yarn workspace @salesbox-ai/web-app lint",
     "dev": "yarn dev:tauri",
     "build": "yarn build:web && yarn build:tauri",
     "test": "vitest run",
@@ -16,7 +16,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:prepare": "yarn build:icon && yarn copy:assets:tauri && yarn build --no-bundle ",
-    "dev:web": "yarn workspace @janhq/web-app dev",
+    "dev:web": "yarn workspace @salesbox-ai/web-app dev",
     "dev:tauri": "yarn build:icon && yarn copy:assets:tauri && cross-env IS_CLEAN=true tauri dev",
     "copy:assets:tauri": "cpx \"pre-install/*.tgz\" \"src-tauri/resources/pre-install/\" && cpx \"LICENSE\" \"src-tauri/resources/\"",
     "download:lib": "node ./scripts/download-lib.mjs",
@@ -28,8 +28,8 @@
     "build:tauri:plugin:api": "cd src-tauri/plugins && yarn install && yarn workspaces foreach -Apt run build",
     "build:icon": "tauri icon ./src-tauri/icons/icon.png",
     "build:core": "cd core && yarn build && yarn pack",
-    "build:web": "yarn workspace @janhq/web-app build",
-    "build:extensions": "rimraf ./pre-install/*.tgz || true && yarn workspace @janhq/core build && cd extensions && yarn install && yarn workspaces foreach -Apt run build:publish",
+    "build:web": "yarn workspace @salesbox-ai/web-app build",
+    "build:extensions": "rimraf ./pre-install/*.tgz || true && yarn workspace @salesbox-ai/core build && cd extensions && yarn install && yarn workspaces foreach -Apt run build:publish",
     "prepare": "husky"
   },
   "devDependencies": {

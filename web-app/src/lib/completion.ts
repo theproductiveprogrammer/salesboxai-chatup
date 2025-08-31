@@ -176,12 +176,12 @@ export const sendCompletion = async (
     baseURL: provider.base_url,
     // Use Tauri's fetch to avoid CORS issues only for openai-compatible provider
     ...(providerName === 'openai-compatible' && { fetch: fetchTauri }),
-    // OpenRouter identification headers for Jan
+    // OpenRouter identification headers for Salesbox.AI Agent
     // ref: https://openrouter.ai/docs/api-reference/overview#headers
     ...(provider.provider === 'openrouter' && {
       defaultHeaders: {
-        'HTTP-Referer': 'https://jan.ai',
-        'X-Title': 'Jan',
+        'HTTP-Referer': 'https://salesbox.ai',
+        'X-Title': 'Salesbox.AI Agent',
       },
     }),
   } as ExtendedConfigOptions)

@@ -109,7 +109,7 @@ function General() {
         // Create a new logs window using Tauri v2 WebviewWindow API
         const logsWindow = new WebviewWindow(windowKey.logsAppWindow, {
           url: route.appLogs,
-          title: 'App Logs - Jan',
+          title: 'App Logs - Salesbox.AI Agent',
           width: 800,
           height: 600,
           resizable: true,
@@ -484,7 +484,7 @@ function General() {
                 description={t('settings:general.documentationDesc')}
                 actions={
                   <a
-                    href="https://jan.ai/docs"
+                    href="https://salesbox.ai/docs"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -500,7 +500,7 @@ function General() {
                 description={t('settings:general.releaseNotesDesc')}
                 actions={
                   <a
-                    href="https://github.com/menloresearch/jan/releases"
+                    href="https://github.com/salesbox-ai/salesbox-ai-agent/releases"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -520,7 +520,7 @@ function General() {
                 description={t('settings:general.githubDesc')}
                 actions={
                   <a
-                    href="https://github.com/menloresearch/jan"
+                    href="https://github.com/salesbox-ai/salesbox-ai-agent"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -560,7 +560,7 @@ function General() {
                 description={t('settings:general.reportAnIssueDesc')}
                 actions={
                   <a
-                    href="https://github.com/menloresearch/jan/issues/new"
+                    href="https://github.com/salesbox-ai/salesbox-ai-agent/issues/new"
                     target="_blank"
                   >
                     <div className="flex items-center gap-1">

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Jan",
+  "productName": "Salesbox.AI Agent",
   "version": "0.6.599",
-  "identifier": "jan.ai.app",
+  "identifier": "salesbox.ai.app",
   "build": {
     "frontendDist": "../web-app/dist",
     "devUrl": "http://localhost:1420",
@@ -15,7 +15,7 @@
       {
         "zoomHotkeysEnabled": true,
         "label": "main",
-        "title": "Jan",
+        "title": "Salesbox.AI Agent",
         "width": 1024,
         "minWidth": 375,
         "minHeight": 667,
@@ -67,13 +67,13 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFNDEzMEVCMUEzNUFENDQKUldSRXJUVWE2ekJCTGc1Mm1BVXgrWmtES3huUlBFR0lCdG5qbWFvMzgyNDhGN3VTTko5Q1NtTW0K",
       "endpoints": [
-        "https://github.com/menloresearch/jan/releases/latest/download/latest.json"
+        "https://github.com/salesbox-ai/salesbox-ai-agent/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"
       }
     },
-    "deep-link": { "schemes": ["jan"] }
+    "deep-link": { "schemes": ["salesbox-ai"] }
   },
   "bundle": {
     "active": true,

@@ -53,7 +53,7 @@ describe('useAssistant', () => {
 
     const updatedAssistant = {
       ...defaultAssistant,
-      name: 'Updated Jan',
+      name: 'Updated Salesbox.AI Agent',
       description: 'Updated description',
     }
 
@@ -61,7 +61,7 @@ describe('useAssistant', () => {
       result.current.updateAssistant(updatedAssistant)
     })
 
-    expect(result.current.assistants[0].name).toBe('Updated Jan')
+    expect(result.current.assistants[0].name).toBe('Updated Salesbox.AI Agent')
     expect(result.current.assistants[0].description).toBe('Updated description')
   })
 
