@@ -65,7 +65,7 @@ export default class SalesboxAIAssistantExtension extends AssistantExtension {
 	}
 
 	private defaultAssistant: Assistant = {
-		avatar: '👋',
+		avatar: '/images/assistants/salesboxai.svg',
 		thread_location: undefined,
 		id: 'salesbox-ai-agent',
 		object: 'assistant',
