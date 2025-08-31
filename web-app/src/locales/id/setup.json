@@ -1,6 +1,7 @@
 {
-  "welcome": "Selamat Datang di SalesboxAI",
-  "description": "Untuk memulai, Anda perlu mengunduh model AI lokal atau terhubung ke model cloud menggunakan kunci API",
-  "localModel": "Siapkan model lokal",
-  "remoteProvider": "Siapkan penyedia jarak jauh"
+	"welcome": "Selamat Datang di SalesboxAI Agent",
+	"description": "Untuk memulai, Anda perlu mengunduh model AI lokal atau terhubung ke model cloud menggunakan kunci API",
+	"descriptionConfigured": "SalesboxAI Agent Anda siap digunakan! Anda dapat melanjutkan ke chat atau mengonfigurasi opsi tambahan di bawah.",
+	"localModel": "Siapkan model lokal",
+	"remoteProvider": "Siapkan penyedia jarak jauh"
 }

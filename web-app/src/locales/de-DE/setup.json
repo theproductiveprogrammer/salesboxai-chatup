@@ -1,5 +1,5 @@
 {
-  "welcome": "Willkommen bei SalesboxAI",
+  "welcome": "Willkommen bei SalesboxAI Agent",
   "description": "Um zu beginnen, musst Du entweder ein lokales KI-Modell herunterladen oder über einen API-Schlüssel eine Verbindung zu einem Cloud-Modell herstellen.",
   "localModel": "Lokales Modell einrichten",
   "remoteProvider": "Fernen Anbieter einrichten"
