@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Salesbox.AI Agent",
+  "productName": "SalesboxAIAgent",
   "version": "0.6.599",
   "identifier": "salesbox.ai.agent",
   "build": {

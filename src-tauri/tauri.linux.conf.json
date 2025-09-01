@@ -12,7 +12,7 @@
       "deb": {
         "files": {
           "usr/bin/bun": "resources/bin/bun",
-          "usr/lib/Salesbox.AI.Agent/resources/lib/libvulkan.so": "resources/lib/libvulkan.so"
+          "usr/lib/SalesboxAIAgent/resources/lib/libvulkan.so": "resources/lib/libvulkan.so"
         }
       }
     }

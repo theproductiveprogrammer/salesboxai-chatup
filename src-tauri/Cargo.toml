@@ -1,5 +1,5 @@
 [package]
-name = "SalesboxAI_Agent"
+name = "SalesboxAIAgent"
 version = "0.6.599"
 description = "The Salesbox.AI Agent"
 authors = ["Salesbox.AI <service@salesbox.ai>"]
