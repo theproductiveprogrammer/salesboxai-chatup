@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleIdentifier</key>
-  <string>salesbox.ai.app</string>
+  <string>salesbox.ai.agent</string>
   <key>CFBundleURLTypes</key>
   <array>
     <dict>
       <key>CFBundleURLName</key>
-      <string>salesbox.ai.app</string>
+      <string>salesbox.ai.agent</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>jan</string>
