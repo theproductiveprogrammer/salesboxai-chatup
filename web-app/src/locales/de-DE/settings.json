@@ -178,17 +178,9 @@
     "verboseLogsDesc": "Aktiviere detaillierte Server Logs zum Debuggen"
   },
   "privacy": {
-    "analytics": "Analytik",
-    "helpUsImprove": "Hilf uns, uns zu verbessern",
-    "helpUsImproveDesc": "Um uns bei der Verbesserung von Jan zu unterstützen, kannst Du uns anonyme Daten wie Funktionsnutzung und Benutzerzahlen mitteilen. Wir erfassen niemals Deine Chats oder persönlichen Daten.",
-    "privacyPolicy": "Du hast die volle Kontrolle über Deine Daten. Erfahre mehr in unserer Datenschutzerklärung.",
-    "analyticsDesc": "Um Jan zu verbessern, müssen wir verstehen, wie es genutzt wird - aber nur mit deiner Hilfe. Du kannst diese Einstellung jederzeit ändern.",
-    "privacyPromises": "Deine Auswahl hier ändert nichts an unseren grundlegenden Datenschutzversprechen:",
-    "promise1": "Deine Gespräche bleiben privat und auf deinem Gerät",
-    "promise2": "Wir erfassen niemals Deine persönlichen Daten oder Chat-Inhalte",
-    "promise3": "Der gesamte Datenaustausch erfolgt anonym und aggregiert",
-    "promise4": "Du kannst dich jederzeit abmelden, ohne die Funktionalität zu verlieren",
-    "promise5": "Wir sind transparent darüber, was wir sammeln und warum"
+    "security": "Sicherheit",
+    "apiKey": "API-Schlüssel",
+    "apiKeyDesc": "Geben Sie den von Salesbox.AI bereitgestellten API-Schlüssel ein."
   },
   "general": {
     "showInFinder": "Im Finder zeigen",

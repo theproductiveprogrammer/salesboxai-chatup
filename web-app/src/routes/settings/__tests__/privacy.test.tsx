@@ -29,11 +29,8 @@ vi.mock('@/containers/Card', () => ({
   ),
 }))
 
-vi.mock('@/hooks/useAnalytic', () => ({
-  useAnalytic: () => ({
-    productAnalytic: false,
-    setProductAnalytic: vi.fn(),
-  }),
+vi.mock('@/containers/ApiKeyInput', () => ({
+  ApiKeyInput: () => <div data-testid="api-key-input">API Key Input</div>,
 }))
 
 vi.mock('@/i18n/react-i18next-compat', () => ({
@@ -42,23 +39,6 @@ vi.mock('@/i18n/react-i18next-compat', () => ({
   }),
 }))
 
-vi.mock('@/components/ui/switch', () => ({
-  Switch: ({ checked, onCheckedChange }: { checked: boolean; onCheckedChange: (checked: boolean) => void }) => (
-    <input
-      data-testid="switch"
-      type="checkbox"
-      checked={checked}
-      onChange={(e) => onCheckedChange(e.target.checked)}
-    />
-  ),
-}))
-
-vi.mock('posthog-js', () => ({
-  default: {
-    opt_in_capturing: vi.fn(),
-    opt_out_capturing: vi.fn(),
-  },
-}))
 
 vi.mock('@/constants/routes', () => ({
   route: {
@@ -89,46 +69,29 @@ describe('Privacy Settings Route', () => {
     expect(screen.getByText('common:settings')).toBeInTheDocument()
   })
 
-  it('should render analytics card with header', () => {
+  it('should render security card with header', () => {
     const Component = PrivacyRoute.component as React.ComponentType
     render(<Component />)
 
     expect(screen.getByTestId('card')).toBeInTheDocument()
     expect(screen.getByTestId('card-header')).toBeInTheDocument()
-    expect(screen.getByText('settings:privacy.analytics')).toBeInTheDocument()
+    expect(screen.getByText('settings:privacy.security')).toBeInTheDocument()
   })
 
-  it('should render analytics switch', () => {
+  it('should render API key input', () => {
     const Component = PrivacyRoute.component as React.ComponentType
     render(<Component />)
 
-    const analyticsSwitch = screen.getByTestId('switch')
-    expect(analyticsSwitch).toBeInTheDocument()
-    expect(analyticsSwitch).not.toBeChecked()
+    const apiKeyInput = screen.getByTestId('api-key-input')
+    expect(apiKeyInput).toBeInTheDocument()
   })
 
-  it('should handle analytics toggle when enabling', () => {
+  it('should render API key card item with title and description', () => {
     const Component = PrivacyRoute.component as React.ComponentType
     render(<Component />)
 
-    const analyticsSwitch = screen.getByTestId('switch')
-    expect(analyticsSwitch).toBeInTheDocument()
-    
-    // Test that switch is interactive
-    fireEvent.click(analyticsSwitch)
-    expect(analyticsSwitch).toBeInTheDocument()
-  })
-
-  it('should handle analytics toggle when disabling', () => {
-    const Component = PrivacyRoute.component as React.ComponentType
-    render(<Component />)
-
-    const analyticsSwitch = screen.getByTestId('switch')
-    expect(analyticsSwitch).toBeInTheDocument()
-    
-    // Test that switch is interactive
-    fireEvent.click(analyticsSwitch)
-    expect(analyticsSwitch).toBeInTheDocument()
+    expect(screen.getByText('settings:privacy.apiKey')).toBeInTheDocument()
+    expect(screen.getByText('settings:privacy.apiKeyDesc')).toBeInTheDocument()
   })
 
   it('should have proper layout structure', () => {
@@ -142,46 +105,14 @@ describe('Privacy Settings Route', () => {
     expect(settingsMenu).toBeInTheDocument()
   })
 
-  it('should render switch in correct checked state based on productAnalytic', () => {
-    const Component = PrivacyRoute.component as React.ComponentType
-    render(<Component />)
-
-    const analyticsSwitch = screen.getByTestId('switch')
-    expect(analyticsSwitch).toBeInTheDocument()
-    // Test that switch has some state
-    expect(analyticsSwitch).toHaveAttribute('type', 'checkbox')
-  })
-
-  it('should render switch in unchecked state when productAnalytic is false', () => {
-    const Component = PrivacyRoute.component as React.ComponentType
-    render(<Component />)
-
-    const analyticsSwitch = screen.getByTestId('switch')
-    expect(analyticsSwitch).toBeInTheDocument()
-    expect(analyticsSwitch).toHaveAttribute('type', 'checkbox')
-  })
-
   it('should call translation function with correct keys', () => {
     const Component = PrivacyRoute.component as React.ComponentType
     render(<Component />)
 
     // Test that translations are rendered
     expect(screen.getByText('common:settings')).toBeInTheDocument()
-    expect(screen.getByText('settings:privacy.analytics')).toBeInTheDocument()
-  })
-
-  it('should handle switch state change properly', () => {
-    const Component = PrivacyRoute.component as React.ComponentType
-    render(<Component />)
-
-    const analyticsSwitch = screen.getByTestId('switch')
-    
-    // Test that switch can be toggled
-    fireEvent.click(analyticsSwitch)
-    expect(analyticsSwitch).toBeInTheDocument()
-    
-    // Test that switch can be toggled again
-    fireEvent.click(analyticsSwitch)
-    expect(analyticsSwitch).toBeInTheDocument()
+    expect(screen.getByText('settings:privacy.security')).toBeInTheDocument()
+    expect(screen.getByText('settings:privacy.apiKey')).toBeInTheDocument()
+    expect(screen.getByText('settings:privacy.apiKeyDesc')).toBeInTheDocument()
   })
 })
