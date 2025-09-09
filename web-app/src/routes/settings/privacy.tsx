@@ -4,7 +4,7 @@ import SettingsMenu from '@/containers/SettingsMenu'
 import HeaderPage from '@/containers/HeaderPage'
 import { Card, CardItem } from '@/containers/Card'
 import { useTranslation } from '@/i18n/react-i18next-compat'
-import { ApiKeyInput } from '@/containers/ApiKeyInput'
+import { SalesboxApiKeyInput } from '@/containers/SalesboxApiKeyInput'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Route = createFileRoute(route.settings.privacy as any)({
@@ -36,7 +36,7 @@ function Privacy() {
                 title={t('settings:privacy.apiKey')}
                 description={t('settings:privacy.apiKeyDesc')}
                 align="start"
-                actions={<ApiKeyInput />}
+                actions={<SalesboxApiKeyInput />}
               />
             </Card>
           </div>

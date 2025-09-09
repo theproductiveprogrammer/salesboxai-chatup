@@ -29,8 +29,8 @@ vi.mock('@/containers/Card', () => ({
   ),
 }))
 
-vi.mock('@/containers/ApiKeyInput', () => ({
-  ApiKeyInput: () => <div data-testid="api-key-input">API Key Input</div>,
+vi.mock('@/containers/SalesboxApiKeyInput', () => ({
+  SalesboxApiKeyInput: () => <div data-testid="salesbox-api-key-input">Salesbox API Key Input</div>,
 }))
 
 vi.mock('@/i18n/react-i18next-compat', () => ({
@@ -78,11 +78,11 @@ describe('Privacy Settings Route', () => {
     expect(screen.getByText('settings:privacy.security')).toBeInTheDocument()
   })
 
-  it('should render API key input', () => {
+  it('should render Salesbox API key input', () => {
     const Component = PrivacyRoute.component as React.ComponentType
     render(<Component />)
 
-    const apiKeyInput = screen.getByTestId('api-key-input')
+    const apiKeyInput = screen.getByTestId('salesbox-api-key-input')
     expect(apiKeyInput).toBeInTheDocument()
   })
 

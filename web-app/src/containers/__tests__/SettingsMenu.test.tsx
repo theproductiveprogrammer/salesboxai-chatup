@@ -78,7 +78,7 @@ describe('SettingsMenu', () => {
 
     expect(screen.getByText('common:general')).toBeInTheDocument()
     expect(screen.getByText('common:appearance')).toBeInTheDocument()
-    expect(screen.getByText('common:privacy')).toBeInTheDocument()
+    expect(screen.getByText('common:security')).toBeInTheDocument()
     expect(screen.getByText('common:modelProviders')).toBeInTheDocument()
     expect(screen.getByText('common:keyboardShortcuts')).toBeInTheDocument()
     expect(screen.getByText('common:hardware')).toBeInTheDocument()
