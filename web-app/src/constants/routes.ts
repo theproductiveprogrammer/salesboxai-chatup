@@ -21,6 +21,7 @@ export const route = {
     index: '/hub/',
     model: '/hub/$modelId',
   },
+  asyncJobs: '/async-jobs',
   localApiServerlogs: '/local-api-server/logs',
   systemMonitor: '/system-monitor',
   threadsDetail: '/threads/$threadId',

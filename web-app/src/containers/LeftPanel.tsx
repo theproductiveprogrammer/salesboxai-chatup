@@ -13,6 +13,7 @@ import {
   IconX,
   IconSearch,
   IconClipboardSmileFilled,
+  IconGrain,
 } from '@tabler/icons-react'
 import { route } from '@/constants/routes'
 import ThreadList from './ThreadList'
@@ -59,6 +60,11 @@ const mainMenus = [
     title: 'common:hub',
     icon: IconAppsFilled,
     route: route.hub.index,
+  },
+  {
+    title: 'common:asyncJobs',
+    icon: IconGrain,
+    route: route.asyncJobs,
   },
   {
     title: 'common:settings',
@@ -259,7 +265,8 @@ const LeftPanel = () => {
           <div
             className={cn(
               'flex flex-col',
-              Object.keys(downloads).length > 0 || localDownloadingModels.size > 0
+              Object.keys(downloads).length > 0 ||
+                localDownloadingModels.size > 0
                 ? 'h-[calc(100%-200px)]'
                 : 'h-[calc(100%-140px)]'
             )}
@@ -474,8 +481,10 @@ const LeftPanel = () => {
           <div className="space-y-1 shrink-0 py-1 mt-2">
             {mainMenus.map((menu) => {
               const isActive =
-                currentPath.includes(route.settings.index) &&
-                menu.route.includes(route.settings.index)
+                (currentPath.includes(route.settings.index) &&
+                  menu.route.includes(route.settings.index)) ||
+                (currentPath === route.asyncJobs &&
+                  menu.route === route.asyncJobs)
               return (
                 <Link
                   key={menu.title}

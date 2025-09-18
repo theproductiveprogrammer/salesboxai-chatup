@@ -33,7 +33,7 @@ export async function callSalesboxApi<T = any>(
     'Content-Type': 'application/json',
     'x-api-key': apiKey,
     'Authorization': `Bearer ${apiKey}`,
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   }
 
   try {

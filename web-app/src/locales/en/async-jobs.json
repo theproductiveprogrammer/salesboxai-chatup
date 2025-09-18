@@ -1,0 +1,81 @@
+{
+	"title": "Jobs",
+	"subtitle": "Monitor and manage your background jobs",
+	"searchPlaceholder": "Search jobs...",
+	"status": {
+		"all": "All Status",
+		"pending": "Pending",
+		"running": "Running",
+		"completed": "Completed",
+		"failed": "Failed",
+		"cancelled": "Cancelled"
+	},
+	"type": {
+		"all": "All Types",
+		"dataExport": "Data Export",
+		"reportGeneration": "Report Generation",
+		"bulkOperation": "Bulk Operation"
+	},
+	"actions": {
+		"refresh": "Refresh",
+		"newJob": "New Job",
+		"loadMore": "Load More",
+		"cancel": "Cancel",
+		"delete": "Delete",
+		"download": "Download",
+		"retry": "Retry"
+	},
+	"statusLabels": {
+		"pending": "Pending",
+		"running": "Running",
+		"completed": "Completed",
+		"failed": "Failed",
+		"cancelled": "Cancelled"
+	},
+	"typeLabels": {
+		"dataExport": "Data Export",
+		"reportGeneration": "Report Generation",
+		"bulkOperation": "Bulk Operation"
+	},
+	"dataExport": {
+		"title": "Data Export",
+		"exporting": "Exporting {{dataType}} data",
+		"format": "Format",
+		"dataType": "Data Type",
+		"startDate": "Start Date",
+		"endDate": "End Date",
+		"includingDeleted": "Including deleted records",
+		"exportProgress": "Export Progress",
+		"exportComplete": "Export Complete",
+		"exportFailed": "Export Failed",
+		"records": "Records",
+		"fileSize": "File Size",
+		"file": "File",
+		"expires": "Expires",
+		"cancelExport": "Cancel Export",
+		"retryExport": "Retry Export",
+		"dataTypes": {
+			"contacts": "Contacts",
+			"leads": "Leads",
+			"deals": "Deals",
+			"activities": "Activities",
+			"all": "All Data"
+		}
+	},
+	"messages": {
+		"loadingJobs": "Loading jobs...",
+		"noJobsFound": "No jobs found",
+		"noJobsFoundDesc": "Try adjusting your search or filters",
+		"jobCancelled": "Job cancelled successfully",
+		"jobDeleted": "Job deleted successfully",
+		"jobCancelledFailed": "Failed to cancel job",
+		"jobDeletedFailed": "Failed to delete job",
+		"loadJobsFailed": "Failed to load jobs",
+		"retryNotImplemented": "Retry functionality not yet implemented"
+	},
+	"timestamps": {
+		"created": "Created",
+		"updated": "Updated",
+		"completed": "Completed"
+	}
+}
