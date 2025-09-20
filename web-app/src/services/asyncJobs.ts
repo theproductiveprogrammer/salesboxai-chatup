@@ -148,3 +148,5 @@ export async function downloadJobResult(
   // For now, we'll assume the API returns a download URL
   throw new Error('Download functionality not yet implemented')
 }
+
+
