@@ -71,6 +71,10 @@ const typeConfig = {
     label: 'Bulk Operation',
     color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
   },
+  [AsyncJobType.DISCOVER_LEADS]: {
+    label: 'Lead Discovery',
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
+  },
 }
 
 export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({

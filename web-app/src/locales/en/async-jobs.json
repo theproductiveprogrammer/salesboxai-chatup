@@ -14,7 +14,8 @@
 		"all": "All Types",
 		"dataExport": "Data Export",
 		"reportGeneration": "Report Generation",
-		"bulkOperation": "Bulk Operation"
+		"bulkOperation": "Bulk Operation",
+		"discoverLeads": "Lead Discovery"
 	},
 	"actions": {
 		"refresh": "Refresh",
@@ -35,7 +36,8 @@
 	"typeLabels": {
 		"dataExport": "Data Export",
 		"reportGeneration": "Report Generation",
-		"bulkOperation": "Bulk Operation"
+		"bulkOperation": "Bulk Operation",
+		"discoverLeads": "Lead Discovery"
 	},
 	"dataExport": {
 		"title": "Data Export",

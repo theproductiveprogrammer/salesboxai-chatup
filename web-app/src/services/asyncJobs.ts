@@ -5,13 +5,56 @@ import type {
   AsyncJobResult,
   AsyncJobsResponse,
   CreateAsyncJobResponse,
-  AsyncJobStatus,
-  AsyncJobType,
 } from '@/types/asyncJobs'
+import { AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
 
 /**
  * Service for managing AsyncJobs via Salesbox.AI API
  */
+
+// Transform backend job data to our frontend format
+function transformBackendJob(backendJob: any): AsyncJob {
+  let jobData = null
+  if (backendJob.job_data && backendJob.job_data !== 'null') {
+    try {
+      jobData = JSON.parse(backendJob.job_data)
+    } catch (e) {
+      console.warn('Failed to parse job_data:', e)
+    }
+  }
+
+  return {
+    id: backendJob.job_id,
+    type: backendJob.job_type as AsyncJobType,
+    status: mapBackendStatus(backendJob.job_status),
+    title: backendJob.job_description,
+    description: backendJob.job_message,
+    message: backendJob.job_message,
+    input: jobData?.input || {},
+    result: jobData?.output ? { output: jobData.output } : undefined,
+    error: backendJob.job_status === 'FAILED' ? backendJob.job_message : undefined,
+    progress: undefined, // Backend doesn't provide progress
+    createdAt: backendJob.created,
+    updatedAt: backendJob.modified,
+    completedAt: backendJob.job_status === 'SUCCESS' || backendJob.job_status === 'FAILED' ? backendJob.modified : undefined,
+    userId: backendJob.owner_id.toString(),
+  }
+}
+
+function mapBackendStatus(backendStatus: string): AsyncJobStatus {
+  switch (backendStatus) {
+    case 'SUCCESS':
+      return AsyncJobStatus.COMPLETED
+    case 'FAILED':
+      return AsyncJobStatus.FAILED
+    case 'RUNNING':
+      return AsyncJobStatus.RUNNING
+    case 'PENDING':
+      return AsyncJobStatus.PENDING
+    default:
+      return AsyncJobStatus.PENDING
+  }
+}
 
 /**
  * Get all async jobs for the current user
@@ -22,28 +65,74 @@ export async function getAsyncJobs(
   status?: AsyncJobStatus,
   type?: AsyncJobType
 ): Promise<AsyncJobsResponse> {
+  // Map frontend status to backend status
+  const statusMap: Record<AsyncJobStatus, string> = {
+    'pending': 'PENDING',
+    'running': 'RUNNING', 
+    'completed': 'SUCCESS',
+    'failed': 'FAILED',
+    'cancelled': 'CANCELLED'
+  }
+
+  // Build RSQL query
+  let rsql = 'owner_id==2' // Hardcoded for now, should come from user context
+  if (status) {
+    rsql += `;job_status==${statusMap[status]}`
+  }
+  if (type) {
+    rsql += `;job_type==${type}`
+  }
+
   const params = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
+    rsql: rsql,
+    page: (page - 1).toString(),
+    size: limit.toString(),
   })
 
-  if (status) {
-    params.append('status', status)
+  try {
+    const response = await fetch(`http://localhost:6991/AsyncJob/search?rsql=${encodeURIComponent(rsql)}`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        rsql: 'string',
+        pageable: {
+          page: page - 1,
+          size: limit,
+          sort: ['string'],
+          orderBy: [{
+            ignoreCase: false,
+            direction: 'ASC',
+            property: 'string',
+            ascending: false
+          }],
+          number: page - 1,
+          mode: 'CURSOR_NEXT'
+        }
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    
+    // Transform backend response to frontend format
+    const transformedJobs = data.content.map(transformBackendJob)
+    
+    return {
+      jobs: transformedJobs,
+      total: data.totalSize,
+      page: page,
+      limit: limit,
+    }
+  } catch (error) {
+    console.error('Error calling AsyncJob API:', error)
+    throw new Error(error instanceof Error ? error.message : 'Unknown error occurred')
   }
-
-  if (type) {
-    params.append('type', type)
-  }
-
-  const response = await callSalesboxApi<AsyncJobsResponse>(
-    `/async-jobs?${params.toString()}`
-  )
-
-  if (response.error) {
-    throw new Error(response.error)
-  }
-
-  return response.data!
 }
 
 /**

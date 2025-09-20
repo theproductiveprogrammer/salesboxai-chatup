@@ -26,6 +26,7 @@ import {
   getJobStatus,
 } from '@/services/asyncJobs'
 import { AsyncJobWidget, DataExportJobWidget } from '@/containers/asyncJobs'
+import { DiscoverLeadsJobWidget } from '@/containers/asyncJobs/DiscoverLeadsJobWidget'
 
 export const Route = createFileRoute('/async-jobs')({
   component: AsyncJobsPage,
@@ -197,6 +198,14 @@ function AsyncJobsPage() {
             onAction={handleJobAction}
           />
         )
+      case JobType.DISCOVER_LEADS:
+        return (
+          <DiscoverLeadsJobWidget
+            key={job.id}
+            job={job}
+            onAction={handleJobAction}
+          />
+        )
       default:
         return (
           <AsyncJobWidget
@@ -269,6 +278,7 @@ function AsyncJobsPage() {
               <SelectItem value={JobType.DATA_EXPORT}>Data Export</SelectItem>
               <SelectItem value={JobType.REPORT_GENERATION}>Report Generation</SelectItem>
               <SelectItem value={JobType.BULK_OPERATION}>Bulk Operation</SelectItem>
+              <SelectItem value={JobType.DISCOVER_LEADS}>Lead Discovery</SelectItem>
             </SelectContent>
           </Select>
         </div>

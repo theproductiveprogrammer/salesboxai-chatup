@@ -15,6 +15,7 @@ export enum AsyncJobType {
   DATA_EXPORT = 'data_export',
   REPORT_GENERATION = 'report_generation',
   BULK_OPERATION = 'bulk_operation',
+  DISCOVER_LEADS = 'DISCOVER_LEADS',
 }
 
 export interface AsyncJob {
@@ -23,6 +24,7 @@ export interface AsyncJob {
   status: AsyncJobStatus
   title: string
   description?: string
+  message?: string
   input: Record<string, any>
   result?: Record<string, any>
   error?: string
