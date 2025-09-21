@@ -60,57 +60,26 @@ function mapBackendStatus(backendStatus: string): AsyncJobStatus {
  * Get all async jobs for the current user
  */
 export async function getAsyncJobs(
+  apiKey: string,
+  endpoint: string,
   page: number = 1,
   limit: number = 20,
   status?: AsyncJobStatus,
   type?: AsyncJobType
 ): Promise<AsyncJobsResponse> {
-  // Map frontend status to backend status
-  const statusMap: Record<AsyncJobStatus, string> = {
-    'pending': 'PENDING',
-    'running': 'RUNNING', 
-    'completed': 'SUCCESS',
-    'failed': 'FAILED',
-    'cancelled': 'CANCELLED'
-  }
-
-  // Build RSQL query
-  let rsql = 'owner_id==2' // Hardcoded for now, should come from user context
-  if (status) {
-    rsql += `;job_status==${statusMap[status]}`
-  }
-  if (type) {
-    rsql += `;job_type==${type}`
-  }
-
-  const params = new URLSearchParams({
-    rsql: rsql,
-    page: (page - 1).toString(),
-    size: limit.toString(),
-  })
-
   try {
-    const response = await fetch(`http://localhost:6991/AsyncJob/search?rsql=${encodeURIComponent(rsql)}`, {
+    console.log('🔍 AsyncJobs Service Debug:', { endpoint, apiKey: apiKey ? '***' : 'missing' })
+    const url = `${endpoint}/job/job-list`
+    console.log('🌐 Making request to:', url)
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        rsql: 'string',
-        pageable: {
-          page: page - 1,
-          size: limit,
-          sort: ['string'],
-          orderBy: [{
-            ignoreCase: false,
-            direction: 'ASC',
-            property: 'string',
-            ascending: false
-          }],
-          number: page - 1,
-          mode: 'CURSOR_NEXT'
-        }
+        apiKey: apiKey
       })
     })
 
@@ -121,11 +90,25 @@ export async function getAsyncJobs(
     const data = await response.json()
     
     // Transform backend response to frontend format
-    const transformedJobs = data.content.map(transformBackendJob)
+    let transformedJobs = data.map(transformBackendJob)
+    
+    // Apply client-side filtering if needed
+    if (status) {
+      transformedJobs = transformedJobs.filter((job: AsyncJob) => job.status === status)
+    }
+    
+    if (type) {
+      transformedJobs = transformedJobs.filter((job: AsyncJob) => job.type === type)
+    }
+    
+    // Apply pagination
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    const paginatedJobs = transformedJobs.slice(startIndex, endIndex)
     
     return {
-      jobs: transformedJobs,
-      total: data.totalSize,
+      jobs: paginatedJobs,
+      total: transformedJobs.length,
       page: page,
       limit: limit,
     }

@@ -5,6 +5,7 @@ import HeaderPage from '@/containers/HeaderPage'
 import { Card, CardItem } from '@/containers/Card'
 import { useTranslation } from '@/i18n/react-i18next-compat'
 import { SalesboxApiKeyInput } from '@/containers/SalesboxApiKeyInput'
+import { SalesboxEndpointInput } from '@/containers/SalesboxEndpointInput'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Route = createFileRoute(route.settings.privacy as any)({
@@ -37,6 +38,12 @@ function Privacy() {
                 description={t('settings:privacy.apiKeyDesc')}
                 align="start"
                 actions={<SalesboxApiKeyInput />}
+              />
+              <CardItem
+                title="API Endpoint"
+                description="Configure the backend endpoint for API calls (e.g., https://agent-job.salesbox.ai)"
+                align="start"
+                actions={<SalesboxEndpointInput />}
               />
             </Card>
           </div>

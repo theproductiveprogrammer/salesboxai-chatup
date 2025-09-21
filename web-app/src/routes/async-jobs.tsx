@@ -17,6 +17,8 @@ import {
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { useSalesboxApiKey } from '@/hooks/useSalesboxApiKey'
+import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 import type { AsyncJob, AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
 import { AsyncJobStatus as JobStatus, AsyncJobType as JobType } from '@/types/asyncJobs'
 import {
@@ -35,6 +37,8 @@ export const Route = createFileRoute('/async-jobs')({
 const POLLING_INTERVAL = 5000 // 5 seconds
 
 function AsyncJobsPage() {
+  const { apiKey } = useSalesboxApiKey()
+  const { endpoint } = useSalesboxEndpoint()
   const [jobs, setJobs] = useState<AsyncJob[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -45,7 +49,31 @@ function AsyncJobsPage() {
   const [hasMore, setHasMore] = useState(true)
   const [pollingJobs, setPollingJobs] = useState<Set<string>>(new Set())
 
+  // Debug endpoint on mount
+  useEffect(() => {
+    console.log('🚀 AsyncJobsPage mounted with endpoint:', endpoint)
+    console.log('🔍 localStorage salesbox-endpoint:', localStorage.getItem('salesbox-endpoint'))
+  }, [endpoint])
+
   const loadJobs = useCallback(async (reset = false) => {
+    console.log('🔍 AsyncJobs Page Debug:', { apiKey: apiKey ? '***' : 'missing', endpoint })
+    
+    if (!apiKey) {
+      console.error('No API key available')
+      toast.error('Please configure your API key first')
+      setLoading(false)
+      setRefreshing(false)
+      return
+    }
+
+    if (!endpoint) {
+      console.error('No endpoint available')
+      toast.error('Please configure your endpoint first')
+      setLoading(false)
+      setRefreshing(false)
+      return
+    }
+
     try {
       if (reset) {
         setLoading(true)
@@ -56,6 +84,8 @@ function AsyncJobsPage() {
 
       const currentPage = reset ? 1 : page
       const response = await getAsyncJobs(
+        apiKey,
+        endpoint,
         currentPage,
         20,
         statusFilter === 'all' ? undefined : statusFilter,
@@ -77,7 +107,7 @@ function AsyncJobsPage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [page, statusFilter, typeFilter])
+  }, [apiKey, endpoint, page, statusFilter, typeFilter])
 
   const refreshJobs = useCallback(() => {
     loadJobs(true)
