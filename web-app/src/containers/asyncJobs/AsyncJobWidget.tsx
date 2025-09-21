@@ -206,8 +206,37 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
       </CardHeader>
 
       <CardContent className="pt-0">
-        {/* Progress bar for running jobs */}
-        {job.status === AsyncJobStatus.RUNNING && job.progress !== undefined && (
+        {/* Running job animation */}
+        {job.status === AsyncJobStatus.RUNNING && (
+          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                  <div className="absolute inset-0 w-3 h-3 bg-blue-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  Processing...
+                </span>
+              </div>
+              {job.progress !== undefined && (
+                <div className="flex-1 ml-4">
+                  <div className="flex justify-between text-xs text-blue-600 dark:text-blue-400 mb-1">
+                    <span>Progress</span>
+                    <span>{job.progress}%</span>
+                  </div>
+                  <Progress value={job.progress} className="h-1.5" />
+                </div>
+              )}
+            </div>
+            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+              This job is currently running in the background. You can continue using the app while it processes.
+            </div>
+          </div>
+        )}
+
+        {/* Progress bar for other job statuses */}
+        {job.status !== AsyncJobStatus.RUNNING && job.progress !== undefined && (
           <div className="mb-4">
             <div className="flex justify-between text-sm text-muted-foreground mb-2">
               <span>Progress</span>

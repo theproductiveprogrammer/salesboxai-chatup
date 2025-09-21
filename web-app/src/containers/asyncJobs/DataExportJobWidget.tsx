@@ -144,14 +144,32 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
           )}
         </div>
 
-        {/* Progress for running jobs */}
-        {job.status === AsyncJobStatus.RUNNING && job.progress !== undefined && (
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-muted-foreground mb-2">
-              <span>Export Progress</span>
-              <span>{job.progress}%</span>
+        {/* Running job animation */}
+        {job.status === AsyncJobStatus.RUNNING && (
+          <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                  <div className="absolute inset-0 w-3 h-3 bg-purple-500 rounded-full animate-ping opacity-75"></div>
+                </div>
+                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                  Exporting data...
+                </span>
+              </div>
+              {job.progress !== undefined && (
+                <div className="flex-1 ml-4">
+                  <div className="flex justify-between text-xs text-purple-600 dark:text-purple-400 mb-1">
+                    <span>Progress</span>
+                    <span>{job.progress}%</span>
+                  </div>
+                  <Progress value={job.progress} className="h-1.5" />
+                </div>
+              )}
             </div>
-            <Progress value={job.progress} className="h-2" />
+            <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
+              Preparing your {getDataTypeLabel(input.dataType)} export. This may take a few minutes.
+            </div>
           </div>
         )}
 
