@@ -8,16 +8,9 @@ type SalesboxEndpointState = {
 
 export const useSalesboxEndpoint = create<SalesboxEndpointState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       endpoint: 'https://agent-job.salesbox.ai',
-      setEndpoint: (value) => {
-        console.log('🔧 Setting endpoint to:', value)
-        set({ endpoint: value })
-        // Verify it was set correctly
-        setTimeout(() => {
-          console.log('🔍 Current endpoint after setting:', get().endpoint)
-        }, 100)
-      },
+      setEndpoint: (value) => set({ endpoint: value }),
     }),
     {
       name: 'salesbox-endpoint',

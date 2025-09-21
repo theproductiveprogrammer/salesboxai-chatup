@@ -68,11 +68,7 @@ export async function getAsyncJobs(
   type?: AsyncJobType
 ): Promise<AsyncJobsResponse> {
   try {
-    console.log('🔍 AsyncJobs Service Debug:', { endpoint, apiKey: apiKey ? '***' : 'missing' })
-    const url = `${endpoint}/job/job-list`
-    console.log('🌐 Making request to:', url)
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${endpoint}/job/job-list`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
@@ -91,6 +87,9 @@ export async function getAsyncJobs(
     
     // Transform backend response to frontend format
     let transformedJobs = data.map(transformBackendJob)
+    
+    // Sort by creation date (latest first)
+    transformedJobs.sort((a: AsyncJob, b: AsyncJob) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     
     // Apply client-side filtering if needed
     if (status) {

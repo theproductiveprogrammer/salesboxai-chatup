@@ -75,3 +75,29 @@ export interface AsyncJobAction {
   variant?: 'default' | 'destructive' | 'link'
   onClick: (job: AsyncJob) => void
 }
+
+// Discover Leads specific types
+export interface DiscoverLeadsInput {
+  companyLinkedinUrl?: string
+  countries?: string[]
+  functions?: string[]
+  titles?: string[]
+  levels?: string[]
+  maxResults?: number
+}
+
+export interface DiscoverLeadsOutput {
+  id: string
+  name: string
+  type: string
+  linkedinUrl?: string
+  email?: string
+  company?: string
+  title?: string
+  location?: string
+}
+
+export interface DiscoverLeadsResult {
+  input: DiscoverLeadsInput
+  output: DiscoverLeadsOutput[]
+}

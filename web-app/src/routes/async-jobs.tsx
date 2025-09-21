@@ -49,15 +49,8 @@ function AsyncJobsPage() {
   const [hasMore, setHasMore] = useState(true)
   const [pollingJobs, setPollingJobs] = useState<Set<string>>(new Set())
 
-  // Debug endpoint on mount
-  useEffect(() => {
-    console.log('🚀 AsyncJobsPage mounted with endpoint:', endpoint)
-    console.log('🔍 localStorage salesbox-endpoint:', localStorage.getItem('salesbox-endpoint'))
-  }, [endpoint])
 
   const loadJobs = useCallback(async (reset = false) => {
-    console.log('🔍 AsyncJobs Page Debug:', { apiKey: apiKey ? '***' : 'missing', endpoint })
-    
     if (!apiKey) {
       console.error('No API key available')
       toast.error('Please configure your API key first')

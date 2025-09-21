@@ -15,28 +15,8 @@ import {
   IconExternalLink,
 } from '@tabler/icons-react'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
-import type { AsyncJobWidgetProps } from '@/types/asyncJobs'
+import type { AsyncJobWidgetProps, DiscoverLeadsResult, DiscoverLeadsInput } from '@/types/asyncJobs'
 
-interface DiscoverLeadsInput {
-  api_key: string
-  companyLinkedinUrl: string
-  jobFunctions: string[]
-  titles: string[]
-  levels: string[]
-  countries: string[]
-  maxResults: number
-}
-
-interface DiscoverLeadsOutput {
-  id: number
-  name: string
-  type: string
-}
-
-interface DiscoverLeadsResult {
-  input: DiscoverLeadsInput
-  output: DiscoverLeadsOutput[]
-}
 
 export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   job,
@@ -139,7 +119,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
               <div className="flex items-center gap-2">
                 <IconBriefcase className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Functions:</span>
-                <span className="font-medium">{input.jobFunctions?.join(', ') || 'N/A'}</span>
+                <span className="font-medium">{input.functions?.join(', ') || 'N/A'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <IconUser className="h-4 w-4 text-muted-foreground" />
@@ -189,9 +169,14 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
               {result.output.map((lead) => (
                 <div
                   key={lead.id}
-                  className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border"
+                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => {
+                    if (lead.linkedinUrl) {
+                      window.open(lead.linkedinUrl, '_blank', 'noopener,noreferrer')
+                    }
+                  }}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
                       <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
                         {lead.name.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -199,12 +184,31 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                     </div>
                     <div>
                       <p className="font-medium text-sm">{lead.name}</p>
-                      <p className="text-xs text-muted-foreground">Lead #{lead.id}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>Lead #{lead.id}</span>
+                        {lead.linkedinUrl && (
+                          <div className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                            <IconExternalLink className="h-3 w-3" />
+                            <span>LinkedIn</span>
+                          </div>
+                        )}
+                      </div>
+                      {lead.title && (
+                        <p className="text-xs text-muted-foreground mt-1">{lead.title}</p>
+                      )}
+                      {lead.company && (
+                        <p className="text-xs text-muted-foreground">{lead.company}</p>
+                      )}
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {lead.type}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {lead.type}
+                    </Badge>
+                    {lead.linkedinUrl && (
+                      <IconExternalLink className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
