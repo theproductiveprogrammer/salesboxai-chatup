@@ -16,19 +16,53 @@ import {
 } from '@tabler/icons-react'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
 import type { AsyncJobWidgetProps, DiscoverLeadsResult, DiscoverLeadsInput } from '@/types/asyncJobs'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { invoke } from '@tauri-apps/api/core'
 
 
 export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   job,
   onAction,
 }) => {
+  console.log('DiscoverLeadsJobWidget - job:', job)
+  console.log('DiscoverLeadsJobWidget - job.status:', job.status)
+  console.log('DiscoverLeadsJobWidget - job.result:', job.result)
+  
   const result = job.result as DiscoverLeadsResult | undefined
   const input = result?.input || (job.input as DiscoverLeadsInput)
+  
+  console.log('DiscoverLeadsJobWidget - result:', result)
+  console.log('DiscoverLeadsJobWidget - input:', input)
 
   const getCompanyName = (linkedinUrl: string | undefined) => {
     if (!linkedinUrl) return 'Unknown Company'
     const match = linkedinUrl.match(/linkedin\.com\/company\/([^\/]+)/)
     return match ? match[1] : 'Unknown Company'
+  }
+
+  // Helper function to get display name from lead data
+  const getLeadDisplayName = (lead: any): string => {
+    if (lead.name) {
+      return lead.name
+    }
+    if (lead.firstname && lead.lastname) {
+      return `${lead.firstname} ${lead.lastname}`
+    }
+    if (lead.firstname) {
+      return lead.firstname
+    }
+    return `Lead #${lead.id}`
+  }
+
+  // Helper function to get LinkedIn URL
+  const getLeadLinkedInUrl = (lead: any): string | undefined => {
+    return lead.linkedin || lead.linkedinUrl
+  }
+
+  // Helper function to get initials for avatar
+  const getLeadInitials = (lead: any): string => {
+    const name = getLeadDisplayName(lead)
+    return name.split(' ').map(n => n[0]).join('').toUpperCase()
   }
 
   const getStatusColor = (status: string) => {
@@ -174,37 +208,68 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
           </div>
         )}
 
-        {/* Results for successful jobs */}
-        {job.status === 'completed' && result?.output && (
-          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <IconUsers className="h-5 w-5 text-green-600" />
-              <h4 className="font-semibold text-green-800 dark:text-green-200">
-                Discovery Complete - {result.output.length} leads found
-              </h4>
-            </div>
-            <div className="space-y-2">
-              {result.output.map((lead) => (
+          {/* Results for successful jobs */}
+          {job.status === 'completed' && result?.output && (
+            <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <IconUsers className="h-5 w-5 text-green-600" />
+                <h4 className="font-semibold text-green-800 dark:text-green-200">
+                  Discovery Complete - {result.output.length} leads found
+                </h4>
+              </div>
+              <div className="space-y-2">
+                {console.log('Rendering leads:', result.output)}
+                {result.output.map((lead) => {
+                  console.log('Rendering lead:', lead)
+                  return (
                 <div
                   key={lead.id}
-                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => {
-                    if (lead.linkedinUrl) {
-                      window.open(lead.linkedinUrl, '_blank', 'noopener,noreferrer')
+                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border hover:shadow-md transition-shadow cursor-pointer group"
+                  onClick={async (e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    console.log('Lead clicked:', lead)
+                    const linkedinUrl = getLeadLinkedInUrl(lead)
+                    console.log('LinkedIn URL:', linkedinUrl)
+                    if (linkedinUrl) {
+                      console.log('Opening LinkedIn URL:', linkedinUrl)
+                      try {
+                        // Method 1: Try Tauri shell command via core API (most reliable for system browser)
+                        await invoke('plugin:shell|open', { path: linkedinUrl })
+                        console.log('Successfully opened LinkedIn URL with shell command')
+                      } catch (shellError) {
+                        console.log('Shell command failed, trying opener plugin:', shellError)
+                        try {
+                          // Method 2: Try Tauri opener plugin
+                          await openUrl(linkedinUrl)
+                          console.log('Successfully opened LinkedIn URL with opener plugin')
+                        } catch (openerError) {
+                          console.log('Opener plugin failed, trying window.open:', openerError)
+                          try {
+                            // Method 3: Fallback to window.open
+                            window.open(linkedinUrl, '_blank', 'noopener,noreferrer')
+                            console.log('Opened with window.open fallback')
+                          } catch (fallbackError) {
+                            console.error('All methods failed:', fallbackError)
+                          }
+                        }
+                      }
+                    } else {
+                      console.log('No LinkedIn URL available for lead:', lead.id)
                     }
                   }}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
                       <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                        {lead.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        {getLeadInitials(lead)}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{lead.name}</p>
+                      <p className="font-medium text-sm">{getLeadDisplayName(lead)}</p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>Lead #{lead.id}</span>
-                        {lead.linkedinUrl && (
+                        {getLeadLinkedInUrl(lead) && (
                           <div className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
                             <IconExternalLink className="h-3 w-3" />
                             <span>LinkedIn</span>
@@ -226,12 +291,13 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                     {lead.linkedinUrl && (
                       <IconExternalLink className="h-4 w-4 text-muted-foreground" />
                     )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Error for failed jobs */}
         {job.status === 'failed' && job.error && (

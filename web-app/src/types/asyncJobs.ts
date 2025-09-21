@@ -87,14 +87,22 @@ export interface DiscoverLeadsInput {
 }
 
 export interface DiscoverLeadsOutput {
-  id: string
-  name: string
+  id: string | number
+  name?: string // For backward compatibility
+  firstname?: string
+  lastname?: string
   type: string
-  linkedinUrl?: string
+  linkedin?: string // Backend uses 'linkedin' field
+  linkedinUrl?: string // For backward compatibility
   email?: string
   company?: string
   title?: string
   location?: string
+  country?: string
+  industry?: string
+  engScore?: number
+  validEmail?: boolean
+  leadStatus?: string
 }
 
 export interface DiscoverLeadsResult {
