@@ -151,17 +151,19 @@ function AsyncJobsPage() {
     if (pollingJobs.size === 0) return
 
     const interval = setInterval(async () => {
+      if (!endpoint) return
+      
       for (const jobId of pollingJobs) {
         try {
-          const status = await getJobStatus(jobId)
+          const updatedJob = await getJobStatus(jobId, endpoint)
           setJobs(prev => prev.map(job => 
             job.id === jobId 
-              ? { ...job, ...status }
+              ? updatedJob
               : job
           ))
 
           // Stop polling if job is completed, failed, or cancelled
-          if ([JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED].includes(status.status)) {
+          if ([JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED].includes(updatedJob.status)) {
             stopPolling(jobId)
           }
         } catch (error) {
@@ -172,7 +174,7 @@ function AsyncJobsPage() {
     }, POLLING_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [pollingJobs, stopPolling])
+  }, [pollingJobs, stopPolling, endpoint])
 
   // Start polling for running jobs
   useEffect(() => {

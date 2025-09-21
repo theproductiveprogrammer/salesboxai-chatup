@@ -2,7 +2,6 @@ import { callSalesboxApi } from './salesboxApi'
 import type {
   AsyncJob,
   AsyncJobInput,
-  AsyncJobResult,
   AsyncJobsResponse,
   CreateAsyncJobResponse,
 } from '@/types/asyncJobs'
@@ -14,6 +13,11 @@ import { AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
 
 // Transform backend job data to our frontend format
 function transformBackendJob(backendJob: any): AsyncJob {
+  // Validate required fields
+  if (!backendJob || !backendJob.job_id) {
+    throw new Error('Invalid job data: missing required fields')
+  }
+
   let jobData = null
   if (backendJob.job_data && backendJob.job_data !== 'null') {
     try {
@@ -25,19 +29,19 @@ function transformBackendJob(backendJob: any): AsyncJob {
 
   return {
     id: backendJob.job_id,
-    type: backendJob.job_type as AsyncJobType,
+    type: (backendJob.job_type as AsyncJobType) || AsyncJobType.BULK_OPERATION,
     status: mapBackendStatus(backendJob.job_status),
-    title: backendJob.job_description,
+    title: backendJob.job_description || 'Unknown Job',
     description: backendJob.job_message,
     message: backendJob.job_message,
     input: jobData?.input || {},
     result: jobData?.output ? { output: jobData.output } : undefined,
     error: backendJob.job_status === 'FAILED' ? backendJob.job_message : undefined,
     progress: undefined, // Backend doesn't provide progress
-    createdAt: backendJob.created,
-    updatedAt: backendJob.modified,
+    createdAt: backendJob.created || new Date().toISOString(),
+    updatedAt: backendJob.modified || new Date().toISOString(),
     completedAt: backendJob.job_status === 'SUCCESS' || backendJob.job_status === 'FAILED' ? backendJob.modified : undefined,
-    userId: backendJob.owner_id.toString(),
+    userId: backendJob.owner_id?.toString() || 'unknown',
   }
 }
 
@@ -185,16 +189,34 @@ export async function deleteAsyncJob(jobId: string): Promise<void> {
 /**
  * Get job status updates (for polling)
  */
-export async function getJobStatus(jobId: string): Promise<AsyncJobResult> {
-  const response = await callSalesboxApi<AsyncJobResult>(
-    `/async-jobs/${jobId}/status`
-  )
+export async function getJobStatus(jobId: string, endpoint: string): Promise<AsyncJob> {
+  try {
+    const response = await fetch(`${endpoint}/job/${jobId}/status`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+      },
+    })
 
-  if (response.error) {
-    throw new Error(response.error)
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error(`Job not found: ${jobId}`)
+      }
+      throw new Error(`API call failed: ${response.status} ${response.statusText}`)
+    }
+
+    const backendJob = await response.json()
+    
+    // Check if the response is null or empty
+    if (!backendJob) {
+      throw new Error(`Job not found: ${jobId}`)
+    }
+    
+    return transformBackendJob(backendJob)
+  } catch (error) {
+    console.error('Error calling job status API:', error)
+    throw new Error(error instanceof Error ? error.message : 'Unknown error occurred')
   }
-
-  return response.data!
 }
 
 /**
