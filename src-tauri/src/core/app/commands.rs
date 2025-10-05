@@ -1,5 +1,6 @@
 use std::{fs, path::PathBuf};
 use tauri::{AppHandle, Manager, Runtime, State};
+use tauri_plugin_store::StoreExt;
 
 use super::{
     constants::CONFIGURATION_FILE_NAME, helpers::copy_dir_recursive, models::AppConfiguration,
@@ -209,4 +210,56 @@ pub fn change_app_data_folder(
 #[tauri::command]
 pub fn app_token(state: State<'_, AppState>) -> Option<String> {
     state.app_token.clone()
+}
+
+/// Sync SalesBox API key to Tauri store so Rust can access it
+#[tauri::command]
+pub fn sync_salesbox_api_key<R: Runtime>(
+    app_handle: tauri::AppHandle<R>,
+    api_key: String,
+) -> Result<(), String> {
+    let mut store_path = get_jan_data_folder_path(app_handle.clone());
+    store_path.push("store.json");
+
+    let store = app_handle
+        .store(store_path)
+        .map_err(|e| format!("Failed to access store: {}", e))?;
+
+    store.set(
+        "salesbox-api-key",
+        serde_json::json!({ "state": { "apiKey": api_key }, "version": 0 }),
+    );
+
+    store
+        .save()
+        .map_err(|e| format!("Failed to save store: {}", e))?;
+
+    log::info!("Synced SalesBox API key to Tauri store");
+    Ok(())
+}
+
+/// Sync SalesBox endpoint to Tauri store so Rust can access it
+#[tauri::command]
+pub fn sync_salesbox_endpoint<R: Runtime>(
+    app_handle: tauri::AppHandle<R>,
+    endpoint: String,
+) -> Result<(), String> {
+    let mut store_path = get_jan_data_folder_path(app_handle.clone());
+    store_path.push("store.json");
+
+    let store = app_handle
+        .store(store_path)
+        .map_err(|e| format!("Failed to access store: {}", e))?;
+
+    store.set(
+        "salesbox-endpoint",
+        serde_json::json!({ "state": { "endpoint": endpoint }, "version": 0 }),
+    );
+
+    store
+        .save()
+        .map_err(|e| format!("Failed to save store: {}", e))?;
+
+    log::info!("Synced SalesBox endpoint to Tauri store");
+    Ok(())
 }

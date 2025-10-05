@@ -56,6 +56,8 @@ pub fn run() {
             core::app::commands::default_data_folder_path,
             core::app::commands::change_app_data_folder,
             core::app::commands::app_token,
+            core::app::commands::sync_salesbox_api_key,
+            core::app::commands::sync_salesbox_endpoint,
             // Extension commands
             core::extensions::commands::get_jan_extensions_path,
             core::extensions::commands::install_extensions,
@@ -128,6 +130,9 @@ pub fn run() {
             if let Err(e) = setup::install_extensions(app.handle().clone(), false) {
                 log::error!("Failed to install extensions: {}", e);
             }
+
+            // Download/update MCP services from remote (will be called by setup_mcp)
+            // Removed separate spawn - now integrated with MCP startup
 
             #[cfg(any(windows, target_os = "linux"))]
             {

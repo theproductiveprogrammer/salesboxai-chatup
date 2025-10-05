@@ -1,7 +1,7 @@
 use flate2::read::GzDecoder;
 use std::{
     fs::{self, File},
-    io::Read,
+    io::{Read, Write},
     path::PathBuf,
 };
 use tar::Archive;
@@ -164,6 +164,131 @@ pub fn install_extensions(app: tauri::AppHandle, force: bool) -> Result<(), Stri
     Ok(())
 }
 
+/// Download and install MCP services from remote endpoint
+/// Checks version and only downloads if newer version is available
+pub async fn install_mcp_from_remote(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_store::StoreExt;
+
+    // Get API endpoint from store
+    let mut store_path = get_jan_data_folder_path(app.clone());
+    store_path.push("store.json");
+
+    let store = app.store(store_path).map_err(|e| {
+        log::warn!("Store not available for MCP download: {}", e);
+        format!("Store not available: {}", e)
+    })?;
+
+    let api_endpoint = store
+        .get("salesbox-endpoint")
+        .and_then(|v| v.get("state").cloned())
+        .and_then(|s| s.get("endpoint").cloned())
+        .and_then(|e| e.as_str().map(String::from))
+        .unwrap_or_else(|| "https://agent-job.salesbox.ai".to_string());
+
+    log::info!("Checking for MCP updates from: {}", api_endpoint);
+
+    // Get local version
+    let data_path = get_jan_data_folder_path(app.clone());
+    let mcp_path = data_path.join("mcp-services").join("salesboxai");
+    let version_file = mcp_path.join("version.json");
+
+    let local_version = if version_file.exists() {
+        fs::read_to_string(&version_file)
+            .ok()
+            .and_then(|content| serde_json::from_str::<serde_json::Value>(&content).ok())
+            .and_then(|v| v["version"].as_str().map(String::from))
+            .unwrap_or_else(|| "0.0.0".to_string())
+    } else {
+        "0.0.0".to_string()
+    };
+
+    log::info!("Local MCP version: {}", local_version);
+
+    // Check remote version
+    let version_url = format!("{}/api/mcp/version", api_endpoint);
+    let client = reqwest::Client::new();
+
+    let remote_info = match client.get(&version_url).send().await {
+        Ok(response) => match response.json::<serde_json::Value>().await {
+            Ok(info) => info,
+            Err(e) => {
+                log::warn!("Failed to parse remote version info: {}", e);
+                return Ok(()); // Don't fail, just skip update
+            }
+        },
+        Err(e) => {
+            log::warn!("Failed to fetch remote version: {}", e);
+            return Ok(()); // Don't fail, just skip update
+        }
+    };
+
+    let remote_version = remote_info["version"]
+        .as_str()
+        .unwrap_or("0.0.0")
+        .to_string();
+
+    let download_url = remote_info["downloadUrl"]
+        .as_str()
+        .ok_or("Missing downloadUrl in remote response")?
+        .to_string();
+
+    log::info!("Remote MCP version: {}", remote_version);
+    log::info!("Download URL: {}", download_url);
+
+    // Compare versions (simple string comparison for now)
+    if remote_version <= local_version {
+        log::info!("MCP is up to date (local: {}, remote: {})", local_version, remote_version);
+        return Ok(());
+    }
+
+    // Download new version from CDN
+    log::info!("Downloading MCP update: {} -> {} from CDN", local_version, remote_version);
+    let response = match client.get(&download_url).send().await {
+        Ok(r) => r,
+        Err(e) => {
+            log::error!("Failed to download MCP: {}", e);
+            return Err(format!("Download failed: {}", e));
+        }
+    };
+
+    let bytes = match response.bytes().await {
+        Ok(b) => b,
+        Err(e) => {
+            log::error!("Failed to read MCP download: {}", e);
+            return Err(format!("Read failed: {}", e));
+        }
+    };
+
+    // Save tar.gz temporarily
+    let temp_path = data_path.join("mcp-temp.tar.gz");
+    let mut file = File::create(&temp_path).map_err(|e| e.to_string())?;
+    file.write_all(&bytes).map_err(|e| e.to_string())?;
+    drop(file);
+
+    log::info!("Downloaded MCP to {:?}, extracting...", temp_path);
+
+    // Remove old MCP directory if exists
+    if mcp_path.exists() {
+        fs::remove_dir_all(&mcp_path).map_err(|e| e.to_string())?;
+    }
+
+    // Create MCP directory
+    fs::create_dir_all(&mcp_path).map_err(|e| e.to_string())?;
+
+    // Extract tar.gz
+    let tar_gz = File::open(&temp_path).map_err(|e| e.to_string())?;
+    let tar = GzDecoder::new(tar_gz);
+    let mut archive = Archive::new(tar);
+    archive.unpack(&mcp_path).map_err(|e| e.to_string())?;
+
+    // Clean up temp file
+    fs::remove_file(&temp_path).unwrap_or_default();
+
+    log::info!("✅ MCP updated successfully to version {}", remote_version);
+
+    Ok(())
+}
+
 pub fn extract_extension_manifest<R: Read>(
     archive: &mut Archive<R>,
 ) -> Result<Option<serde_json::Value>, String> {
@@ -199,12 +324,17 @@ pub fn setup_mcp(app: &App) {
     let servers = state.mcp_servers.clone();
     let app_handle: tauri::AppHandle = app.handle().clone();
     tauri::async_runtime::spawn(async move {
-        // Start the built-in SalesBox.AI MCP server first (if API key is configured)
+        // First, download/update MCP services from remote
+        if let Err(e) = install_mcp_from_remote(app_handle.clone()).await {
+            log::warn!("Failed to download MCP from remote: {}", e);
+        }
+
+        // Then start the built-in SalesBox.AI MCP server (if API key is configured)
         if let Err(e) = start_builtin_salesbox_mcp(&app_handle, servers.clone()).await {
             log::warn!("SalesBox.AI builtin MCP server not started: {}", e);
         }
 
-        // Then start other configured MCP servers
+        // Finally start other configured MCP servers
         if let Err(e) = run_mcp_commands(&app_handle, servers).await {
             log::error!("Failed to run mcp commands: {}", e);
         }
