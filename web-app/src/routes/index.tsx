@@ -8,6 +8,7 @@ import { useTools } from '@/hooks/useTools'
 import { useModelProvider } from '@/hooks/useModelProvider'
 import SetupScreen from '@/containers/SetupScreen'
 import { route } from '@/constants/routes'
+import { localStorageKey } from '@/constants/localStorage'
 
 type SearchParams = {
   model?: {
@@ -32,7 +33,6 @@ function Index() {
   const { t } = useTranslation()
   const { providers } = useModelProvider()
   const search = useSearch({ from: route.home as any })
-  const selectedModel = search.model
   const { setCurrentThreadId } = useThreads()
   const [splashScreenShown, setSplashScreenShown] = useState(() => {
     // Check if splash has been shown in this session
@@ -44,18 +44,34 @@ function Index() {
   const { isAutoDownloading, autoDownloadComplete, hasValidProviders } =
     useAutoDownloadDefaultModel()
 
+  const selectedModel = search.model
+
   useEffect(() => {
     setCurrentThreadId(undefined)
   }, [setCurrentThreadId])
 
-  // Auto-proceed when download completes
+  // Auto-proceed when download completes and save Jan-Nano as lastUsedModel
   useEffect(() => {
     if (autoDownloadComplete && !splashScreenShown) {
       console.log('✅ Auto-download complete, proceeding to chat')
+
+      // Save Jan-Nano to localStorage so it's auto-selected
+      const llamacppProvider = providers.find(
+        (p) => p.provider === 'llamacpp' && p.models.length > 0
+      )
+      if (llamacppProvider && llamacppProvider.models.length > 0) {
+        const janNano = llamacppProvider.models[0]
+        localStorage.setItem(
+          localStorageKey.lastUsedModel,
+          JSON.stringify({ provider: 'llamacpp', model: janNano.id })
+        )
+        console.log('💾 Saved Jan-Nano as lastUsedModel:', janNano.id)
+      }
+
       setSplashScreenShown(true)
       sessionStorage.setItem('splashScreenShown', 'true')
     }
-  }, [autoDownloadComplete, splashScreenShown])
+  }, [autoDownloadComplete, splashScreenShown, providers])
 
   // Debug: Log current state
   useEffect(() => {
