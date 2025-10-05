@@ -934,3 +934,92 @@ pub async fn should_restart_server(
         }
     }
 }
+
+/// Start the built-in SalesBox.AI MCP server if API key is configured
+/// This server is hidden from the UI and provides lead discovery/CRM tools
+pub async fn start_builtin_salesbox_mcp<R: Runtime>(
+    app: &AppHandle<R>,
+    servers_state: SharedMcpServers,
+) -> Result<(), String> {
+    use tauri_plugin_store::StoreExt;
+
+    // Get API key and endpoint from store
+    let mut store_path = get_jan_data_folder_path(app.clone());
+    store_path.push("store.json");
+
+    let store = app.store(store_path).map_err(|e| {
+        log::warn!("Store not available: {}", e);
+        format!("Store not available: {}", e)
+    })?;
+
+    // Read salesbox-api-key from localStorage (stored via zustand)
+    let api_key = store
+        .get("salesbox-api-key")
+        .and_then(|v| v.get("state").cloned())
+        .and_then(|s| s.get("apiKey").cloned())
+        .and_then(|k| k.as_str().map(String::from));
+
+    // Read salesbox-endpoint from localStorage
+    let api_endpoint = store
+        .get("salesbox-endpoint")
+        .and_then(|v| v.get("state").cloned())
+        .and_then(|s| s.get("endpoint").cloned())
+        .and_then(|e| e.as_str().map(String::from))
+        .unwrap_or_else(|| "https://agent-job.salesbox.ai".to_string());
+
+    // Only start if API key is present
+    let api_key = match api_key {
+        Some(key) if !key.trim().is_empty() => key,
+        _ => {
+            log::info!("SalesBox.AI API key not configured, skipping builtin MCP server");
+            return Ok(());
+        }
+    };
+
+    log::info!("Starting built-in SalesBox.AI MCP server with endpoint: {}", api_endpoint);
+
+    // Get path to mcp-services/salesboxai (no hardcoded paths!)
+    let data_path = get_jan_data_folder_path(app.clone());
+    let service_path = data_path.join("mcp-services").join("salesboxai");
+    let launch_script = service_path.join("launch-mcp.js");
+
+    if !launch_script.exists() {
+        log::error!("SalesBox.AI MCP service not found at {:?}", launch_script);
+        log::error!("Expected location: <data-folder>/mcp-services/salesboxai/");
+        log::error!("Run 'npm run deploy' in w2/salesboxai-chatgpt/mcp-server/ to deploy it");
+        return Err("SalesBox.AI MCP service not found".to_string());
+    }
+
+    // Build the MCP server configuration
+    let config = serde_json::json!({
+        "command": "node",
+        "args": [launch_script.to_string_lossy().to_string()],
+        "env": {
+            "SALESBOX_API_KEY": api_key,
+            "SALESBOX_API_ENDPOINT": api_endpoint,
+        },
+        "active": true
+    });
+
+    log::info!("Launching SalesBox.AI MCP server from {:?}", launch_script);
+
+    // Start the server using the existing MCP infrastructure
+    match start_mcp_server_with_restart(
+        app.clone(),
+        servers_state,
+        "salesboxai-builtin".to_string(),
+        config,
+        Some(3),
+    )
+    .await
+    {
+        Ok(_) => {
+            log::info!("SalesBox.AI builtin MCP server started successfully");
+            Ok(())
+        }
+        Err(e) => {
+            log::error!("Failed to start SalesBox.AI builtin MCP server: {}", e);
+            Err(e)
+        }
+    }
+}

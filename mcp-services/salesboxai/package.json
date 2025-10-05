@@ -1,0 +1,32 @@
+{
+	"name": "salesbox-mcp-server",
+	"version": "0.1.0",
+	"description": "SalesboxAI MCP server",
+	"main": "src/index.js",
+	"type": "module",
+	"scripts": {
+		"start": "tsc && node ./build/index.js",
+		"build": "tsc && chmod 755 build/index.js",
+		"deploy": "npm run build && node scripts/deploy.js",
+		"debug-env": "tsc && node ./build/debug-env.js",
+		"test-minimal": "tsc && node ./build/test-minimal.js",
+		"test-multiple": "tsc && node ./build/test-multiple.js",
+		"test-mcp": "tsc && node ./build/test-mcp-integration.js",
+		"start-from-anywhere": "node launch-mcp.js"
+	},
+	"files": ["build", "launch-mcp.js"],
+	"author": "charles.lobo@gmail.com",
+	"license": "UNLICENSED",
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.17.3",
+		"axios": "^1.11.0",
+		"dotenv": "^17.2.1",
+		"express": "^5.1.0",
+		"zod": "^3.25.76"
+	},
+	"devDependencies": {
+		"@types/express": "^5.0.3",
+		"@types/node": "^24.3.0",
+		"typescript": "^5.9.2"
+	}
+}

@@ -14,7 +14,7 @@ use tauri_plugin_store::StoreExt;
 // MCP
 use super::{
     app::commands::get_jan_data_folder_path, extensions::commands::get_jan_extensions_path,
-    mcp::helpers::run_mcp_commands, state::AppState,
+    mcp::helpers::{run_mcp_commands, start_builtin_salesbox_mcp}, state::AppState,
 };
 
 pub fn install_extensions(app: tauri::AppHandle, force: bool) -> Result<(), String> {
@@ -199,6 +199,12 @@ pub fn setup_mcp(app: &App) {
     let servers = state.mcp_servers.clone();
     let app_handle: tauri::AppHandle = app.handle().clone();
     tauri::async_runtime::spawn(async move {
+        // Start the built-in SalesBox.AI MCP server first (if API key is configured)
+        if let Err(e) = start_builtin_salesbox_mcp(&app_handle, servers.clone()).await {
+            log::warn!("SalesBox.AI builtin MCP server not started: {}", e);
+        }
+
+        // Then start other configured MCP servers
         if let Err(e) = run_mcp_commands(&app_handle, servers).await {
             log::error!("Failed to run mcp commands: {}", e);
         }
