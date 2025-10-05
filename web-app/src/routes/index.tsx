@@ -18,6 +18,8 @@ type SearchParams = {
 import DropdownAssistant from '@/containers/DropdownAssistant'
 import { useEffect, useState } from 'react'
 import { useThreads } from '@/hooks/useThreads'
+import { useAutoDownloadDefaultModel } from '@/hooks/useAutoDownloadDefaultModel'
+import { DownloadProgressScreen } from '@/containers/DownloadProgressScreen'
 
 export const Route = createFileRoute(route.home as any)({
   component: Index,
@@ -38,17 +40,32 @@ function Index() {
   })
   useTools()
 
-  // Conditional to check if there are any valid providers
-  // required min 1 api_key or 1 model in llama.cpp
-  const hasValidProviders = providers.some(
-    (provider) =>
-      provider.api_key?.length ||
-      (provider.provider === 'llamacpp' && provider.models.length)
-  )
+  // Auto-download default model on first launch
+  const { isAutoDownloading, autoDownloadComplete, hasValidProviders } =
+    useAutoDownloadDefaultModel()
 
   useEffect(() => {
     setCurrentThreadId(undefined)
   }, [setCurrentThreadId])
+
+  // Auto-proceed when download completes
+  useEffect(() => {
+    if (autoDownloadComplete && !splashScreenShown) {
+      console.log('✅ Auto-download complete, proceeding to chat')
+      setSplashScreenShown(true)
+      sessionStorage.setItem('splashScreenShown', 'true')
+    }
+  }, [autoDownloadComplete, splashScreenShown])
+
+  // Debug: Log current state
+  useEffect(() => {
+    console.log('🎯 Route state:', {
+      isAutoDownloading,
+      autoDownloadComplete,
+      hasValidProviders,
+      splashScreenShown,
+    })
+  }, [isAutoDownloading, autoDownloadComplete, hasValidProviders, splashScreenShown])
 
   // Function to handle proceeding from splash screen
   const handleProceedFromSplash = () => {
@@ -56,13 +73,18 @@ function Index() {
     sessionStorage.setItem('splashScreenShown', 'true')
   }
 
-  // If no valid providers, always show splash screen
-  if (!hasValidProviders) {
+  // Show download progress if auto-downloading
+  if (isAutoDownloading) {
+    return <DownloadProgressScreen />
+  }
+
+  // If no valid providers and not auto-downloading, show setup screen
+  if (!hasValidProviders && !autoDownloadComplete) {
     return <SetupScreen onProceed={handleProceedFromSplash} />
   }
 
-  // If splash screen hasn't been shown yet, show it
-  if (!splashScreenShown) {
+  // If splash screen hasn't been shown yet and has valid providers, show it with proceed button
+  if (!splashScreenShown && hasValidProviders) {
     return <SetupScreen onProceed={handleProceedFromSplash} />
   }
 
