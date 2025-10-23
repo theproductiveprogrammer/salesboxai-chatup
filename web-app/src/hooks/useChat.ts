@@ -5,6 +5,8 @@ import { useThreads } from './useThreads'
 import { useAppState } from './useAppState'
 import { useMessages } from './useMessages'
 import { useRouter } from '@tanstack/react-router'
+import { useSalesboxApiKey } from './useSalesboxApiKey'
+import { useUserContext } from './useUserContext'
 import { defaultModel } from '@/lib/models'
 import { route } from '@/constants/routes'
 import {
@@ -46,6 +48,8 @@ export const useChat = () => {
   } = useAppState()
   const { assistants, currentAssistant } = useAssistant()
   const { updateProvider } = useModelProvider()
+  const { apiKey } = useSalesboxApiKey()
+  const { contextMarkdown } = useUserContext(apiKey)
 
   const { approvedTools, showApprovalModal, allowAllMCPPermissions } =
     useToolApproval()
@@ -236,9 +240,19 @@ export const useChat = () => {
           updateLoadingModel(false)
         }
 
+        const renderedInstructions = renderInstructions(currentAssistant?.instructions, {
+          userContext: contextMarkdown
+        })
+        console.log('[useChat] Sending message with context:', {
+          hasContext: !!contextMarkdown,
+          contextLength: contextMarkdown?.length || 0,
+          instructionsLength: renderedInstructions?.length || 0,
+          contextPreview: contextMarkdown?.substring(0, 200)
+        })
+
         const builder = new CompletionMessagesBuilder(
           messages,
-          renderInstructions(currentAssistant?.instructions)
+          renderedInstructions
         )
         if (troubleshooting) builder.addUserMessage(message, attachments)
 
@@ -540,6 +554,7 @@ export const useChat = () => {
       setPrompt,
       selectedModel,
       currentAssistant,
+      contextMarkdown,
       tools,
       updateLoadingModel,
       getDisabledToolsForThread,
