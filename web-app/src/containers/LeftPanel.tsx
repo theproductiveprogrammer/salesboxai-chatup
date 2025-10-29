@@ -267,8 +267,8 @@ const LeftPanel = () => {
               'flex flex-col',
               Object.keys(downloads).length > 0 ||
                 localDownloadingModels.size > 0
-                ? 'h-[calc(100%-200px)]'
-                : 'h-[calc(100%-140px)]'
+                ? 'h-[calc(100%-260px)]'
+                : 'h-[calc(100%-180px)]'
             )}
           >
             {IS_MACOS && (
