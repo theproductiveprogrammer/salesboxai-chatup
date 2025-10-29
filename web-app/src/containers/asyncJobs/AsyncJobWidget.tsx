@@ -61,19 +61,30 @@ const statusConfig = {
 const typeConfig = {
   [AsyncJobType.DATA_EXPORT]: {
     label: 'Data Export',
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300',
+    color:
+      'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300',
   },
   [AsyncJobType.REPORT_GENERATION]: {
     label: 'Report Generation',
-    color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300',
+    color:
+      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300',
   },
   [AsyncJobType.BULK_OPERATION]: {
     label: 'Bulk Operation',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
+    color:
+      'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
   },
   [AsyncJobType.DISCOVER_LEADS]: {
     label: 'Lead Discovery',
     color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
+  },
+  [AsyncJobType.DISCOVER_EMAIL]: {
+    label: 'Email Discovery',
+    color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-300',
+  },
+  [AsyncJobType.LINKEDIN_LEAD_INFO]: {
+    label: 'LinkedIn Lead Info',
+    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-300',
   },
 }
 
@@ -82,7 +93,10 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
   onAction,
 }) => {
   const statusInfo = statusConfig[job.status]
-  const typeInfo = typeConfig[job.type]
+  const typeInfo = typeConfig[job.type] || {
+    label: job.type || 'Unknown',
+    color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300',
+  }
   const StatusIcon = statusInfo.icon
 
   const getDefaultActions = (): AsyncJobAction[] => {
@@ -194,10 +208,7 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
             <Badge className={typeInfo.color}>{typeInfo.label}</Badge>
             <Badge
               variant="outline"
-              className={cn(
-                'border-current',
-                statusInfo.color
-              )}
+              className={cn('border-current', statusInfo.color)}
             >
               {statusInfo.label}
             </Badge>
@@ -230,40 +241,65 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
               )}
             </div>
             <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-              This job is currently running in the background. You can continue using the app while it processes.
+              This job is currently running in the background. You can continue
+              using the app while it processes.
             </div>
           </div>
         )}
 
         {/* Progress bar for other job statuses */}
-        {job.status !== AsyncJobStatus.RUNNING && job.progress !== undefined && (
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-muted-foreground mb-2">
-              <span>Progress</span>
-              <span>{job.progress}%</span>
+        {job.status !== AsyncJobStatus.RUNNING &&
+          job.progress !== undefined && (
+            <div className="mb-4">
+              <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                <span>Progress</span>
+                <span>{job.progress}%</span>
+              </div>
+              <Progress value={job.progress} className="h-2" />
             </div>
-            <Progress value={job.progress} className="h-2" />
-          </div>
-        )}
+          )}
 
         {/* Job details */}
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Created:</span>
-            <span>{formatRelativeTime(new Date(job.createdAt), { addSuffix: true })}</span>
-          </div>
-          {job.updatedAt !== job.createdAt && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Updated:</span>
-              <span>{formatRelativeTime(new Date(job.updatedAt), { addSuffix: true })}</span>
-            </div>
-          )}
-          {job.completedAt && (
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Completed:</span>
-              <span>{formatRelativeTime(new Date(job.completedAt), { addSuffix: true })}</span>
-            </div>
-          )}
+        <div className="text-sm text-muted-foreground">
+          {(() => {
+            const createdTime = formatRelativeTime(new Date(job.createdAt), {
+              addSuffix: true,
+            })
+            const completedTime = job.completedAt
+              ? formatRelativeTime(new Date(job.completedAt), {
+                  addSuffix: true,
+                })
+              : null
+
+            // Calculate duration if completed
+            const duration = job.completedAt
+              ? (() => {
+                  const ms =
+                    new Date(job.completedAt).getTime() -
+                    new Date(job.createdAt).getTime()
+                  const seconds = Math.floor(ms / 1000)
+                  const minutes = Math.floor(seconds / 60)
+                  const hours = Math.floor(minutes / 60)
+                  const days = Math.floor(hours / 24)
+
+                  if (days > 0) return `${days}d ${hours % 24}h`
+                  if (hours > 0) return `${hours}h ${minutes % 60}m`
+                  if (minutes > 0) return `${minutes}m ${seconds % 60}s`
+                  return `${seconds}s`
+                })()
+              : null
+
+            return (
+              <div className="text-right text-sm gray-50">
+                <b>Done</b> {createdTime}
+                {completedTime && (
+                  <span className="text-muted-foreground/70">
+                    , time taken: {duration}
+                  </span>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Error message for failed jobs */}

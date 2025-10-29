@@ -19,7 +19,7 @@ const syncToTauriStore = async (endpoint: string) => {
 export const useSalesboxEndpoint = create<SalesboxEndpointState>()(
   persist(
     (set) => ({
-      endpoint: 'https://agent-job.salesbox.ai',
+      endpoint: 'https://agent.salesbox.ai',
       setEndpoint: (value) => {
         set({ endpoint: value })
         // Sync to Tauri store for Rust to read

@@ -41,7 +41,7 @@ function Privacy() {
               />
               <CardItem
                 title="API Endpoint"
-                description="Configure the backend endpoint for API calls (e.g., https://agent-job.salesbox.ai)"
+                description="Configure the backend endpoint for API calls (e.g., https://agent.salesbox.ai)"
                 align="start"
                 actions={<SalesboxEndpointInput />}
               />

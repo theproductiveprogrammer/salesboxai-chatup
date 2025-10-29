@@ -965,7 +965,7 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
         .and_then(|v| v.get("state").cloned())
         .and_then(|s| s.get("endpoint").cloned())
         .and_then(|e| e.as_str().map(String::from))
-        .unwrap_or_else(|| "https://agent-job.salesbox.ai".to_string());
+        .unwrap_or_else(|| "https://agent.salesbox.ai".to_string());
 
     // Only start if API key is present
     let api_key = match api_key {

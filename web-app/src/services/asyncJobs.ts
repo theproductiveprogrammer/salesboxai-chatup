@@ -72,15 +72,15 @@ export async function getAsyncJobs(
   type?: AsyncJobType
 ): Promise<AsyncJobsResponse> {
   try {
-    const response = await fetch(`${endpoint}/job/job-list`, {
+    const response = await fetch(`${endpoint}/mcp/job-list`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
         'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        apiKey: apiKey
-      })
+      body: JSON.stringify({})
     })
 
     if (!response.ok) {
@@ -189,13 +189,17 @@ export async function deleteAsyncJob(jobId: string): Promise<void> {
 /**
  * Get job status updates (for polling)
  */
-export async function getJobStatus(jobId: string, endpoint: string): Promise<AsyncJob> {
+export async function getJobStatus(jobId: string, endpoint: string, apiKey: string): Promise<AsyncJob> {
   try {
-    const response = await fetch(`${endpoint}/job/${jobId}/status`, {
-      method: 'GET',
+    const response = await fetch(`${endpoint}/mcp/job/${jobId}/status`, {
+      method: 'POST',
       headers: {
         'accept': 'application/json',
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
       },
+      body: JSON.stringify({})
     })
 
     if (!response.ok) {

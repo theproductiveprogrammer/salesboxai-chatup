@@ -1,5 +1,6 @@
 import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
 import { useSalesboxApiKey } from '@/hooks/useSalesboxApiKey'
+import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 
 /**
  * Example service for making API calls to Salesbox.AI
@@ -22,9 +23,10 @@ export async function callSalesboxApi<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<SalesboxApiResponse<T>> {
-  // Get the API key from the store
+  // Get the API key and endpoint from the store
   const { apiKey } = useSalesboxApiKey.getState()
-  
+  const { endpoint: baseEndpoint } = useSalesboxEndpoint.getState()
+
   if (!apiKey || apiKey.trim().length === 0) {
     throw new Error('Salesbox.AI API key is required. Please set it in Settings → Security.')
   }
@@ -37,7 +39,7 @@ export async function callSalesboxApi<T = any>(
   }
 
   try {
-    const response = await fetchTauri(`https://api.salesbox.ai${endpoint}`, {
+    const response = await fetchTauri(`${baseEndpoint}${endpoint}`, {
       method: 'GET',
       ...options,
       headers,

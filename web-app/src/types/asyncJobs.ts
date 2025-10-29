@@ -16,6 +16,8 @@ export enum AsyncJobType {
   REPORT_GENERATION = 'report_generation',
   BULK_OPERATION = 'bulk_operation',
   DISCOVER_LEADS = 'DISCOVER_LEADS',
+  DISCOVER_EMAIL = 'DISCOVER_EMAIL',
+  LINKEDIN_LEAD_INFO = 'LINKEDIN_LEAD_INFO',
 }
 
 export interface AsyncJob {

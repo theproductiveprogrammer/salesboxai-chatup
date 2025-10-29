@@ -216,23 +216,46 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )}
 
         {/* Timestamps */}
-        <div className="space-y-1 text-sm text-muted-foreground border-t pt-3">
-          <div className="flex justify-between">
-            <span>Created:</span>
-            <span>{formatRelativeTime(new Date(job.createdAt), { addSuffix: true })}</span>
-          </div>
-          {job.updatedAt !== job.createdAt && (
-            <div className="flex justify-between">
-              <span>Updated:</span>
-              <span>{formatRelativeTime(new Date(job.updatedAt), { addSuffix: true })}</span>
-            </div>
-          )}
-          {job.completedAt && (
-            <div className="flex justify-between">
-              <span>Completed:</span>
-              <span>{formatRelativeTime(new Date(job.completedAt), { addSuffix: true })}</span>
-            </div>
-          )}
+        <div className="text-sm text-muted-foreground border-t pt-3">
+          {(() => {
+            const createdTime = formatRelativeTime(new Date(job.createdAt), {
+              addSuffix: true,
+            })
+            const completedTime = job.completedAt
+              ? formatRelativeTime(new Date(job.completedAt), {
+                  addSuffix: true,
+                })
+              : null
+
+            // Calculate duration if completed
+            const duration = job.completedAt
+              ? (() => {
+                  const ms =
+                    new Date(job.completedAt).getTime() -
+                    new Date(job.createdAt).getTime()
+                  const seconds = Math.floor(ms / 1000)
+                  const minutes = Math.floor(seconds / 60)
+                  const hours = Math.floor(minutes / 60)
+                  const days = Math.floor(hours / 24)
+
+                  if (days > 0) return `${days}d ${hours % 24}h`
+                  if (hours > 0) return `${hours}h ${minutes % 60}m`
+                  if (minutes > 0) return `${minutes}m ${seconds % 60}s`
+                  return `${seconds}s`
+                })()
+              : null
+
+            return (
+              <div className="text-right text-sm gray-50">
+                <b>Done</b> {createdTime}
+                {completedTime && (
+                  <span className="text-muted-foreground/70">
+                    , time taken: {duration}
+                  </span>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Action buttons */}

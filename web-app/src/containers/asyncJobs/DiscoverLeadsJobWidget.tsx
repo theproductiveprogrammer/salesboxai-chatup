@@ -15,10 +15,13 @@ import {
   IconExternalLink,
 } from '@tabler/icons-react'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
-import type { AsyncJobWidgetProps, DiscoverLeadsResult, DiscoverLeadsInput } from '@/types/asyncJobs'
+import type {
+  AsyncJobWidgetProps,
+  DiscoverLeadsResult,
+  DiscoverLeadsInput,
+} from '@/types/asyncJobs'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { invoke } from '@tauri-apps/api/core'
-
 
 export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   job,
@@ -27,10 +30,10 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   console.log('DiscoverLeadsJobWidget - job:', job)
   console.log('DiscoverLeadsJobWidget - job.status:', job.status)
   console.log('DiscoverLeadsJobWidget - job.result:', job.result)
-  
+
   const result = job.result as DiscoverLeadsResult | undefined
   const input = result?.input || (job.input as DiscoverLeadsInput)
-  
+
   console.log('DiscoverLeadsJobWidget - result:', result)
   console.log('DiscoverLeadsJobWidget - input:', input)
 
@@ -62,7 +65,11 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   // Helper function to get initials for avatar
   const getLeadInitials = (lead: any): string => {
     const name = getLeadDisplayName(lead)
-    return name.split(' ').map(n => n[0]).join('').toUpperCase()
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
   }
 
   const getStatusColor = (status: string) => {
@@ -148,17 +155,23 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
               <div className="flex items-center gap-2">
                 <IconMapPin className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Countries:</span>
-                <span className="font-medium">{input.countries?.join(', ') || 'N/A'}</span>
+                <span className="font-medium">
+                  {input.countries?.join(', ') || 'N/A'}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <IconBriefcase className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Functions:</span>
-                <span className="font-medium">{input.functions?.join(', ') || 'N/A'}</span>
+                <span className="font-medium">
+                  {input.functions?.join(', ') || 'N/A'}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <IconUser className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Titles:</span>
-                <span className="font-medium">{input.titles?.join(', ') || 'N/A'}</span>
+                <span className="font-medium">
+                  {input.titles?.join(', ') || 'N/A'}
+                </span>
               </div>
             </div>
 
@@ -203,101 +216,130 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
               )}
             </div>
             <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-              Searching for leads based on your criteria. This may take a few minutes.
+              Searching for leads based on your criteria. This may take a few
+              minutes.
             </div>
           </div>
         )}
 
-          {/* Results for successful jobs */}
-          {job.status === 'completed' && result?.output && (
-            <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-              <div className="flex items-center gap-2 mb-3">
-                <IconUsers className="h-5 w-5 text-green-600" />
-                <h4 className="font-semibold text-green-800 dark:text-green-200">
-                  Discovery Complete - {result.output.length} leads found
-                </h4>
-              </div>
-              <div className="space-y-2">
-                {console.log('Rendering leads:', result.output)}
-                {result.output.map((lead) => {
-                  console.log('Rendering lead:', lead)
-                  return (
-                <div
-                  key={lead.id}
-                  className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border hover:shadow-md transition-shadow cursor-pointer group"
-                  onClick={async (e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('Lead clicked:', lead)
-                    const linkedinUrl = getLeadLinkedInUrl(lead)
-                    console.log('LinkedIn URL:', linkedinUrl)
-                    if (linkedinUrl) {
-                      console.log('Opening LinkedIn URL:', linkedinUrl)
-                      try {
-                        // Method 1: Try Tauri shell command via core API (most reliable for system browser)
-                        await invoke('plugin:shell|open', { path: linkedinUrl })
-                        console.log('Successfully opened LinkedIn URL with shell command')
-                      } catch (shellError) {
-                        console.log('Shell command failed, trying opener plugin:', shellError)
+        {/* Results for successful jobs */}
+        {job.status === 'completed' && result?.output && (
+          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <IconUsers className="h-5 w-5 text-green-600" />
+              <h4 className="font-semibold text-green-800 dark:text-green-200">
+                Discovery Complete - {result.output.length} leads found
+              </h4>
+            </div>
+            <div className="space-y-2">
+              {console.log('Rendering leads:', result.output)}
+              {result.output.map((lead) => {
+                console.log('Rendering lead:', lead)
+                return (
+                  <div
+                    key={lead.id}
+                    className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border hover:shadow-md transition-shadow cursor-pointer group"
+                    onClick={async (e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('Lead clicked:', lead)
+                      const linkedinUrl = getLeadLinkedInUrl(lead)
+                      console.log('LinkedIn URL:', linkedinUrl)
+                      if (linkedinUrl) {
+                        console.log('Opening LinkedIn URL:', linkedinUrl)
                         try {
-                          // Method 2: Try Tauri opener plugin
-                          await openUrl(linkedinUrl)
-                          console.log('Successfully opened LinkedIn URL with opener plugin')
-                        } catch (openerError) {
-                          console.log('Opener plugin failed, trying window.open:', openerError)
+                          // Method 1: Try Tauri shell command via core API (most reliable for system browser)
+                          await invoke('plugin:shell|open', {
+                            path: linkedinUrl,
+                          })
+                          console.log(
+                            'Successfully opened LinkedIn URL with shell command'
+                          )
+                        } catch (shellError) {
+                          console.log(
+                            'Shell command failed, trying opener plugin:',
+                            shellError
+                          )
                           try {
-                            // Method 3: Fallback to window.open
-                            window.open(linkedinUrl, '_blank', 'noopener,noreferrer')
-                            console.log('Opened with window.open fallback')
-                          } catch (fallbackError) {
-                            console.error('All methods failed:', fallbackError)
+                            // Method 2: Try Tauri opener plugin
+                            await openUrl(linkedinUrl)
+                            console.log(
+                              'Successfully opened LinkedIn URL with opener plugin'
+                            )
+                          } catch (openerError) {
+                            console.log(
+                              'Opener plugin failed, trying window.open:',
+                              openerError
+                            )
+                            try {
+                              // Method 3: Fallback to window.open
+                              window.open(
+                                linkedinUrl,
+                                '_blank',
+                                'noopener,noreferrer'
+                              )
+                              console.log('Opened with window.open fallback')
+                            } catch (fallbackError) {
+                              console.error(
+                                'All methods failed:',
+                                fallbackError
+                              )
+                            }
                           }
                         }
+                      } else {
+                        console.log(
+                          'No LinkedIn URL available for lead:',
+                          lead.id
+                        )
                       }
-                    } else {
-                      console.log('No LinkedIn URL available for lead:', lead.id)
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                        {getLeadInitials(lead)}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{getLeadDisplayName(lead)}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>Lead #{lead.id}</span>
-                        {getLeadLinkedInUrl(lead) && (
-                          <div className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
-                            <IconExternalLink className="h-3 w-3" />
-                            <span>LinkedIn</span>
-                          </div>
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                          {getLeadInitials(lead)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">
+                          {getLeadDisplayName(lead)}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Lead #{lead.id}</span>
+                          {getLeadLinkedInUrl(lead) && (
+                            <div className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                              <IconExternalLink className="h-3 w-3" />
+                              <span>LinkedIn</span>
+                            </div>
+                          )}
+                        </div>
+                        {lead.title && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {lead.title}
+                          </p>
+                        )}
+                        {lead.company && (
+                          <p className="text-xs text-muted-foreground">
+                            {lead.company}
+                          </p>
                         )}
                       </div>
-                      {lead.title && (
-                        <p className="text-xs text-muted-foreground mt-1">{lead.title}</p>
-                      )}
-                      {lead.company && (
-                        <p className="text-xs text-muted-foreground">{lead.company}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {lead.type}
+                      </Badge>
+                      {lead.linkedinUrl && (
+                        <IconExternalLink className="h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {lead.type}
-                    </Badge>
-                    {lead.linkedinUrl && (
-                      <IconExternalLink className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    </div>
-                  </div>
-                  )
-                })}
-              </div>
+                )
+              })}
             </div>
-          )}
+          </div>
+        )}
 
         {/* Error for failed jobs */}
         {job.status === 'failed' && job.error && (
@@ -305,7 +347,9 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
             <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">
               Discovery Failed
             </h4>
-            <p className="text-sm text-red-700 dark:text-red-300">{job.error}</p>
+            <p className="text-sm text-red-700 dark:text-red-300">
+              {job.error}
+            </p>
           </div>
         )}
 
@@ -319,49 +363,68 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )}
 
         {/* Timestamps */}
-        <div className="space-y-1 text-sm text-muted-foreground border-t pt-3">
-          <div className="flex justify-between">
-            <span>Created:</span>
-            <span>{formatRelativeTime(new Date(job.createdAt), { addSuffix: true })}</span>
-          </div>
-          {job.updatedAt !== job.createdAt && (
-            <div className="flex justify-between">
-              <span>Updated:</span>
-              <span>{formatRelativeTime(new Date(job.updatedAt), { addSuffix: true })}</span>
-            </div>
-          )}
-          {job.completedAt && (
-            <div className="flex justify-between">
-              <span>Completed:</span>
-              <span>{formatRelativeTime(new Date(job.completedAt), { addSuffix: true })}</span>
-            </div>
-          )}
+        <div className="text-sm text-muted-foreground border-t pt-3">
+          {(() => {
+            const createdTime = formatRelativeTime(new Date(job.createdAt), {
+              addSuffix: true,
+            })
+            const completedTime = job.completedAt
+              ? formatRelativeTime(new Date(job.completedAt), {
+                  addSuffix: true,
+                })
+              : null
+
+            // Calculate duration if completed
+            const duration = job.completedAt
+              ? (() => {
+                  const ms =
+                    new Date(job.completedAt).getTime() -
+                    new Date(job.createdAt).getTime()
+                  const seconds = Math.floor(ms / 1000)
+                  const minutes = Math.floor(seconds / 60)
+                  const hours = Math.floor(minutes / 60)
+                  const days = Math.floor(hours / 24)
+
+                  if (days > 0) return `${days}d ${hours % 24}h`
+                  if (hours > 0) return `${hours}h ${minutes % 60}m`
+                  if (minutes > 0) return `${minutes}m ${seconds % 60}s`
+                  return `${seconds}s`
+                })()
+              : null
+
+            return (
+              <div className="text-right text-sm gray-50">
+                <b>Done</b> {createdTime}
+                {completedTime && (
+                  <span className="text-muted-foreground/70">
+                    , time taken: {duration}
+                  </span>
+                )}
+              </div>
+            )
+          })()}
         </div>
 
         {/* Action buttons */}
         <div className="flex gap-2 mt-4">
-          {job.status === 'completed' && result?.output && result.output.length > 0 && (
-            <Button
-              onClick={() => onAction?.('download', job)}
-              className="flex items-center gap-2"
-            >
-              <IconDownload className="h-4 w-4" />
-              Export Leads
-            </Button>
-          )}
+          {job.status === 'completed' &&
+            result?.output &&
+            result.output.length > 0 && (
+              <Button
+                onClick={() => onAction?.('download', job)}
+                className="flex items-center gap-2"
+              >
+                <IconDownload className="h-4 w-4" />
+                Export Leads
+              </Button>
+            )}
           {job.status === 'running' && (
-            <Button
-              variant="default"
-              onClick={() => onAction?.('cancel', job)}
-            >
+            <Button variant="default" onClick={() => onAction?.('cancel', job)}>
               Cancel Discovery
             </Button>
           )}
           {job.status === 'failed' && (
-            <Button
-              variant="default"
-              onClick={() => onAction?.('retry', job)}
-            >
+            <Button variant="default" onClick={() => onAction?.('retry', job)}>
               <IconRefresh className="h-4 w-4 mr-2" />
               Retry Discovery
             </Button>

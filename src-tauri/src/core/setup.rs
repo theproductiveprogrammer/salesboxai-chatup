@@ -183,7 +183,7 @@ pub async fn install_mcp_from_remote(app: tauri::AppHandle) -> Result<(), String
         .and_then(|v| v.get("state").cloned())
         .and_then(|s| s.get("endpoint").cloned())
         .and_then(|e| e.as_str().map(String::from))
-        .unwrap_or_else(|| "https://agent-job.salesbox.ai".to_string());
+        .unwrap_or_else(|| "https://agent.salesbox.ai".to_string());
 
     log::info!("Checking for MCP updates from: {}", api_endpoint);
 
@@ -205,7 +205,7 @@ pub async fn install_mcp_from_remote(app: tauri::AppHandle) -> Result<(), String
     log::info!("Local MCP version: {}", local_version);
 
     // Check remote version
-    let version_url = format!("{}/api/mcp/version", api_endpoint);
+    let version_url = format!("{}/mcp/server-info", api_endpoint);
     let client = reqwest::Client::new();
 
     let remote_info = match client.get(&version_url).send().await {

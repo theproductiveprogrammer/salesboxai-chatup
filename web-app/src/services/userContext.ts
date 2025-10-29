@@ -70,11 +70,9 @@ export interface UserContext {
 export async function getUserContext(apiKey: string): Promise<UserContext> {
   console.log('[UserContext] Fetching user context with API key:', apiKey ? 'present' : 'missing')
   try {
-    const response = await callSalesboxApi('mcp/user-context', {
+    const response = await callSalesboxApi('/mcp/user-context', {
       method: 'POST',
-      body: JSON.stringify({
-        api_key: apiKey
-      })
+      body: JSON.stringify({})
     })
     console.log('[UserContext] API response:', response)
 

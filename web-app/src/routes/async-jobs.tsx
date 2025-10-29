@@ -151,11 +151,11 @@ function AsyncJobsPage() {
     if (pollingJobs.size === 0) return
 
     const interval = setInterval(async () => {
-      if (!endpoint) return
-      
+      if (!endpoint || !apiKey) return
+
       for (const jobId of pollingJobs) {
         try {
-          const updatedJob = await getJobStatus(jobId, endpoint)
+          const updatedJob = await getJobStatus(jobId, endpoint, apiKey)
           setJobs(prev => prev.map(job => 
             job.id === jobId 
               ? updatedJob
