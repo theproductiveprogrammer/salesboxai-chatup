@@ -232,10 +232,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
               </h4>
             </div>
             <div className="space-y-2">
-              {console.log('Rendering leads:', result.output)}
-              {result.output.map((lead) => {
-                console.log('Rendering lead:', lead)
-                return (
+              {result.output.map((lead) => (
                   <div
                     key={lead.id}
                     className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border hover:shadow-md transition-shadow cursor-pointer group"
@@ -335,8 +332,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                       )}
                     </div>
                   </div>
-                )
-              })}
+              ))}
             </div>
           </div>
         )}

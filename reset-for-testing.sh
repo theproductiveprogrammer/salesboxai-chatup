@@ -7,10 +7,41 @@ echo "🔄 SalesBoxAI - Reset for Testing"
 echo "=================================="
 echo ""
 
-# Determine the app name based on Cargo.toml
-APP_NAME="SalesboxAIAgent"
-DATA_DIR="$HOME/Library/Application Support/$APP_NAME/data"
-CONFIG_FILE="$HOME/Library/Application Support/$APP_NAME/settings.json"
+# Determine which version to reset
+echo "Which version do you want to reset?"
+echo "  1) Development (salesbox.ai.agent.dev)"
+echo "  2) Production (salesbox.ai.agent)"
+echo "  3) Both"
+read -p "Enter choice [1-3]: " -n 1 -r
+echo ""
+echo ""
+
+case $REPLY in
+    1)
+        APP_NAME="salesbox.ai.agent.dev"
+        ;;
+    2)
+        APP_NAME="salesbox.ai.agent"
+        ;;
+    3)
+        APP_NAME="both"
+        ;;
+    *)
+        echo "Invalid choice. Exiting."
+        exit 1
+        ;;
+esac
+
+if [ "$APP_NAME" = "both" ]; then
+    APPS=("salesbox.ai.agent.dev" "salesbox.ai.agent")
+else
+    APPS=("$APP_NAME")
+fi
+
+for APP in "${APPS[@]}"; do
+    echo "📦 Processing: $APP"
+    DATA_DIR="$HOME/Library/Application Support/$APP/data"
+    CONFIG_FILE="$HOME/Library/Application Support/$APP/settings.json"
 
 echo "📁 Checking for app data..."
 echo ""

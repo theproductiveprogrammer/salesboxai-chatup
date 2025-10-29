@@ -3,7 +3,6 @@ import { useModelSources } from './useModelSources'
 import { useModelProvider } from './useModelProvider'
 import { useDownloadStore } from './useDownloadStore'
 import { pullModelWithMetadata } from '@/services/models'
-import { localStorageKey } from '@/constants/localStorage'
 
 const DEFAULT_MODEL_NAME = 'jan-nano-gguf'
 const AUTO_DOWNLOAD_KEY = 'auto-download-attempted'

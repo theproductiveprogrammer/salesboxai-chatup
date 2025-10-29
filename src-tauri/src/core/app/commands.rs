@@ -7,6 +7,22 @@ use super::{
 };
 use crate::core::state::AppState;
 
+// Helper function to get app_data_dir with .dev suffix in debug mode
+fn get_app_data_dir_with_dev<R: Runtime>(app_handle: &tauri::AppHandle<R>) -> PathBuf {
+    let mut path = app_handle.path().app_data_dir().unwrap();
+
+    // In dev mode, append .dev suffix to the path (Tauri v2 doesn't do this automatically)
+    if cfg!(debug_assertions) {
+        // Clone the last component so we don't hold a reference while mutating
+        if let Some(last_component) = path.file_name().and_then(|n| n.to_str()).map(|s| s.to_string()) {
+            path.pop(); // Remove the last component
+            path.push(format!("{}.dev", last_component)); // Add it back with .dev suffix
+        }
+    }
+
+    path
+}
+
 #[tauri::command]
 pub fn get_app_configurations<R: Runtime>(app_handle: tauri::AppHandle<R>) -> AppConfiguration {
     let mut app_default_configuration = AppConfiguration::default();
@@ -94,21 +110,8 @@ pub fn get_jan_data_folder_path<R: Runtime>(app_handle: tauri::AppHandle<R>) -> 
 
 #[tauri::command]
 pub fn get_configuration_file_path<R: Runtime>(app_handle: tauri::AppHandle<R>) -> PathBuf {
-    let app_path = app_handle.path().app_data_dir().unwrap_or_else(|err| {
-        log::error!(
-            "Failed to get app data directory: {}. Using home directory instead.",
-            err
-        );
-
-        let home_dir = std::env::var(if cfg!(target_os = "windows") {
-            "USERPROFILE"
-        } else {
-            "HOME"
-        })
-        .expect("Failed to determine the home directory");
-
-        PathBuf::from(home_dir)
-    });
+    // Use helper function that adds .dev suffix in debug mode
+    let app_path = get_app_data_dir_with_dev(&app_handle);
 
     let package_name = env!("CARGO_PKG_NAME");
     #[cfg(target_os = "linux")]
@@ -139,11 +142,8 @@ pub fn get_configuration_file_path<R: Runtime>(app_handle: tauri::AppHandle<R>) 
 
 #[tauri::command]
 pub fn default_data_folder_path<R: Runtime>(app_handle: tauri::AppHandle<R>) -> String {
-    let mut path = app_handle.path().data_dir().unwrap();
-
-    let app_name = std::env::var("APP_NAME")
-        .unwrap_or_else(|_| app_handle.config().product_name.clone().unwrap());
-    path.push(app_name);
+    // Use helper function that adds .dev suffix in debug mode
+    let mut path = get_app_data_dir_with_dev(&app_handle);
     path.push("data");
 
     let mut path_str = path.to_str().unwrap().to_string();
