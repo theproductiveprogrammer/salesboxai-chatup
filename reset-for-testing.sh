@@ -78,6 +78,8 @@ else
     echo "   ℹ️  No config file found"
 fi
 
+done
+
 echo ""
 echo "🌐 Browser Data (localStorage, sessionStorage)"
 echo "   ⚠️  You need to manually clear browser data:"
