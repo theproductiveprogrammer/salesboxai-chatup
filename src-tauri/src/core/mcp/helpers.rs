@@ -188,15 +188,15 @@ pub async fn monitor_mcp_server_handle(
 
     // Monitor server health with periodic checks
     loop {
-        // Small delay between health checks
-        sleep(Duration::from_secs(5)).await;
+        // Longer delay between health checks to allow for tool calls to complete
+        sleep(Duration::from_secs(15)).await;
 
         // Check if server is still healthy by trying to list tools
         let health_check_result = {
             let servers = servers_state.lock().await;
             if let Some(service) = servers.get(&name) {
-                // Try to list tools as a health check with a short timeout
-                match timeout(Duration::from_secs(2), service.list_all_tools()).await {
+                // Try to list tools as a health check with a longer timeout to allow for concurrent tool calls
+                match timeout(Duration::from_secs(45), service.list_all_tools()).await {
                     Ok(Ok(_)) => {
                         // Server responded successfully
                         true
@@ -952,12 +952,20 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
         format!("Store not available: {}", e)
     })?;
 
-    // Read salesbox-api-key from localStorage (stored via zustand)
-    let api_key = store
-        .get("salesbox-api-key")
-        .and_then(|v| v.get("state").cloned())
-        .and_then(|s| s.get("apiKey").cloned())
-        .and_then(|k| k.as_str().map(String::from));
+    // Read salesbox-credentials from secure Tauri store
+    let credentials = store
+        .get("salesbox-credentials")
+        .and_then(|v| v.get("state").cloned());
+
+    let username = credentials
+        .as_ref()
+        .and_then(|c| c.get("username").cloned())
+        .and_then(|u| u.as_str().map(String::from));
+
+    let password = credentials
+        .as_ref()
+        .and_then(|c| c.get("password").cloned())
+        .and_then(|p| p.as_str().map(String::from));
 
     // Read salesbox-endpoint from localStorage
     let api_endpoint = store
@@ -967,11 +975,11 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
         .and_then(|e| e.as_str().map(String::from))
         .unwrap_or_else(|| "https://agent.salesbox.ai".to_string());
 
-    // Only start if API key is present
-    let api_key = match api_key {
-        Some(key) if !key.trim().is_empty() => key,
+    // Only start if credentials are present
+    let (username, password) = match (username, password) {
+        (Some(u), Some(p)) if !u.trim().is_empty() && !p.trim().is_empty() => (u, p),
         _ => {
-            log::info!("SalesBox.AI API key not configured, skipping builtin MCP server");
+            log::info!("SalesBox.AI credentials not configured, skipping builtin MCP server");
             return Ok(());
         }
     };
@@ -995,7 +1003,8 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
         "command": "node",
         "args": [launch_script.to_string_lossy().to_string()],
         "env": {
-            "SALESBOX_API_KEY": api_key,
+            "SALESBOX_USERNAME": username,
+            "SALESBOX_PASSWORD": password,
             "SALESBOX_API_ENDPOINT": api_endpoint,
         },
         "active": true

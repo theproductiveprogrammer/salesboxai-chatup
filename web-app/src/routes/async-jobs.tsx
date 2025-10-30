@@ -17,7 +17,6 @@ import {
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { useSalesboxApiKey } from '@/hooks/useSalesboxApiKey'
 import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 import type { AsyncJob, AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
 import { AsyncJobStatus as JobStatus, AsyncJobType as JobType } from '@/types/asyncJobs'
@@ -37,7 +36,6 @@ export const Route = createFileRoute('/async-jobs')({
 const POLLING_INTERVAL = 5000 // 5 seconds
 
 function AsyncJobsPage() {
-  const { apiKey } = useSalesboxApiKey()
   const { endpoint } = useSalesboxEndpoint()
   const [jobs, setJobs] = useState<AsyncJob[]>([])
   const [loading, setLoading] = useState(true)
@@ -51,14 +49,6 @@ function AsyncJobsPage() {
 
 
   const loadJobs = useCallback(async (reset = false) => {
-    if (!apiKey) {
-      console.error('No API key available')
-      toast.error('Please configure your API key first')
-      setLoading(false)
-      setRefreshing(false)
-      return
-    }
-
     if (!endpoint) {
       console.error('No endpoint available')
       toast.error('Please configure your endpoint first')
@@ -77,7 +67,6 @@ function AsyncJobsPage() {
 
       const currentPage = reset ? 1 : page
       const response = await getAsyncJobs(
-        apiKey,
         endpoint,
         currentPage,
         20,
@@ -100,7 +89,7 @@ function AsyncJobsPage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [apiKey, endpoint, page, statusFilter, typeFilter])
+  }, [endpoint, page, statusFilter, typeFilter])
 
   const refreshJobs = useCallback(() => {
     loadJobs(true)
@@ -151,13 +140,13 @@ function AsyncJobsPage() {
     if (pollingJobs.size === 0) return
 
     const interval = setInterval(async () => {
-      if (!endpoint || !apiKey) return
+      if (!endpoint) return
 
       for (const jobId of pollingJobs) {
         try {
-          const updatedJob = await getJobStatus(jobId, endpoint, apiKey)
-          setJobs(prev => prev.map(job => 
-            job.id === jobId 
+          const updatedJob = await getJobStatus(jobId, endpoint)
+          setJobs(prev => prev.map(job =>
+            job.id === jobId
               ? updatedJob
               : job
           ))

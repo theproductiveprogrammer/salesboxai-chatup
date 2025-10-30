@@ -94,6 +94,33 @@ pub async fn restart_mcp_servers(app: AppHandle, state: State<'_, AppState>) -> 
     Ok(())
 }
 
+/// Reinitialize MCP servers (download from remote + start builtin)
+/// This is called after login when the endpoint is changed
+#[tauri::command]
+pub async fn reinitialize_mcp_servers(app: AppHandle, state: State<'_, AppState>) -> Result<(), String> {
+    use crate::core::setup::install_mcp_from_remote;
+    use super::helpers::start_builtin_salesbox_mcp;
+
+    let servers = state.mcp_servers.clone();
+
+    log::info!("Reinitializing MCP servers after login/endpoint change");
+
+    // Download/update MCP services from remote (uses current endpoint from store)
+    if let Err(e) = install_mcp_from_remote(app.clone()).await {
+        log::warn!("Failed to download MCP from remote: {}", e);
+    }
+
+    // Start the built-in SalesBox.AI MCP server (if credentials are configured)
+    if let Err(e) = start_builtin_salesbox_mcp(&app, servers.clone()).await {
+        log::warn!("SalesBox.AI builtin MCP server not started: {}", e);
+    }
+
+    app.emit("mcp-update", "MCP servers updated")
+        .map_err(|e| format!("Failed to emit event: {}", e))?;
+
+    Ok(())
+}
+
 /// Reset MCP restart count for a specific server (like cortex reset)
 #[tauri::command]
 pub async fn reset_mcp_restart_count(

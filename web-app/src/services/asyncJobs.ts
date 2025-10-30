@@ -6,6 +6,8 @@ import type {
   CreateAsyncJobResponse,
 } from '@/types/asyncJobs'
 import { AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
+import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
+import { isTokenExpired } from '@/lib/jwt'
 
 /**
  * Service for managing AsyncJobs via Salesbox.AI API
@@ -64,7 +66,6 @@ function mapBackendStatus(backendStatus: string): AsyncJobStatus {
  * Get all async jobs for the current user
  */
 export async function getAsyncJobs(
-  apiKey: string,
   endpoint: string,
   page: number = 1,
   limit: number = 20,
@@ -72,43 +73,59 @@ export async function getAsyncJobs(
   type?: AsyncJobType
 ): Promise<AsyncJobsResponse> {
   try {
+    // Get JWT token from auth store
+    const { token, isAuthenticated, logout } = useSalesboxAuth.getState()
+
+    if (!isAuthenticated || !token) {
+      throw new Error('Not authenticated. Please sign in to continue.')
+    }
+
+    if (isTokenExpired(token)) {
+      logout()
+      throw new Error('Session expired. Please sign in again.')
+    }
+
     const response = await fetch(`${endpoint}/mcp/job-list`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
         'content-type': 'application/json',
-        'x-api-key': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({})
     })
+
+    if (response.status === 401) {
+      logout()
+      throw new Error('Authentication failed. Please sign in again.')
+    }
 
     if (!response.ok) {
       throw new Error(`API call failed: ${response.status} ${response.statusText}`)
     }
 
     const data = await response.json()
-    
+
     // Transform backend response to frontend format
     let transformedJobs = data.map(transformBackendJob)
-    
+
     // Sort by creation date (latest first)
     transformedJobs.sort((a: AsyncJob, b: AsyncJob) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    
+
     // Apply client-side filtering if needed
     if (status) {
       transformedJobs = transformedJobs.filter((job: AsyncJob) => job.status === status)
     }
-    
+
     if (type) {
       transformedJobs = transformedJobs.filter((job: AsyncJob) => job.type === type)
     }
-    
+
     // Apply pagination
     const startIndex = (page - 1) * limit
     const endIndex = startIndex + limit
     const paginatedJobs = transformedJobs.slice(startIndex, endIndex)
-    
+
     return {
       jobs: paginatedJobs,
       total: transformedJobs.length,
@@ -189,18 +206,34 @@ export async function deleteAsyncJob(jobId: string): Promise<void> {
 /**
  * Get job status updates (for polling)
  */
-export async function getJobStatus(jobId: string, endpoint: string, apiKey: string): Promise<AsyncJob> {
+export async function getJobStatus(jobId: string, endpoint: string): Promise<AsyncJob> {
   try {
+    // Get JWT token from auth store
+    const { token, isAuthenticated, logout } = useSalesboxAuth.getState()
+
+    if (!isAuthenticated || !token) {
+      throw new Error('Not authenticated. Please sign in to continue.')
+    }
+
+    if (isTokenExpired(token)) {
+      logout()
+      throw new Error('Session expired. Please sign in again.')
+    }
+
     const response = await fetch(`${endpoint}/mcp/job/${jobId}/status`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
         'content-type': 'application/json',
-        'x-api-key': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({})
     })
+
+    if (response.status === 401) {
+      logout()
+      throw new Error('Authentication failed. Please sign in again.')
+    }
 
     if (!response.ok) {
       if (response.status === 404) {
@@ -210,12 +243,12 @@ export async function getJobStatus(jobId: string, endpoint: string, apiKey: stri
     }
 
     const backendJob = await response.json()
-    
+
     // Check if the response is null or empty
     if (!backendJob) {
       throw new Error(`Job not found: ${jobId}`)
     }
-    
+
     return transformBackendJob(backendJob)
   } catch (error) {
     console.error('Error calling job status API:', error)

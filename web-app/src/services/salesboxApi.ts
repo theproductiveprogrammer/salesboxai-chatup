@@ -1,10 +1,10 @@
 import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
-import { useSalesboxApiKey } from '@/hooks/useSalesboxApiKey'
+import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
+import { isTokenExpired } from '@/lib/jwt'
 
 /**
- * Example service for making API calls to Salesbox.AI
- * This demonstrates how to use the Salesbox.AI API key for REST API calls
+ * Service for making authenticated API calls to Salesbox.AI using JWT tokens
  */
 
 export interface SalesboxApiResponse<T = any> {
@@ -14,7 +14,7 @@ export interface SalesboxApiResponse<T = any> {
 }
 
 /**
- * Makes an authenticated request to Salesbox.AI API
+ * Makes an authenticated request to Salesbox.AI API using JWT token
  * @param endpoint - The API endpoint (e.g., '/users', '/models')
  * @param options - Fetch options (method, body, etc.)
  * @returns Promise with the API response
@@ -23,18 +23,25 @@ export async function callSalesboxApi<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<SalesboxApiResponse<T>> {
-  // Get the API key and endpoint from the store
-  const { apiKey } = useSalesboxApiKey.getState()
+  // Get the JWT token and endpoint from the store
+  const { token, isAuthenticated, logout } = useSalesboxAuth.getState()
   const { endpoint: baseEndpoint } = useSalesboxEndpoint.getState()
 
-  if (!apiKey || apiKey.trim().length === 0) {
-    throw new Error('Salesbox.AI API key is required. Please set it in Settings → Security.')
+  // Check authentication
+  if (!isAuthenticated || !token) {
+    throw new Error('Not authenticated. Please sign in to continue.')
+  }
+
+  // Check if token is expired
+  if (isTokenExpired(token)) {
+    console.error('Token is expired')
+    logout()
+    throw new Error('Session expired. Please sign in again.')
   }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'x-api-key': apiKey,
-    'Authorization': `Bearer ${apiKey}`,
+    'Authorization': `Bearer ${token}`,
     ...(options.headers as Record<string, string>),
   }
 
@@ -44,6 +51,16 @@ export async function callSalesboxApi<T = any>(
       ...options,
       headers,
     })
+
+    // Handle 401 Unauthorized - token might be invalid or expired
+    if (response.status === 401) {
+      console.error('Received 401 Unauthorized - logging out')
+      logout()
+      return {
+        error: 'Authentication failed. Please sign in again.',
+        status: 401,
+      }
+    }
 
     if (!response.ok) {
       return {

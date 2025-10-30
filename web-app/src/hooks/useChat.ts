@@ -5,7 +5,6 @@ import { useThreads } from './useThreads'
 import { useAppState } from './useAppState'
 import { useMessages } from './useMessages'
 import { useRouter } from '@tanstack/react-router'
-import { useSalesboxApiKey } from './useSalesboxApiKey'
 import { useUserContext } from './useUserContext'
 import { defaultModel } from '@/lib/models'
 import { route } from '@/constants/routes'
@@ -48,8 +47,7 @@ export const useChat = () => {
   } = useAppState()
   const { assistants, currentAssistant } = useAssistant()
   const { updateProvider } = useModelProvider()
-  const { apiKey } = useSalesboxApiKey()
-  const { contextMarkdown } = useUserContext(apiKey)
+  const { contextMarkdown } = useUserContext()
 
   const { approvedTools, showApprovalModal, allowAllMCPPermissions } =
     useToolApproval()

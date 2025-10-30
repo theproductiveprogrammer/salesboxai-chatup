@@ -64,11 +64,10 @@ export interface UserContext {
 
 /**
  * Fetch user context from backend
- * @param apiKey - User's API key
  * @returns UserContext object with all relevant business context
  */
-export async function getUserContext(apiKey: string): Promise<UserContext> {
-  console.log('[UserContext] Fetching user context with API key:', apiKey ? 'present' : 'missing')
+export async function getUserContext(): Promise<UserContext> {
+  console.log('[UserContext] Fetching user context')
   try {
     const response = await callSalesboxApi('/mcp/user-context', {
       method: 'POST',

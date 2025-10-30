@@ -4,7 +4,7 @@ import SettingsMenu from '@/containers/SettingsMenu'
 import HeaderPage from '@/containers/HeaderPage'
 import { Card, CardItem } from '@/containers/Card'
 import { useTranslation } from '@/i18n/react-i18next-compat'
-import { SalesboxApiKeyInput } from '@/containers/SalesboxApiKeyInput'
+import { SalesboxAuthStatus } from '@/containers/SalesboxAuthStatus'
 import { SalesboxEndpointInput } from '@/containers/SalesboxEndpointInput'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,10 +34,10 @@ function Privacy() {
               }
             >
               <CardItem
-                title={t('settings:privacy.apiKey')}
-                description={t('settings:privacy.apiKeyDesc')}
+                title="Authentication"
+                description="Manage your SalesBox.AI account authentication and JWT tokens"
                 align="start"
-                actions={<SalesboxApiKeyInput />}
+                actions={<SalesboxAuthStatus />}
               />
               <CardItem
                 title="API Endpoint"

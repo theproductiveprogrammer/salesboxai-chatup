@@ -26,10 +26,13 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from '@/components/ui/resizable'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import GlobalError from '@/containers/GlobalError'
 import { GlobalEventHandler } from '@/providers/GlobalEventHandler'
 import ErrorDialog from '@/containers/dialogs/ErrorDialog'
+import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
+import { startAutoRefresh, stopAutoRefresh } from '@/services/auth'
+import { LoginDialog } from '@/containers/LoginDialog'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -184,11 +187,50 @@ const LogsLayout = () => {
 
 function RootLayout() {
   const router = useRouterState()
+  const { isAuthenticated, loadStoredCredentials } = useSalesboxAuth()
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [authInitialized, setAuthInitialized] = useState(false)
 
   const isLocalAPIServerLogsRoute =
     router.location.pathname === route.localApiServerlogs ||
     router.location.pathname === route.systemMonitor ||
     router.location.pathname === route.appLogs
+
+  // Initialize authentication on app startup
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        // Try to load stored credentials and auto-login
+        await loadStoredCredentials()
+      } catch (error) {
+        console.error('Failed to load stored credentials:', error)
+      } finally {
+        setAuthInitialized(true)
+      }
+    }
+
+    initAuth()
+  }, [loadStoredCredentials])
+
+  // Show login dialog if not authenticated after initialization
+  useEffect(() => {
+    if (authInitialized && !isAuthenticated) {
+      setShowLoginDialog(true)
+    }
+  }, [authInitialized, isAuthenticated])
+
+  // Start/stop auto-refresh based on authentication status
+  useEffect(() => {
+    if (isAuthenticated) {
+      startAutoRefresh()
+    } else {
+      stopAutoRefresh()
+    }
+
+    return () => {
+      stopAutoRefresh()
+    }
+  }, [isAuthenticated])
 
   return (
     <Fragment>
@@ -206,6 +248,11 @@ function RootLayout() {
         <LoadModelErrorDialog />
         <ErrorDialog />
         <OutOfContextPromiseModal />
+        <LoginDialog
+          open={showLoginDialog}
+          onOpenChange={setShowLoginDialog}
+          onSuccess={() => setShowLoginDialog(false)}
+        />
       </TranslationProvider>
     </Fragment>
   )

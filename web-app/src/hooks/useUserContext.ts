@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getUserContext, formatUserContextAsMarkdown, type UserContext } from '@/services/userContext'
+import { useSalesboxAuth } from './useSalesboxAuth'
 
 /**
  * Cache duration in milliseconds (5 minutes)
@@ -24,13 +25,12 @@ interface UseUserContextResult {
 /**
  * React hook for managing user context with 5-minute TTL caching
  *
- * @param apiKey - User's API key (required)
  * @param enabled - Whether to fetch context automatically (default: true)
  * @returns User context data and control functions
  *
  * @example
  * ```tsx
- * const { context, contextMarkdown, isLoading, error, refresh } = useUserContext(apiKey)
+ * const { context, contextMarkdown, isLoading, error, refresh } = useUserContext()
  *
  * // Use contextMarkdown in AI prompts
  * const systemPrompt = `${baseInstructions}\n\n${contextMarkdown}`
@@ -40,9 +40,9 @@ interface UseUserContextResult {
  * ```
  */
 export function useUserContext(
-  apiKey: string | null | undefined,
   enabled: boolean = true
 ): UseUserContextResult {
+  const { isAuthenticated } = useSalesboxAuth()
   const [context, setContext] = useState<UserContext | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,7 +64,7 @@ export function useUserContext(
    * Fetch user context from API
    */
   const fetchContext = useCallback(async (force: boolean = false) => {
-    console.log('[useUserContext] fetchContext called:', { enabled, hasApiKey: !!apiKey, force, isCacheValid: isCacheValid() })
+    console.log('[useUserContext] fetchContext called:', { enabled, isAuthenticated, force, isCacheValid: isCacheValid() })
 
     // Don't fetch if already fetching
     if (isFetching.current) {
@@ -72,9 +72,9 @@ export function useUserContext(
       return
     }
 
-    // Don't fetch if disabled
-    if (!enabled || !apiKey) {
-      console.log('[useUserContext] Fetch skipped - enabled:', enabled, 'apiKey:', !!apiKey)
+    // Don't fetch if disabled or not authenticated
+    if (!enabled || !isAuthenticated) {
+      console.log('[useUserContext] Fetch skipped - enabled:', enabled, 'isAuthenticated:', isAuthenticated)
       return
     }
 
@@ -89,7 +89,7 @@ export function useUserContext(
     setError(null)
 
     try {
-      const data = await getUserContext(apiKey)
+      const data = await getUserContext()
 
       setContext(data)
       lastFetchTime.current = Date.now()
@@ -103,7 +103,7 @@ export function useUserContext(
       setIsLoading(false)
       isFetching.current = false
     }
-  }, [apiKey, enabled, isCacheValid])
+  }, [isAuthenticated, enabled, isCacheValid])
 
   /**
    * Manual refresh function (bypasses cache)

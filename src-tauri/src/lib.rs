@@ -58,6 +58,9 @@ pub fn run() {
             core::app::commands::app_token,
             core::app::commands::sync_salesbox_api_key,
             core::app::commands::sync_salesbox_endpoint,
+            core::app::commands::sync_salesbox_credentials,
+            core::app::commands::get_salesbox_credentials,
+            core::app::commands::clear_salesbox_credentials,
             // Extension commands
             core::extensions::commands::get_jan_extensions_path,
             core::extensions::commands::install_extensions,
@@ -78,6 +81,7 @@ pub fn run() {
             core::mcp::commands::call_tool,
             core::mcp::commands::cancel_tool_call,
             core::mcp::commands::restart_mcp_servers,
+            core::mcp::commands::reinitialize_mcp_servers,
             core::mcp::commands::get_connected_servers,
             core::mcp::commands::save_mcp_configs,
             core::mcp::commands::get_mcp_configs,

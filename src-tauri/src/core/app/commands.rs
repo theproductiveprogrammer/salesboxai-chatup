@@ -263,3 +263,83 @@ pub fn sync_salesbox_endpoint<R: Runtime>(
     log::info!("Synced SalesBox endpoint to Tauri store");
     Ok(())
 }
+
+/// Sync SalesBox credentials to Tauri store for JWT authentication
+#[tauri::command]
+pub fn sync_salesbox_credentials<R: Runtime>(
+    app_handle: tauri::AppHandle<R>,
+    username: String,
+    password: String,
+) -> Result<(), String> {
+    let mut store_path = get_jan_data_folder_path(app_handle.clone());
+    store_path.push("store.json");
+
+    let store = app_handle
+        .store(store_path)
+        .map_err(|e| format!("Failed to access store: {}", e))?;
+
+    store.set(
+        "salesbox-credentials",
+        serde_json::json!({
+            "state": {
+                "username": username,
+                "password": password
+            },
+            "version": 0
+        }),
+    );
+
+    store
+        .save()
+        .map_err(|e| format!("Failed to save store: {}", e))?;
+
+    log::info!("Synced SalesBox credentials to Tauri store");
+    Ok(())
+}
+
+/// Get SalesBox credentials from Tauri store
+#[tauri::command]
+pub fn get_salesbox_credentials<R: Runtime>(
+    app_handle: tauri::AppHandle<R>,
+) -> Result<Option<serde_json::Value>, String> {
+    let mut store_path = get_jan_data_folder_path(app_handle.clone());
+    store_path.push("store.json");
+
+    let store = app_handle
+        .store(store_path)
+        .map_err(|e| format!("Failed to access store: {}", e))?;
+
+    match store.get("salesbox-credentials") {
+        Some(value) => {
+            if let Some(state) = value.get("state") {
+                Ok(Some(state.clone()))
+            } else {
+                Ok(None)
+            }
+        }
+        None => Ok(None),
+    }
+}
+
+/// Clear SalesBox credentials from Tauri store
+#[tauri::command]
+pub fn clear_salesbox_credentials<R: Runtime>(
+    app_handle: tauri::AppHandle<R>,
+) -> Result<(), String> {
+    let mut store_path = get_jan_data_folder_path(app_handle.clone());
+    store_path.push("store.json");
+
+    let store = app_handle
+        .store(store_path)
+        .map_err(|e| format!("Failed to access store: {}", e))?;
+
+    // delete() returns bool, not Result
+    store.delete("salesbox-credentials");
+
+    store
+        .save()
+        .map_err(|e| format!("Failed to save store: {}", e))?;
+
+    log::info!("Cleared SalesBox credentials from Tauri store");
+    Ok(())
+}
