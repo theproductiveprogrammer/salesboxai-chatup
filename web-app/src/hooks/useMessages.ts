@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { ThreadMessage } from '@janhq/core'
 import {
   createMessage,
@@ -14,7 +15,9 @@ type MessageState = {
   deleteMessage: (threadId: string, messageId: string) => void
 }
 
-export const useMessages = create<MessageState>()((set, get) => ({
+export const useMessages = create<MessageState>()(
+  persist(
+    (set, get) => ({
   messages: {},
   getMessages: (threadId) => {
     return get().messages[threadId] || []
@@ -54,7 +57,7 @@ export const useMessages = create<MessageState>()((set, get) => ({
       role: newMessage.role,
     })
 
-    // Update state immediately to avoid race conditions with navigation
+    // Update state - Zustand persist middleware will automatically save to localStorage
     set((state) => ({
       messages: {
         ...state.messages,
@@ -65,14 +68,8 @@ export const useMessages = create<MessageState>()((set, get) => ({
       },
     }))
 
-    // Persist to disk asynchronously
-    createMessage(newMessage)
-      .then(() => {
-        console.log('[useMessages] Message persisted to disk:', newMessage.id)
-      })
-      .catch((error) => {
-        console.error('[useMessages] Failed to persist message to disk:', error)
-      })
+    // NOTE: ExtensionManager persistence is disabled
+    // Persistence now handled by Zustand's persist middleware (localStorage)
   },
   deleteMessage: (threadId, messageId) => {
     deleteMessageExt(threadId, messageId)
@@ -86,4 +83,10 @@ export const useMessages = create<MessageState>()((set, get) => ({
       },
     }))
   },
-}))
+}),
+    {
+      name: 'salesbox-messages-storage',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+)

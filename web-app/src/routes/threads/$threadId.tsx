@@ -94,38 +94,24 @@ function ThreadDetail() {
   }, [threadId, currentThreadId, assistants])
 
   useEffect(() => {
-    fetchMessages(threadId).then((fetchedMessages) => {
-      // Get the current messages from store (not from closure) to avoid stale data
-      const currentMessages = getMessages(threadId) || []
+    // DISABLED: Extensions are disabled, messages are persisted via Zustand
+    // Messages are already loaded from localStorage by Zustand's persist middleware
+    // No need to fetch from ExtensionManager
 
-      console.log('[ThreadDetail] Fetched messages:', {
-        threadId,
-        fetchedCount: fetchedMessages?.length || 0,
-        inMemoryCount: currentMessages.length,
-      })
+    console.log('[ThreadDetail] Using Zustand-persisted messages for thread:', threadId)
 
-      if (fetchedMessages && fetchedMessages.length > 0) {
-        // We have messages from disk - merge with in-memory ones
-        const messageIds = new Set(fetchedMessages.map((m) => m.id))
-        const inMemoryOnly = currentMessages.filter((m) => !messageIds.has(m.id))
-
-        // Combine fetched messages with any in-memory-only messages
-        const mergedMessages = [...fetchedMessages, ...inMemoryOnly]
-        console.log('[ThreadDetail] Merging messages:', {
-          fetchedCount: fetchedMessages.length,
-          inMemoryOnlyCount: inMemoryOnly.length,
-          totalCount: mergedMessages.length,
-        })
-        setMessages(threadId, mergedMessages)
-      } else if (currentMessages.length === 0) {
-        // No messages in memory and none on disk - initialize empty array
-        console.log('[ThreadDetail] No messages found, initializing empty array')
-        setMessages(threadId, [])
-      } else {
-        console.log('[ThreadDetail] Keeping in-memory messages:', currentMessages.length)
-      }
-      // If fetchedMessages is empty but we have currentMessages, keep the in-memory ones
-    })
+    // Old code (kept for reference):
+    // fetchMessages(threadId).then((fetchedMessages) => {
+    //   const currentMessages = getMessages(threadId) || []
+    //   if (fetchedMessages && fetchedMessages.length > 0) {
+    //     const messageIds = new Set(fetchedMessages.map((m) => m.id))
+    //     const inMemoryOnly = currentMessages.filter((m) => !messageIds.has(m.id))
+    //     const mergedMessages = [...fetchedMessages, ...inMemoryOnly]
+    //     setMessages(threadId, mergedMessages)
+    //   } else if (currentMessages.length === 0) {
+    //     setMessages(threadId, [])
+    //   }
+    // })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId])
 

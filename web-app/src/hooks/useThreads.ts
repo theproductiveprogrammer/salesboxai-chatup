@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { ulid } from 'ulidx'
 import { createThread, deleteThread, updateThread } from '@/services/threads'
 import { Fzf } from 'fzf'
@@ -29,10 +30,17 @@ type ThreadState = {
   searchIndex: Fzf<Thread> | null
 }
 
-export const useThreads = create<ThreadState>()((set, get) => ({
+export const useThreads = create<ThreadState>()(
+  persist(
+    (set, get) => ({
   threads: {},
   searchIndex: null,
   setThreads: (threads) => {
+    console.log('[useThreads] setThreads called with:', {
+      count: threads.length,
+      threadIds: threads.map((t) => t.id),
+      titles: threads.map((t) => t.title),
+    })
     const threadMap = threads.reduce(
       (acc: Record<string, Thread>, thread) => {
         acc[thread.id] = {
@@ -191,23 +199,32 @@ export const useThreads = create<ThreadState>()((set, get) => ({
       updated: Date.now() / 1000,
       assistants: assistant ? [assistant] : [],
     }
-    return await createThread(newThread).then((createdThread) => {
-      set((state) => {
-        // Get all existing threads as an array
-        const existingThreads = Object.values(state.threads)
 
-        // Create new array with the new thread at the beginning
-        const reorderedThreads = [createdThread, ...existingThreads]
-
-        // Use setThreads to handle proper ordering (this will assign order 1, 2, 3...)
-        get().setThreads(reorderedThreads)
-
-        return {
-          currentThreadId: createdThread.id,
-        }
-      })
-      return createdThread
+    console.log('[useThreads] Creating thread:', {
+      id: newThread.id,
+      title: newThread.title,
     })
+
+    // Update state - Zustand persist middleware will automatically save to localStorage
+    set((state) => {
+      // Get all existing threads as an array
+      const existingThreads = Object.values(state.threads)
+
+      // Create new array with the new thread at the beginning
+      const reorderedThreads = [newThread, ...existingThreads]
+
+      // Use setThreads to handle proper ordering (this will assign order 1, 2, 3...)
+      get().setThreads(reorderedThreads)
+
+      return {
+        currentThreadId: newThread.id,
+      }
+    })
+
+    // NOTE: ExtensionManager persistence is disabled
+    // Persistence now handled by Zustand's persist middleware (localStorage)
+
+    return newThread
   },
   updateCurrentThreadAssistant: (assistant) => {
     set((state) => {
@@ -295,4 +312,14 @@ export const useThreads = create<ThreadState>()((set, get) => ({
       }
     })
   },
-}))
+}),
+    {
+      name: 'salesbox-threads-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        threads: state.threads,
+        // Don't persist searchIndex or currentThreadId
+      }),
+    }
+  )
+)

@@ -57,14 +57,22 @@ export function DataProvider() {
   }, [])
 
   useEffect(() => {
-    fetchThreads().then((threads) => {
-      setThreads(threads)
-      threads.forEach((thread) =>
-        fetchMessages(thread.id).then((messages) =>
-          setMessages(thread.id, messages)
-        )
-      )
-    })
+    // DISABLED: Extensions are disabled, so we can't fetch from disk
+    // Threads and messages are now persisted via Zustand's persist middleware (localStorage)
+    // They will be automatically loaded on app startup by Zustand
+    console.log('[DataProvider] Skipping ExtensionManager fetch - using Zustand persistence')
+
+    // Old code (kept for reference):
+    // fetchThreads().then((threads) => {
+    //   console.log('[DataProvider] Loaded threads from disk:', threads.length)
+    //   setThreads(threads)
+    //   threads.forEach((thread) =>
+    //     fetchMessages(thread.id).then((messages) => {
+    //       console.log(`[DataProvider] Loaded ${messages.length} messages for thread ${thread.id}`)
+    //       setMessages(thread.id, messages)
+    //     })
+    //   )
+    // })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
