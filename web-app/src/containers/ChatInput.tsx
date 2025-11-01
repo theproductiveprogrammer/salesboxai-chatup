@@ -39,9 +39,10 @@ type ChatInputProps = {
   showSpeedToken?: boolean
   model?: ThreadModel
   initialMessage?: boolean
+  initialPrompt?: string
 }
 
-const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
+const ChatInput = ({ model, className, initialMessage, initialPrompt }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isFocused, setIsFocused] = useState(false)
   const [rows, setRows] = useState(1)
@@ -206,6 +207,13 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
       }, 10)
     }
   }, [streamingContent])
+
+  // Set initial prompt if provided
+  useEffect(() => {
+    if (initialPrompt) {
+      setPrompt(initialPrompt)
+    }
+  }, [initialPrompt, setPrompt])
 
   const stopStreaming = useCallback(
     (threadId: string) => {

@@ -22,11 +22,15 @@ import type {
 } from '@/types/asyncJobs'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { invoke } from '@tauri-apps/api/core'
+import { useRouter } from '@tanstack/react-router'
+import { route } from '@/constants/routes'
 
 export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   job,
   onAction,
 }) => {
+  const router = useRouter()
+
   console.log('DiscoverLeadsJobWidget - job:', job)
   console.log('DiscoverLeadsJobWidget - job.status:', job.status)
   console.log('DiscoverLeadsJobWidget - job.result:', job.result)
@@ -70,6 +74,33 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
       .map((n) => n[0])
       .join('')
       .toUpperCase()
+  }
+
+  // Handler to create a chat with lead info
+  const handleChatWithLead = async (lead: any, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const linkedinUrl = getLeadLinkedInUrl(lead)
+    if (!linkedinUrl) {
+      console.log('No LinkedIn URL available for lead:', lead.id)
+      return
+    }
+
+    try {
+      // Pre-fill message for the user to edit/submit
+      const message = `Please get detailed information about this lead: ${linkedinUrl}`
+
+      // Navigate to home (New Chat) with pre-filled message
+      await router.navigate({
+        to: route.home,
+        search: { message },
+      })
+
+      console.log('Successfully navigated to new chat with pre-filled message')
+    } catch (error) {
+      console.error('Error navigating to chat:', error)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -324,11 +355,16 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {lead.type}
-                      </Badge>
-                      {lead.linkedinUrl && (
-                        <IconExternalLink className="h-4 w-4 text-muted-foreground" />
+                      {getLeadLinkedInUrl(lead) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer"
+                          onClick={(e) => handleChatWithLead(lead, e)}
+                          title="Chat with lead info"
+                        >
+                          Chat
+                        </Button>
                       )}
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createFileRoute, useParams } from '@tanstack/react-router'
+import { createFileRoute, useParams, useSearch } from '@tanstack/react-router'
 import { UIEventHandler } from 'react'
 import debounce from 'lodash.debounce'
 import cloneDeep from 'lodash.clonedeep'
@@ -25,14 +25,22 @@ import { useChat } from '@/hooks/useChat'
 import { useSmallScreen } from '@/hooks/useMediaQuery'
 import { useTools } from '@/hooks/useTools'
 
+type ThreadSearchParams = {
+  message?: string
+}
+
 // as route.threadsDetail
 export const Route = createFileRoute('/threads/$threadId')({
   component: ThreadDetail,
+  validateSearch: (search: Record<string, unknown>): ThreadSearchParams => ({
+    message: search.message as string | undefined,
+  }),
 })
 
 function ThreadDetail() {
   const { t } = useTranslation()
   const { threadId } = useParams({ from: Route.id })
+  const search = useSearch({ from: Route.id })
   const [isUserScrolling, setIsUserScrolling] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(true)
   const [hasScrollbar, setHasScrollbar] = useState(false)
@@ -391,7 +399,7 @@ function ThreadDetail() {
               </div>
             )}
           </div>
-          <ChatInput model={threadModel} />
+          <ChatInput model={threadModel} initialPrompt={search.message} />
         </div>
       </div>
     </div>

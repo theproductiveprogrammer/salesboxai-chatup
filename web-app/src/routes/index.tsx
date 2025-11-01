@@ -12,6 +12,7 @@ type SearchParams = {
     id: string
     provider: string
   }
+  message?: string
 }
 import DropdownAssistant from '@/containers/DropdownAssistant'
 import { useEffect } from 'react'
@@ -22,6 +23,7 @@ export const Route = createFileRoute(route.home as any)({
   component: Index,
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
     model: search.model as SearchParams['model'],
+    message: search.message as string | undefined,
   }),
 })
 
@@ -60,6 +62,7 @@ function Index() {
               showSpeedToken={false}
               model={selectedModel}
               initialMessage={true}
+              initialPrompt={search.message}
             />
           </div>
         </div>

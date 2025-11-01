@@ -26,7 +26,7 @@ type ThreadState = {
   getFilteredThreads: (searchTerm: string) => Thread[]
   updateCurrentThreadAssistant: (assistant: Assistant) => void
   updateThreadTimestamp: (threadId: string) => void
-  searchIndex: Fzf<Thread[]> | null
+  searchIndex: Fzf<Thread> | null
 }
 
 export const useThreads = create<ThreadState>()((set, get) => ({
@@ -58,7 +58,7 @@ export const useThreads = create<ThreadState>()((set, get) => ({
     )
     set({
       threads: threadMap,
-      searchIndex: new Fzf<Thread[]>(Object.values(threadMap), {
+      searchIndex: new Fzf<Thread>(Object.values(threadMap), {
         selector: (item: Thread) => item.title,
       }),
     })
@@ -74,7 +74,7 @@ export const useThreads = create<ThreadState>()((set, get) => ({
 
     let currentIndex = searchIndex
     if (!currentIndex?.find) {
-      currentIndex = new Fzf<Thread[]>(Object.values(threads), {
+      currentIndex = new Fzf<Thread>(Object.values(threads), {
         selector: (item: Thread) => item.title,
       })
       set({ searchIndex: currentIndex })
@@ -118,7 +118,7 @@ export const useThreads = create<ThreadState>()((set, get) => ({
       deleteThread(threadId)
       return {
         threads: remainingThreads,
-        searchIndex: new Fzf<Thread[]>(Object.values(remainingThreads), {
+        searchIndex: new Fzf<Thread>(Object.values(remainingThreads), {
           selector: (item: Thread) => item.title,
         }),
       }
@@ -150,7 +150,7 @@ export const useThreads = create<ThreadState>()((set, get) => ({
 
       return {
         threads: remainingThreads,
-        searchIndex: new Fzf<Thread[]>(Object.values(remainingThreads), {
+        searchIndex: new Fzf<Thread>(Object.values(remainingThreads), {
           selector: (item: Thread) => item.title,
         }),
       }
@@ -259,7 +259,7 @@ export const useThreads = create<ThreadState>()((set, get) => ({
       const newThreads = { ...state.threads, [threadId]: updatedThread }
       return {
         threads: newThreads,
-        searchIndex: new Fzf<Thread[]>(Object.values(newThreads), {
+        searchIndex: new Fzf<Thread>(Object.values(newThreads), {
           selector: (item: Thread) => item.title,
         }),
       }
@@ -289,7 +289,7 @@ export const useThreads = create<ThreadState>()((set, get) => ({
 
       return {
         threads: updatedThreads,
-        searchIndex: new Fzf<Thread[]>(Object.values(updatedThreads), {
+        searchIndex: new Fzf<Thread>(Object.values(updatedThreads), {
           selector: (item: Thread) => item.title,
         }),
       }
