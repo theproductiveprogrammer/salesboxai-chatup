@@ -424,7 +424,7 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
             }
           }
         })
-        
+
         // If we found image items but couldn't get files, fall through to modern API
         if (processedCount === imageItems.length && !hasProcessedImage) {
           // Continue to modern clipboard API fallback below
@@ -602,16 +602,6 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
                   streamingContent && 'opacity-50 pointer-events-none'
                 )}
               >
-                <div className="flex items-center gap-2 px-2 py-1 rounded-md border border-border/50 bg-accent/5">
-                  <span className="text-sm font-medium text-foreground">
-                    Salesbox.AI Agent
-                  </span>
-                  {tools.length > 0 && (
-                    <span className="text-xs text-muted-foreground bg-accent/20 px-1.5 py-0.5 rounded">
-                      {tools.length} {tools.length === 1 ? 'tool' : 'tools'}
-                    </span>
-                  )}
-                </div>
                 {/* File attachment - show only for models with mmproj */}
                 {hasMmproj && (
                   <TooltipProvider>
@@ -662,8 +652,77 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
                   </TooltipProvider>
                 )}
 
-                {selectedModel?.capabilities?.includes('tools') &&
-                  hasActiveMCPServers && (
+                {selectedModel?.capabilities?.includes('web_search') && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="h-7 p-1 flex items-center justify-center rounded-sm hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out gap-1">
+                          <IconWorld
+                            size={18}
+                            className="text-main-view-fg/50"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Web Search</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {selectedModel?.capabilities?.includes('reasoning') && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="h-7 p-1 flex items-center justify-center rounded-sm hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out gap-1">
+                          <IconAtom
+                            size={18}
+                            className="text-main-view-fg/50"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('reasoning')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              {streamingContent ? (
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() =>
+                    stopStreaming(currentThreadId ?? streamingContent.thread_id)
+                  }
+                >
+                  <IconPlayerStopFilled />
+                </Button>
+              ) : (
+                <Button
+                  variant={
+                    !prompt.trim() && uploadedFiles.length === 0
+                      ? null
+                      : 'default'
+                  }
+                  size="icon"
+                  disabled={!prompt.trim() && uploadedFiles.length === 0}
+                  data-test-id="send-message-button"
+                  onClick={() => handleSendMesage(prompt)}
+                >
+                  {streamingContent ? (
+                    <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                  ) : (
+                    <ArrowRight className="text-primary-fg" />
+                  )}
+                </Button>
+              )}
+
+              {selectedModel?.capabilities?.includes('tools') &&
+                hasActiveMCPServers && (
+                  <div className="opacity-80">
                     <TooltipProvider>
                       <Tooltip
                         open={tooltipToolsAvailable}
@@ -718,73 +777,9 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  )}
-                {selectedModel?.capabilities?.includes('web_search') && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="h-7 p-1 flex items-center justify-center rounded-sm hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out gap-1">
-                          <IconWorld
-                            size={18}
-                            className="text-main-view-fg/50"
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Web Search</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  </div>
                 )}
-                {selectedModel?.capabilities?.includes('reasoning') && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="h-7 p-1 flex items-center justify-center rounded-sm hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out gap-1">
-                          <IconAtom
-                            size={18}
-                            className="text-main-view-fg/50"
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{t('reasoning')}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
             </div>
-
-            {streamingContent ? (
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() =>
-                  stopStreaming(currentThreadId ?? streamingContent.thread_id)
-                }
-              >
-                <IconPlayerStopFilled />
-              </Button>
-            ) : (
-              <Button
-                variant={
-                  !prompt.trim() && uploadedFiles.length === 0
-                    ? null
-                    : 'default'
-                }
-                size="icon"
-                disabled={!prompt.trim() && uploadedFiles.length === 0}
-                data-test-id="send-message-button"
-                onClick={() => handleSendMesage(prompt)}
-              >
-                {streamingContent ? (
-                  <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                ) : (
-                  <ArrowRight className="text-primary-fg" />
-                )}
-              </Button>
-            )}
           </div>
         </div>
       </div>

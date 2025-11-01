@@ -16,6 +16,7 @@ type SearchParams = {
 import DropdownAssistant from '@/containers/DropdownAssistant'
 import { useEffect } from 'react'
 import { useThreads } from '@/hooks/useThreads'
+import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 
 export const Route = createFileRoute(route.home as any)({
   component: Index,
@@ -28,9 +29,11 @@ function Index() {
   const { t } = useTranslation()
   const search = useSearch({ from: route.home as any })
   const { setCurrentThreadId } = useThreads()
+  const { user } = useSalesboxAuth()
   useTools()
 
   const selectedModel = search.model
+  const userName = user?.name || user?.username || 'there'
 
   useEffect(() => {
     setCurrentThreadId(undefined)
