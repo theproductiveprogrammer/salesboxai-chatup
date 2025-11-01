@@ -272,6 +272,7 @@ export const sendCompletion = async (
       )
     } else if (stream) {
       console.log('[sendCompletion] Using tokenJS streaming API call')
+      const normalizedTools = normalizeTools(tools)
       console.log('[sendCompletion] Request payload:', {
         stream: true,
         provider: providerName,
@@ -279,6 +280,8 @@ export const sendCompletion = async (
         messagesCount: messages.length,
         toolsCount: tools.length
       })
+      console.log('[sendCompletion] Normalized tools being sent:', normalizedTools)
+      console.log('[sendCompletion] Raw MCP tools:', tools)
 
       try {
         completion = await tokenJS.chat.completions.create(
@@ -287,7 +290,7 @@ export const sendCompletion = async (
             provider: providerName as any,
             model: thread.model?.id,
             messages,
-            tools: normalizeTools(tools),
+            tools: normalizedTools,
             tool_choice: tools.length ? 'auto' : undefined,
             ...params,
           },
@@ -379,12 +382,21 @@ export const extractToolCall = (
   calls: ChatCompletionMessageToolCall[]
 ) => {
   const deltaToolCalls = part.choices[0].delta.tool_calls
+
+  if (deltaToolCalls) {
+    console.log('[extractToolCall] Received delta tool calls:', JSON.stringify(deltaToolCalls, null, 2))
+  }
+
   // Handle the beginning of a new tool call
   if (deltaToolCalls?.[0]?.index !== undefined && deltaToolCalls[0]?.function) {
     const index = deltaToolCalls[0].index
 
     // Create new tool call if this is the first chunk for it
     if (!calls[index]) {
+      console.log('[extractToolCall] Creating new tool call at index', index)
+      console.log('[extractToolCall] Function name from delta:', deltaToolCalls[0]?.function?.name)
+      console.log('[extractToolCall] Function arguments from delta:', deltaToolCalls[0]?.function?.arguments)
+
       calls[index] = {
         id: deltaToolCalls[0]?.id || ulid(),
         function: {
@@ -394,6 +406,8 @@ export const extractToolCall = (
         type: 'function',
       }
       currentCall = calls[index]
+
+      console.log('[extractToolCall] Created tool call:', JSON.stringify(calls[index], null, 2))
     } else {
       // Continuation of existing tool call
       currentCall = calls[index]
@@ -403,14 +417,21 @@ export const extractToolCall = (
         deltaToolCalls[0]?.function?.name &&
         currentCall!.function.name !== deltaToolCalls[0]?.function?.name
       ) {
+        console.log('[extractToolCall] Appending to function name:', deltaToolCalls[0].function.name)
         currentCall!.function.name += deltaToolCalls[0].function.name
       }
 
       if (deltaToolCalls[0]?.function?.arguments) {
+        console.log('[extractToolCall] Appending to arguments:', deltaToolCalls[0].function.arguments)
         currentCall!.function.arguments += deltaToolCalls[0].function.arguments
       }
     }
   }
+
+  if (calls.length > 0) {
+    console.log('[extractToolCall] Current accumulated calls:', JSON.stringify(calls, null, 2))
+  }
+
   return calls
 }
 
@@ -463,6 +484,10 @@ export const postMessageProcessing = async (
       }
 
       // Check if tool is approved or show modal for approval
+      console.log('[postMessageProcessing] Processing tool call:', JSON.stringify(toolCall, null, 2))
+      console.log('[postMessageProcessing] Tool function name:', toolCall.function.name)
+      console.log('[postMessageProcessing] Tool function arguments:', toolCall.function.arguments)
+
       let toolParameters = {}
       if (toolCall.function.arguments.length) {
         try {
@@ -481,6 +506,9 @@ export const postMessageProcessing = async (
               toolParameters
             )
           : true)
+
+      console.log('[postMessageProcessing] Calling tool with name:', toolCall.function.name)
+      console.log('[postMessageProcessing] Tool parameters:', toolParameters)
 
       const { promise, cancel } = callToolWithCancellation({
         toolName: toolCall.function.name,

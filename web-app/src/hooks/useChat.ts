@@ -413,18 +413,6 @@ export const useChat = () => {
               let chunkCount = 0
               let iterationStarted = false
               try {
-                // Test if the iterator works
-                console.log('[useChat] About to call next() manually')
-                const iterator = completion[Symbol.asyncIterator]()
-                const firstResult = await iterator.next()
-                console.log('[useChat] First next() result:', firstResult)
-
-                // If we got data, we need to process it and continue iterating
-                if (!firstResult.done && firstResult.value) {
-                  console.log('[useChat] First chunk received via manual next()')
-                  // Process this chunk (we'll refactor this properly after debugging)
-                }
-
                 console.log('[useChat] Starting for-await loop')
                 for await (const part of completion) {
                   if (!iterationStarted) {
@@ -453,6 +441,9 @@ export const useChat = () => {
                   }
 
                   if (part.choices[0]?.delta?.tool_calls) {
+                    console.log('[useChat] Tool call delta detected in chunk', chunkCount)
+                    console.log('[useChat] Full part object:', JSON.stringify(part, null, 2))
+                    console.log('[useChat] Delta tool_calls:', JSON.stringify(part.choices[0].delta.tool_calls, null, 2))
                     extractToolCall(part, currentCall, toolCalls)
                     // Schedule a flush to reflect tool update
                     scheduleFlush()

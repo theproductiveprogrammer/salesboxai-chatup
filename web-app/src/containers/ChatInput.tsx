@@ -602,10 +602,15 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
                   streamingContent && 'opacity-50 pointer-events-none'
                 )}
               >
-                <div className="flex items-center gap-2 px-3 py-1.5">
-                  <span className="text-sm font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 px-2 py-1 rounded-md border border-border/50 bg-accent/5">
+                  <span className="text-sm font-medium text-foreground">
                     Salesbox.AI Agent
                   </span>
+                  {tools.length > 0 && (
+                    <span className="text-xs text-muted-foreground bg-accent/20 px-1.5 py-0.5 rounded">
+                      {tools.length} {tools.length === 1 ? 'tool' : 'tools'}
+                    </span>
+                  )}
                 </div>
                 {/* File attachment - show only for models with mmproj */}
                 {hasMmproj && (
