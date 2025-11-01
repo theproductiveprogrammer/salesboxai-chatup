@@ -209,6 +209,7 @@ export default class llamacpp_extension extends AIEngine {
       events.emit(DownloadEvent.onModelValidationStarted, event.payload)
     })
 
+    // Start backend configuration in the background (don't block onLoad)
     this.configureBackends()
   }
 
@@ -271,17 +272,17 @@ export default class llamacpp_extension extends AIEngine {
       try {
         version_backends = await listSupportedBackends()
         if (version_backends.length === 0) {
-          throw new Error(
-            'No supported backend binaries found for this system. Backend selection and auto-update will be unavailable.'
+          logger.error(
+            'No supported backend binaries found for this system. Backend configuration will be skipped.'
           )
         } else {
           version_backends.sort((a, b) => b.version.localeCompare(a.version))
         }
       } catch (error) {
-        throw new Error(
+        logger.error(
           `Failed to fetch supported backends: ${
             error instanceof Error ? error.message : error
-          }`
+          }. Backend configuration will be skipped - please configure manually in settings if needed.`
         )
       }
 
@@ -1344,11 +1345,45 @@ export default class llamacpp_extension extends AIEngine {
     }
     const args: string[] = []
     const envs: Record<string, string> = {}
-    const cfg = { ...this.config, ...(overrideSettings ?? {}) }
+
+    // Wait for backend configuration to complete if it's still in progress
+    if (this.isConfiguringBackends) {
+      logger.info('Waiting for backend configuration to complete...')
+      // Wait for configuration to finish (with timeout)
+      const timeout = 30000 // 30 seconds
+      const startTime = Date.now()
+      while (this.isConfiguringBackends && Date.now() - startTime < timeout) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+      if (this.isConfiguringBackends) {
+        throw new Error(
+          'Backend configuration timed out. Please try again or restart the app.'
+        )
+      }
+    }
+
+    // Get config after waiting for backend configuration
+    let cfg = { ...this.config, ...(overrideSettings ?? {}) }
+
+    // If version_backend is not configured, trigger configuration now
+    if (!cfg.version_backend || cfg.version_backend === 'none' || !cfg.version_backend.includes('/')) {
+      logger.warn('Backend not configured, triggering configuration now...')
+      await this.configureBackends()
+      // Reload config after configuration
+      cfg = { ...this.config, ...(overrideSettings ?? {}) }
+
+      // If still not configured after attempting, throw error
+      if (!cfg.version_backend || cfg.version_backend === 'none' || !cfg.version_backend.includes('/')) {
+        throw new Error(
+          'Model backend could not be auto-configured. Please manually configure in Settings > Model Providers > llama.cpp.'
+        )
+      }
+    }
+
     const [version, backend] = cfg.version_backend.split('/')
     if (!version || !backend) {
       throw new Error(
-        'Initial setup for the backend failed due to a network issue. Please restart the app!'
+        'Invalid backend configuration format. Expected "version/backend" format. Please reconfigure in Settings > Model Providers > llama.cpp.'
       )
     }
 

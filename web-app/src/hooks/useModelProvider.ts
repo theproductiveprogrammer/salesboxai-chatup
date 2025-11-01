@@ -1,283 +1,163 @@
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
-import { localStorageKey } from '@/constants/localStorage'
-import { sep } from '@tauri-apps/api/path'
-import { modelSettings } from '@/lib/predefined'
+import { useSalesboxEndpoint } from './useSalesboxEndpoint'
+import { useSalesboxAuth } from './useSalesboxAuth'
+
+/**
+ * Simplified model provider hook.
+ * Always uses the Salesbox provider with gpt-4o-mini model.
+ * Provider configuration is dynamically constructed from useSalesboxEndpoint and useSalesboxAuth.
+ * No localStorage persistence - configuration comes from those hooks instead.
+ */
 
 type ModelProviderState = {
   providers: ModelProvider[]
+  selectedModel: Model
   selectedProvider: string
-  selectedModel: Model | null
-  deletedModels: string[]
   getModelBy: (modelId: string) => Model | undefined
-  setProviders: (providers: ModelProvider[]) => void
-  getProviderByName: (providerName: string) => ModelProvider | undefined
-  updateProvider: (providerName: string, data: Partial<ModelProvider>) => void
+  getProvider: () => ModelProvider
+  getProviderByName: (providerName?: string) => ModelProvider
   selectModelProvider: (
-    providerName: string,
-    modelName: string
-  ) => Model | undefined
+    providerName?: string,
+    modelName?: string
+  ) => Model
+  // Legacy methods kept for compatibility (no-ops or simple returns)
+  setProviders: (providers: ModelProvider[]) => void
+  updateProvider: (providerName: string, data: Partial<ModelProvider>) => void
+  deleteModel: (modelId: string) => void
   addProvider: (provider: ModelProvider) => void
   deleteProvider: (providerName: string) => void
-  deleteModel: (modelId: string) => void
 }
 
-export const useModelProvider = create<ModelProviderState>()(
-  persist(
-    (set, get) => ({
-      providers: [],
-      selectedProvider: 'llamacpp',
-      selectedModel: null,
-      deletedModels: [],
-      getModelBy: (modelId: string) => {
-        const provider = get().providers.find(
-          (provider) => provider.provider === get().selectedProvider
-        )
-        if (!provider) return undefined
-        return provider.models.find((model) => model.id === modelId)
+// Hardcoded gpt-4o-mini model
+const GPT_4O_MINI_MODEL: Model = {
+  id: 'gpt-4o-mini',
+  name: 'GPT-4o Mini',
+  version: '1.0',
+  description: 'OpenAI GPT-4o Mini via Salesbox.AI proxy',
+  capabilities: ['completion', 'tools'],
+}
+
+// Helper to construct provider dynamically
+const constructProvider = (): ModelProvider => {
+  const endpoint = useSalesboxEndpoint.getState().endpoint
+  const token = useSalesboxAuth.getState().token
+
+  return {
+    active: true,
+    api_key: token || '',
+    base_url: `${endpoint}/api/openai/v1`,
+    provider: 'salesbox',
+    explore_models_url: 'https://platform.openai.com/docs/models',
+    settings: [
+      {
+        key: 'api-key',
+        title: 'JWT Token',
+        description:
+          'Authentication token automatically managed from your Salesbox.AI session.',
+        controller_type: 'input',
+        controller_props: {
+          placeholder: 'Auto-filled from login',
+          value: token || '',
+          type: 'password',
+          input_actions: ['unobscure', 'copy'],
+        },
       },
-      setProviders: (providers) =>
-        set((state) => {
-          const existingProviders = state.providers
-            // Filter out legacy llama.cpp provider for migration
-            // Can remove after a couple of releases
-            .filter((e) => e.provider !== 'llama.cpp')
-            .map((provider) => {
-              return {
-                ...provider,
-                models: provider.models.filter(
-                  (e) =>
-                    ('id' in e || 'model' in e) &&
-                    typeof (e.id ?? e.model) === 'string'
-                ),
-              }
-            })
-
-          let legacyModels: Model[] | undefined = []
-          /// Cortex Migration
-          if (
-            localStorage.getItem('cortex_model_settings_migrated') !== 'true'
-          ) {
-            legacyModels = state.providers.find(
-              (e) => e.provider === 'llama.cpp'
-            )?.models
-            localStorage.setItem('cortex_model_settings_migrated', 'true')
-          }
-          // Ensure deletedModels is always an array
-          const currentDeletedModels = Array.isArray(state.deletedModels)
-            ? state.deletedModels
-            : []
-
-          const updatedProviders = providers.map((provider) => {
-            const existingProvider = existingProviders.find(
-              (x) => x.provider === provider.provider
-            )
-            const models = (existingProvider?.models || []).filter(
-              (e) =>
-                ('id' in e || 'model' in e) &&
-                typeof (e.id ?? e.model) === 'string'
-            )
-            const mergedModels = [
-              ...(provider?.models ?? []).filter(
-                (e) =>
-                  ('id' in e || 'model' in e) &&
-                  typeof (e.id ?? e.model) === 'string' &&
-                  !models.some((m) => m.id === e.id) &&
-                  !currentDeletedModels.includes(e.id)
-              ),
-              ...models,
-            ]
-            const updatedModels = provider.models?.map((model) => {
-              const settings =
-                (legacyModels && legacyModels?.length > 0
-                  ? legacyModels
-                  : models
-                ).find(
-                  (m) => m.id.split(':').slice(0, 2).join(sep()) === model.id
-                )?.settings || model.settings
-              const existingModel = models.find((m) => m.id === model.id)
-              return {
-                ...model,
-                settings: settings,
-                capabilities: existingModel?.capabilities || model.capabilities,
-              }
-            })
-
-            return {
-              ...provider,
-              models: provider.persist ? updatedModels : mergedModels,
-              settings: provider.settings.map((setting) => {
-                const existingSetting = provider.persist
-                  ? undefined
-                  : existingProvider?.settings?.find(
-                      (x) => x.key === setting.key
-                    )
-                return {
-                  ...setting,
-                  controller_props: {
-                    ...setting.controller_props,
-                    ...(existingSetting?.controller_props || {}),
-                  },
-                }
-              }),
-              api_key: existingProvider?.api_key || provider.api_key,
-              base_url: existingProvider?.base_url || provider.base_url,
-              active: existingProvider ? existingProvider?.active : true,
-            }
-          })
-          return {
-            providers: [
-              ...updatedProviders,
-              ...existingProviders.filter(
-                (e) => !updatedProviders.some((p) => p.provider === e.provider)
-              ),
-            ],
-          }
-        }),
-      updateProvider: (providerName, data) => {
-        set((state) => ({
-          providers: state.providers.map((provider) => {
-            if (provider.provider === providerName) {
-              return {
-                ...provider,
-                ...data,
-              }
-            }
-            return provider
-          }),
-        }))
+      {
+        key: 'base-url',
+        title: 'Base URL',
+        description: 'Salesbox.AI OpenAI-compatible API endpoint.',
+        controller_type: 'input',
+        controller_props: {
+          placeholder: endpoint,
+          value: endpoint,
+        },
       },
-      getProviderByName: (providerName: string) => {
-        const provider = get().providers.find(
-          (provider) => provider.provider === providerName
-        )
+    ],
+    models: [GPT_4O_MINI_MODEL],
+  } as ModelProvider
+}
 
-        return provider
-      },
-      selectModelProvider: (providerName: string, modelName: string) => {
-        // Find the model object
-        const provider = get().providers.find(
-          (provider) => provider.provider === providerName
-        )
+export const useModelProvider = create<ModelProviderState>((set, get) => ({
+  providers: [constructProvider()],  // Initialize with salesbox provider
+  selectedModel: GPT_4O_MINI_MODEL,
+  selectedProvider: 'salesbox',
 
-        let modelObject: Model | undefined = undefined
+  getModelBy: (modelId: string) => {
+    // We only have one model - gpt-4o-mini
+    return modelId === 'gpt-4o-mini' ? GPT_4O_MINI_MODEL : undefined
+  },
 
-        if (provider && provider.models) {
-          modelObject = provider.models.find((model) => model.id === modelName)
-        }
+  getProvider: () => {
+    // Dynamically construct provider from current endpoint and auth state
+    const endpoint = useSalesboxEndpoint.getState().endpoint
+    const token = useSalesboxAuth.getState().token
 
-        // Update state with provider name and model object
-        set({
-          selectedProvider: providerName,
-          selectedModel: modelObject || null,
-        })
+    const provider = {
+      active: true,
+      api_key: token || '',
+      base_url: `${endpoint}/api/openai/v1`,
+      provider: 'salesbox',
+      explore_models_url: 'https://platform.openai.com/docs/models',
+      settings: [
+        {
+          key: 'api-key',
+          title: 'JWT Token',
+          description:
+            'Authentication token automatically managed from your Salesbox.AI session.',
+          controller_type: 'input',
+          controller_props: {
+            placeholder: 'Auto-filled from login',
+            value: token || '',
+            type: 'password',
+            input_actions: ['unobscure', 'copy'],
+          },
+        },
+        {
+          key: 'base-url',
+          title: 'Base URL',
+          description: 'Salesbox.AI OpenAI-compatible API endpoint.',
+          controller_type: 'input',
+          controller_props: {
+            placeholder: endpoint,
+            value: endpoint,
+          },
+        },
+      ],
+      models: [GPT_4O_MINI_MODEL],
+    } as ModelProvider
 
-        return modelObject
-      },
-      deleteModel: (modelId: string) => {
-        set((state) => {
-          // Ensure deletedModels is always an array
-          const currentDeletedModels = Array.isArray(state.deletedModels)
-            ? state.deletedModels
-            : []
+    return provider
+  },
 
-          return {
-            providers: state.providers.map((provider) => {
-              const models = provider.models.filter(
-                (model) => model.id !== modelId
-              )
-              return {
-                ...provider,
-                models,
-              }
-            }),
-            deletedModels: [...currentDeletedModels, modelId],
-          }
-        })
-      },
-      addProvider: (provider: ModelProvider) => {
-        set((state) => ({
-          providers: [...state.providers, provider],
-        }))
-      },
-      deleteProvider: (providerName: string) => {
-        set((state) => ({
-          providers: state.providers.filter(
-            (provider) => provider.provider !== providerName
-          ),
-        }))
-      },
-    }),
-    {
-      name: localStorageKey.modelProvider,
-      storage: createJSONStorage(() => localStorage),
-      migrate: (persistedState: unknown, version: number) => {
-        const state = persistedState as ModelProviderState & {
-          providers: Array<
-            ModelProvider & {
-              models: Array<
-                Model & {
-                  settings?: Record<string, unknown> & {
-                    chatTemplate?: string
-                    chat_template?: string
-                  }
-                }
-              >
-            }
-          >
-        }
+  getProviderByName: (_providerName?: string) => {
+    // Always return salesbox provider, ignore providerName
+    return get().getProvider()
+  },
 
-        if (version === 0 && state?.providers) {
-          state.providers.forEach((provider) => {
-            // Update cont_batching description for llamacpp provider
-            if (provider.provider === 'llamacpp' && provider.settings) {
-              const contBatchingSetting = provider.settings.find(
-                (s) => s.key === 'cont_batching'
-              )
-              if (contBatchingSetting) {
-                contBatchingSetting.description =
-                  'Enable continuous batching (a.k.a dynamic batching) for concurrent requests.'
-              }
-            }
+  selectModelProvider: (_providerName?: string, _modelName?: string) => {
+    // Always return gpt-4o-mini, ignore parameters
+    set({ selectedModel: GPT_4O_MINI_MODEL })
+    return GPT_4O_MINI_MODEL
+  },
 
-            // Migrate model settings
-            if (provider.models && provider.provider === 'llamacpp') {
-              provider.models.forEach((model) => {
-                if (!model.settings) model.settings = {}
+  // Legacy methods - no-ops for compatibility
+  setProviders: (_providers: ModelProvider[]) => {
+    // No-op: we don't store providers anymore
+  },
 
-                // Migrate chatTemplate key to chat_template
-                if (model.settings.chatTemplate) {
-                  model.settings.chat_template = model.settings.chatTemplate
-                  delete model.settings.chatTemplate
-                }
+  updateProvider: (_providerName: string, _data: Partial<ModelProvider>) => {
+    // No-op: provider is dynamically constructed
+  },
 
-                // Add missing settings with defaults
-                if (!model.settings.chat_template) {
-                  model.settings.chat_template = {
-                    ...modelSettings.chatTemplate,
-                    controller_props: {
-                      ...modelSettings.chatTemplate.controller_props,
-                    },
-                  }
-                }
+  deleteModel: (_modelId: string) => {
+    // No-op: we only have one model
+  },
 
-                if (!model.settings.override_tensor_buffer_t) {
-                  model.settings.override_tensor_buffer_t = {
-                    ...modelSettings.override_tensor_buffer_t,
-                    controller_props: {
-                      ...modelSettings.override_tensor_buffer_t
-                        .controller_props,
-                    },
-                  }
-                }
-              })
-            }
-          })
-        }
+  addProvider: (_provider: ModelProvider) => {
+    // No-op: we only have salesbox provider
+  },
 
-        return state
-      },
-      version: 1,
-    }
-  )
-)
+  deleteProvider: (_providerName: string) => {
+    // No-op: we only have salesbox provider
+  },
+}))

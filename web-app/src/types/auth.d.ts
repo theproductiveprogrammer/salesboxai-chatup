@@ -1,7 +1,7 @@
 // Authentication-related type definitions
 
 // JWT token payload structure based on TokenProviderLogic.java
-interface JWTPayload {
+export interface JWTPayload {
   iat: number // Issued at timestamp
   exp: number // Expiry timestamp
   sub: string // Subject (user_<id>)
@@ -13,19 +13,19 @@ interface JWTPayload {
 }
 
 // User credentials for login
-interface LoginCredentials {
+export interface LoginCredentials {
   username: string
   password: string
 }
 
 // Response from /user-token/login endpoint
-interface TokenResponse {
+export interface TokenResponse {
   access_token: string | null
   error: string | null
 }
 
 // User information extracted from JWT
-interface AuthUser {
+export interface AuthUser {
   id: number
   tenantId: number
   name: string
@@ -34,7 +34,7 @@ interface AuthUser {
 }
 
 // Authentication state
-interface AuthState {
+export interface AuthState {
   token: string | null
   user: AuthUser | null
   isAuthenticated: boolean
@@ -47,7 +47,7 @@ interface AuthState {
 }
 
 // Authentication actions
-interface AuthActions {
+export interface AuthActions {
   login: (username: string, password: string) => Promise<boolean>
   logout: () => void
   setToken: (token: string) => void
@@ -57,4 +57,4 @@ interface AuthActions {
 }
 
 // Combined auth store type
-type AuthStore = AuthState & AuthActions
+export type AuthStore = AuthState & AuthActions

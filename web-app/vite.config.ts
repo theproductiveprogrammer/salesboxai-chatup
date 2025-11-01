@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       TanStackRouterVite({
         target: 'react',
-        autoCodeSplitting: true,
+        autoCodeSplitting: false,
         routeFileIgnorePattern: '.((test).ts)|test-page',
       }),
       react(),

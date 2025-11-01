@@ -7,7 +7,9 @@ import { Progress } from '@/components/ui/progress'
 import { useDownloadStore } from '@/hooks/useDownloadStore'
 import { useLeftPanel } from '@/hooks/useLeftPanel'
 import { useAppUpdater } from '@/hooks/useAppUpdater'
+import { useModelProvider } from '@/hooks/useModelProvider'
 import { abortDownload } from '@/services/models'
+import { getProviders } from '@/services/providers'
 import { DownloadEvent, DownloadState, events, AppEvent } from '@janhq/core'
 import { IconDownload, IconX } from '@tabler/icons-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -26,6 +28,7 @@ export function DownloadManagement() {
     removeLocalDownloadingModel,
   } = useDownloadStore()
   const { updateState } = useAppUpdater()
+  const { setProviders } = useModelProvider()
 
   const [appUpdateState, setAppUpdateState] = useState({
     isDownloading: false,
@@ -242,6 +245,12 @@ export function DownloadManagement() {
 
       removeDownload(state.modelId)
       removeLocalDownloadingModel(state.modelId)
+
+      // Refresh providers to ensure the newly downloaded model is discovered
+      // This provides a backup mechanism in case the onModelImported event is missed
+      console.debug('Refreshing providers after download success...')
+      await getProviders().then(setProviders)
+
       toast.success(t('common:toast.downloadAndVerificationComplete.title'), {
         id: 'download-complete',
         description: t(
@@ -252,7 +261,7 @@ export function DownloadManagement() {
         ),
       })
     },
-    [removeDownload, removeLocalDownloadingModel, t]
+    [removeDownload, removeLocalDownloadingModel, setProviders, t]
   )
 
   useEffect(() => {

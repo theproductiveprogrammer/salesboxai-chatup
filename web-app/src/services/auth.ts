@@ -1,7 +1,13 @@
-import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
 import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 import { isTokenExpiringSoon } from '@/lib/jwt'
 import type { TokenResponse } from '@/types/auth'
+
+// Use native fetch for all URLs to avoid Tauri security restrictions in release mode
+// Native fetch works for both localhost and remote URLs without permission issues
+const smartFetch = (url: string, options?: RequestInit) => {
+  console.log('[Auth] Using native fetch for URL:', url)
+  return fetch(url, options)
+}
 
 /**
  * Authentication service for SalesBox.AI
@@ -31,19 +37,25 @@ export async function loginWithCredentials(
   }
 
   try {
-    console.log('[Auth] Attempting login to:', `${baseEndpoint}/user-token/login`)
+    const loginUrl = `${baseEndpoint}/user-token/login`
+    console.log('[Auth] Attempting login to:', loginUrl)
+    console.log('[Auth] Base endpoint:', baseEndpoint)
+    console.log('[Auth] Username:', username)
 
-    const response = await fetchTauri(`${baseEndpoint}/user-token/login`, {
+    const requestBody = {
+      username,
+      password,
+    }
+
+    const response = await smartFetch(loginUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        username,
-        password,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
+    console.log('[Auth] Response received')
     console.log('[Auth] Response status:', response.status, response.statusText)
 
     if (!response.ok) {

@@ -1,107 +1,19 @@
-import { models as providerModels } from 'token.js'
 import { predefinedProviders } from '@/consts/providers'
-import { EngineManager, SettingComponentProps } from '@janhq/core'
-import { ModelCapabilities } from '@/types/models'
-import { modelSettings } from '@/lib/predefined'
-import { fetchModels, isToolSupported } from './models'
+import { SettingComponentProps } from '@janhq/core'
 import { ExtensionManager } from '@/lib/extension'
 import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
 
 export const getProviders = async (): Promise<ModelProvider[]> => {
-  const builtinProviders = predefinedProviders.map((provider) => {
-    let models = provider.models as Model[]
-    if (Object.keys(providerModels).includes(provider.provider)) {
-      const builtInModels = providerModels[
-        provider.provider as unknown as keyof typeof providerModels
-      ].models as unknown as string[]
+  // Only return salesbox provider - skip all runtime providers (llamacpp, etc.)
+  const salesboxProvider = predefinedProviders.find((p) => p.provider === 'salesbox')
 
-      if (Array.isArray(builtInModels))
-        models = builtInModels.map((model) => {
-          const modelManifest = models.find((e) => e.id === model)
-          // TODO: Check chat_template for tool call support
-          const capabilities = [
-            ModelCapabilities.COMPLETION,
-            (
-              providerModels[
-                provider.provider as unknown as keyof typeof providerModels
-              ].supportsToolCalls as unknown as string[]
-            ).includes(model)
-              ? ModelCapabilities.TOOLS
-              : undefined,
-          ].filter(Boolean) as string[]
-          return {
-            ...(modelManifest ?? { id: model, name: model }),
-            capabilities,
-          } as Model
-        })
-    }
-
-    return {
-      ...provider,
-      models,
-    }
-  })
-
-  const runtimeProviders: ModelProvider[] = []
-  for (const [providerName, value] of EngineManager.instance().engines) {
-    const models = (await fetchModels()) ?? []
-    const provider: ModelProvider = {
-      active: false,
-      persist: true,
-      provider: providerName,
-      base_url:
-        'inferenceUrl' in value
-          ? (value.inferenceUrl as string).replace('/chat/completions', '')
-          : '',
-      settings: (await value.getSettings()).map((setting) => {
-        return {
-          key: setting.key,
-          title: setting.title,
-          description: setting.description,
-          controller_type: setting.controllerType as unknown,
-          controller_props: setting.controllerProps as unknown,
-        }
-      }) as ProviderSetting[],
-      models: await Promise.all(
-        models.map(
-          async (model) =>
-            ({
-              id: model.id,
-              model: model.id,
-              name: model.name,
-              description: model.description,
-              capabilities:
-                'capabilities' in model
-                  ? (model.capabilities as string[])
-                  : (await isToolSupported(model.id))
-                    ? [ModelCapabilities.TOOLS]
-                    : [],
-              provider: providerName,
-              settings: Object.values(modelSettings).reduce(
-                (acc, setting) => {
-                  let value = setting.controller_props.value
-                  if (setting.key === 'ctx_len') {
-                    value = 8192 // Default context length for Llama.cpp models
-                  }
-                  acc[setting.key] = {
-                    ...setting,
-                    controller_props: {
-                      ...setting.controller_props,
-                      value: value,
-                    },
-                  }
-                  return acc
-                },
-                {} as Record<string, ProviderSetting>
-              ),
-            }) as Model
-        )
-      ),
-    }
-    runtimeProviders.push(provider)
+  if (!salesboxProvider) {
+    console.error('Salesbox provider not found in predefined providers!')
+    return []
   }
 
-  return runtimeProviders.concat(builtinProviders as ModelProvider[])
+  // Return only salesbox provider with its predefined models
+  return [salesboxProvider as ModelProvider]
 }
 
 /**

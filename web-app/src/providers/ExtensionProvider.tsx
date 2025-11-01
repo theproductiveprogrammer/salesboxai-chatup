@@ -16,19 +16,23 @@ export function ExtensionProvider({ children }: PropsWithChildren) {
     window.core.engineManager = new EngineManager()
     window.core.modelManager = new ModelManager()
 
-    // Register all active extensions
-    await ExtensionManager.getInstance()
-      .registerActive()
-      .then(() => ExtensionManager.getInstance().load())
-      .then(() => setFinishedSetup(true))
+    // DISABLED: Don't load llamacpp or other extensions - we only use salesbox provider
+    // await ExtensionManager.getInstance()
+    //   .registerActive()
+    //   .then(() => ExtensionManager.getInstance().load())
+    //   .then(() => setFinishedSetup(true))
+
+    // Just mark setup as finished immediately
+    setFinishedSetup(true)
   }, [])
 
   useEffect(() => {
     setupExtensions()
 
-    return () => {
-      ExtensionManager.getInstance().unload()
-    }
+    // DISABLED: No extensions to unload
+    // return () => {
+    //   ExtensionManager.getInstance().unload()
+    // }
   }, [setupExtensions])
 
   return <>{finishedSetup && children}</>

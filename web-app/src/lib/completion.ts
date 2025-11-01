@@ -23,6 +23,7 @@ import {
   TokenJS,
   ConfigOptions,
 } from 'token.js'
+import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 
 // Extended config options to include custom fetch function
 type ExtendedConfigOptions = ConfigOptions & {
@@ -163,19 +164,51 @@ export const sendCompletion = async (
   stream: boolean = true,
   params: Record<string, object> = {}
 ): Promise<ChatCompletionResponse | undefined> => {
-  if (!thread?.model?.id || !provider) return undefined
+  console.log('[sendCompletion] Called with:', {
+    threadId: thread?.id,
+    modelId: thread?.model?.id,
+    provider: provider?.provider,
+    baseURL: provider?.base_url,
+    messagesCount: messages?.length,
+    toolsCount: tools?.length,
+    stream
+  })
+
+  if (!thread?.model?.id || !provider) {
+    console.log('[sendCompletion] Missing thread model or provider, returning undefined')
+    return undefined
+  }
 
   let providerName = provider.provider as unknown as keyof typeof models
 
   if (!Object.keys(models).some((key) => key === providerName))
     providerName = 'openai-compatible'
 
+  console.log('[sendCompletion] Using providerName:', providerName)
+
+  const useTauriFetch = providerName === 'openai-compatible' && provider.provider !== 'salesbox'
+  console.log('[sendCompletion] Will use Tauri fetch?', useTauriFetch, 'Provider:', provider.provider)
+
   const tokenJS = new TokenJS({
-    apiKey: provider.api_key ?? (await invoke('app_token')),
+    apiKey:
+      provider.provider === 'salesbox'
+        ? useSalesboxAuth.getState().token || ''
+        : provider.api_key ?? (await invoke('app_token')),
     // TODO: Retrieve from extension settings
     baseURL: provider.base_url,
-    // Use Tauri's fetch to avoid CORS issues only for openai-compatible provider
-    ...(providerName === 'openai-compatible' && { fetch: fetchTauri }),
+    // Use Tauri's fetch to avoid CORS issues ONLY for openai-compatible provider
+    // DO NOT use it for salesbox because it breaks streaming
+    ...(useTauriFetch && {
+      fetch: fetchTauri,
+    }),
+    // Salesbox.AI JWT authentication and headers
+    ...(provider.provider === 'salesbox' && {
+      defaultHeaders: {
+        Authorization: `Bearer ${useSalesboxAuth.getState().token}`,
+        Accept: 'text/event-stream',
+        'Content-Type': 'application/json',
+      },
+    }),
     // OpenRouter identification headers for Salesbox.AI Agent
     // ref: https://openrouter.ai/docs/api-reference/overview#headers
     ...(provider.provider === 'openrouter' && {
@@ -186,11 +219,14 @@ export const sendCompletion = async (
     }),
   } as ExtendedConfigOptions)
 
+  // Skip extendModelList for llamacpp and salesbox providers
+  // salesbox uses predefined models and doesn't need dynamic model extension
   if (
     thread.model.id &&
     !Object.values(models[providerName]).flat().includes(thread.model.id) &&
     !tokenJS.extendedModelExist(providerName as any, thread.model.id) &&
-    provider.provider !== 'llamacpp'
+    provider.provider !== 'llamacpp' &&
+    provider.provider !== 'salesbox'
   ) {
     try {
       tokenJS.extendModelList(
@@ -210,8 +246,20 @@ export const sendCompletion = async (
 
   const engine = ExtensionManager.getInstance().getEngine(provider.provider)
 
-  const completion = engine
-    ? await engine.chat(
+  console.log('[sendCompletion] About to call API. Engine:', !!engine, 'Stream:', stream)
+  console.log('[sendCompletion] Request details:', {
+    model: thread.model?.id,
+    provider: providerName,
+    messagesCount: messages.length,
+    firstMessage: messages[0],
+    lastMessage: messages[messages.length - 1]
+  })
+
+  let completion
+  try {
+    if (engine) {
+      console.log('[sendCompletion] Using engine.chat')
+      completion = await engine.chat(
         {
           messages: messages as chatCompletionRequestMessage[],
           model: thread.model?.id,
@@ -222,11 +270,20 @@ export const sendCompletion = async (
         },
         abortController
       )
-    : stream
-      ? await tokenJS.chat.completions.create(
+    } else if (stream) {
+      console.log('[sendCompletion] Using tokenJS streaming API call')
+      console.log('[sendCompletion] Request payload:', {
+        stream: true,
+        provider: providerName,
+        model: thread.model?.id,
+        messagesCount: messages.length,
+        toolsCount: tools.length
+      })
+
+      try {
+        completion = await tokenJS.chat.completions.create(
           {
             stream: true,
-
             provider: providerName as any,
             model: thread.model?.id,
             messages,
@@ -238,15 +295,33 @@ export const sendCompletion = async (
             signal: abortController.signal,
           }
         )
-      : await tokenJS.chat.completions.create({
-          stream: false,
-          provider: providerName,
-          model: thread.model?.id,
-          messages,
-          tools: normalizeTools(tools),
-          tool_choice: tools.length ? 'auto' : undefined,
-          ...params,
+        console.log('[sendCompletion] TokenJS returned:', {
+          type: typeof completion,
+          constructor: completion?.constructor?.name,
+          isIterable: completion && typeof completion[Symbol.asyncIterator] === 'function'
         })
+      } catch (error) {
+        console.error('[sendCompletion] TokenJS create() threw error:', error)
+        throw error
+      }
+    } else {
+      console.log('[sendCompletion] Using tokenJS non-streaming API call')
+      completion = await tokenJS.chat.completions.create({
+        stream: false,
+        provider: providerName,
+        model: thread.model?.id,
+        messages,
+        tools: normalizeTools(tools),
+        tool_choice: tools.length ? 'auto' : undefined,
+        ...params,
+      })
+    }
+    console.log('[sendCompletion] API call completed, received completion:', completion)
+  } catch (error) {
+    console.error('[sendCompletion] API call failed with error:', error)
+    throw error
+  }
+
   return completion
 }
 

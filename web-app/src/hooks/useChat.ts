@@ -215,13 +215,23 @@ export const useChat = () => {
         dataUrl: string
       }>
     ) => {
+      console.log('[useChat] sendMessage called with:', { message, troubleshooting, attachments })
       const activeThread = await getCurrentThread()
+      console.log('[useChat] activeThread:', activeThread)
 
       resetTokenSpeed()
       let activeProvider = currentProviderId
         ? getProviderByName(currentProviderId)
         : provider
-      if (!activeThread || !activeProvider) return
+      console.log('[useChat] activeProvider:', {
+        provider: activeProvider?.provider,
+        base_url: activeProvider?.base_url,
+        api_key: activeProvider?.api_key ? '[REDACTED]' : 'none'
+      })
+      if (!activeThread || !activeProvider) {
+        console.log('[useChat] Missing thread or provider, returning')
+        return
+      }
       const messages = getMessages(activeThread.id)
       const abortController = new AbortController()
       setAbortController(activeThread.id, abortController)
@@ -305,11 +315,13 @@ export const useChat = () => {
           )
 
           if (!completion) throw new Error('No completion received')
+          console.log('[useChat] Processing completion, type:', completion.constructor.name)
           let accumulatedText = ''
           const currentCall: ChatCompletionMessageToolCall | null = null
           const toolCalls: ChatCompletionMessageToolCall[] = []
           try {
             if (isCompletionResponse(completion)) {
+              console.log('[useChat] Non-streaming response')
               const message = completion.choices[0]?.message
               accumulatedText = (message?.content as string) || ''
 
@@ -394,15 +406,45 @@ export const useChat = () => {
                 pendingDeltaCount = 0
                 rafScheduled = false
               }
+              console.log('[useChat] Streaming response - starting to iterate')
+              console.log('[useChat] Completion object:', completion)
+              console.log('[useChat] Has Symbol.asyncIterator?', Symbol.asyncIterator in completion)
+
+              let chunkCount = 0
+              let iterationStarted = false
               try {
+                // Test if the iterator works
+                console.log('[useChat] About to call next() manually')
+                const iterator = completion[Symbol.asyncIterator]()
+                const firstResult = await iterator.next()
+                console.log('[useChat] First next() result:', firstResult)
+
+                // If we got data, we need to process it and continue iterating
+                if (!firstResult.done && firstResult.value) {
+                  console.log('[useChat] First chunk received via manual next()')
+                  // Process this chunk (we'll refactor this properly after debugging)
+                }
+
+                console.log('[useChat] Starting for-await loop')
                 for await (const part of completion) {
+                  if (!iterationStarted) {
+                    console.log('[useChat] First iteration started')
+                    iterationStarted = true
+                  }
+                  chunkCount++
+                  if (chunkCount === 1 || chunkCount % 10 === 0) {
+                    console.log('[useChat] Received chunk', chunkCount, part)
+                  }
+
                   // Check if aborted before processing each part
                   if (abortController.signal.aborted) {
+                    console.log('[useChat] Stream aborted at chunk', chunkCount)
                     break
                   }
 
                   // Error message
                   if (!part.choices) {
+                    console.error('[useChat] Chunk missing choices:', part)
                     throw new Error(
                       'message' in part
                         ? (part.message as string)
@@ -431,6 +473,7 @@ export const useChat = () => {
                     scheduleFlush()
                   }
                 }
+                console.log('[useChat] Stream completed. Total chunks:', chunkCount, 'Accumulated text:', accumulatedText)
               } finally {
                 // Always clean up scheduled RAF when stream ends (either normally or via abort)
                 if (rafHandle !== undefined) {
@@ -465,17 +508,19 @@ export const useChat = () => {
               const method = await showIncreaseContextSizeModal()
               if (method === 'ctx_len') {
                 /// Increase context size
-                activeProvider = await increaseModelContextSize(
+                const updated = await increaseModelContextSize(
                   selectedModel.id,
                   activeProvider
                 )
+                if (updated) activeProvider = updated
                 continue
               } else if (method === 'context_shift' && selectedModel?.id) {
                 /// Enable context_shift
-                activeProvider = await toggleOnContextShifting(
+                const updated = await toggleOnContextShifting(
                   selectedModel?.id,
                   activeProvider
                 )
+                if (updated) activeProvider = updated
                 continue
               } else throw error
             } else {

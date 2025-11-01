@@ -1,6 +1,8 @@
 // JWT token utilities for client-side token handling
 // Note: We only decode/validate on client side; server does cryptographic verification
 
+import type { JWTPayload, AuthUser } from '../types/auth'
+
 /**
  * Decode a JWT token to extract the payload
  */
@@ -125,7 +127,7 @@ export function isValidTokenStructure(token: string): boolean {
   const requiredFields: (keyof JWTPayload)[] = ['id', 'tenant_id', 'username', 'exp']
   for (const field of requiredFields) {
     if (!(field in payload)) {
-      console.error(`Missing required field in JWT: ${field}`)
+      console.error(`Missing required field in JWT: ${String(field)}`)
       return false
     }
   }

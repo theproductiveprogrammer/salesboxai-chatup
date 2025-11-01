@@ -29,7 +29,6 @@ import { useModelProvider } from '@/hooks/useModelProvider'
 import { useAppState } from '@/hooks/useAppState'
 import { MovingBorder } from './MovingBorder'
 import { useChat } from '@/hooks/useChat'
-import DropdownModelProvider from '@/containers/DropdownModelProvider'
 import { ModelLoader } from '@/containers/loaders/ModelLoader'
 import DropdownToolsAvailable from '@/containers/DropdownToolsAvailable'
 import { getConnectedServers } from '@/services/mcp'
@@ -131,20 +130,29 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
   const hasActiveMCPServers = connectedServers.length > 0 || tools.length > 0
 
   const handleSendMesage = (prompt: string) => {
+    console.log('[ChatInput] handleSendMesage called with prompt:', prompt)
+    console.log('[ChatInput] selectedModel:', selectedModel)
+    console.log('[ChatInput] selectedProvider:', selectedProvider)
+    console.log('[ChatInput] uploadedFiles:', uploadedFiles)
+
     if (!selectedModel) {
+      console.log('[ChatInput] No model selected, returning')
       setMessage('Please select a model to start chatting.')
       return
     }
     if (!prompt.trim() && uploadedFiles.length === 0) {
+      console.log('[ChatInput] Empty prompt and no files, returning')
       return
     }
     setMessage('')
+    console.log('[ChatInput] Calling sendMessage...')
     sendMessage(
       prompt,
       true,
       uploadedFiles.length > 0 ? uploadedFiles : undefined
     )
     setUploadedFiles([])
+    console.log('[ChatInput] handleSendMesage completed')
   }
 
   useEffect(() => {
@@ -594,14 +602,11 @@ const ChatInput = ({ model, className, initialMessage }: ChatInputProps) => {
                   streamingContent && 'opacity-50 pointer-events-none'
                 )}
               >
-                {model?.provider === 'llamacpp' && loadingModel ? (
-                  <ModelLoader />
-                ) : (
-                  <DropdownModelProvider
-                    model={model}
-                    useLastUsedModel={initialMessage}
-                  />
-                )}
+                <div className="flex items-center gap-2 px-3 py-1.5">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Salesbox.AI Agent
+                  </span>
+                </div>
                 {/* File attachment - show only for models with mmproj */}
                 {hasMmproj && (
                   <TooltipProvider>

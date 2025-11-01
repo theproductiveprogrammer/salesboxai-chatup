@@ -23,17 +23,52 @@
     "deep-link:default",
     "core:webview:allow-create-webview-window",
     "opener:allow-open-url",
+    "http:default",
     {
-      "identifier": "http:default",
+      "identifier": "http:allow-fetch",
       "allow": [
         {
-          "url": "https://*:*"
+          "url": "http://localhost:6991/*"
         },
         {
-          "url": "http://*:*"
+          "url": "https://api.github.com/*"
+        },
+        {
+          "url": "https://github.com/*"
+        },
+        {
+          "url": "https://agent.salesbox.ai/*"
+        },
+        {
+          "url": "https://dev-agent.salesbox.ai/*"
+        },
+        {
+          "url": "https://uat-agent.salesbox.ai/*"
         }
-      ],
-      "deny": []
+      ]
+    },
+    {
+      "identifier": "http:allow-fetch-send",
+      "allow": [
+        {
+          "url": "http://localhost:6991/*"
+        },
+        {
+          "url": "https://api.github.com/*"
+        },
+        {
+          "url": "https://github.com/*"
+        },
+        {
+          "url": "https://agent.salesbox.ai/*"
+        },
+        {
+          "url": "https://dev-agent.salesbox.ai/*"
+        },
+        {
+          "url": "https://uat-agent.salesbox.ai/*"
+        }
+      ]
     },
     {
       "identifier": "shell:allow-execute",

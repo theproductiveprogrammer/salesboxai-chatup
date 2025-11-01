@@ -4,13 +4,28 @@ import { stopAllModels } from './models'
 
 /**
  * @description This function is used to reset the app to its factory settings.
- * It will remove all the data from the app, including the data folder and local storage.
+ * It will remove all the data from the app, including the data folder and browser storage.
  * @returns {Promise<void>}
  */
 export const factoryReset = async () => {
   // Kill background processes and remove data folder
   await stopAllModels()
+
+  // Clear all browser storage
   window.localStorage.clear()
+  window.sessionStorage.clear()
+
+  // Clear IndexedDB
+  if (window.indexedDB) {
+    const databases = await window.indexedDB.databases()
+    for (const db of databases) {
+      if (db.name) {
+        window.indexedDB.deleteDatabase(db.name)
+      }
+    }
+  }
+
+  // Call Tauri factory_reset command to clear Application Support folder and restart
   await invoke('factory_reset')
 }
 

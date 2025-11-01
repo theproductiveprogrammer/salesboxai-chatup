@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { invoke } from '@tauri-apps/api/core'
 import { decodeJWT, extractUserFromJWT, isTokenExpired, isValidTokenStructure } from '../lib/jwt'
+import type { AuthStore } from '../types/auth'
 
 // Sync credentials to Tauri secure storage
 const syncCredentialsToTauri = async (username: string, password: string) => {
@@ -73,6 +74,16 @@ export const useSalesboxAuth = create<AuthStore>()(
             // Sync to Tauri secure storage
             await syncCredentialsToTauri(username, password)
 
+            // Ensure endpoint is synced to Tauri store before reinitializing MCP
+            try {
+              const { useSalesboxEndpoint } = await import('./useSalesboxEndpoint')
+              const { endpoint } = useSalesboxEndpoint.getState()
+              await invoke('sync_salesbox_endpoint', { endpoint })
+              console.log('[Auth] Endpoint synced to Tauri store:', endpoint)
+            } catch (error) {
+              console.warn('[Auth] Failed to sync endpoint:', error)
+            }
+
             // Reinitialize MCP servers (download from new endpoint + start builtin)
             try {
               await invoke('reinitialize_mcp_servers')
@@ -80,6 +91,18 @@ export const useSalesboxAuth = create<AuthStore>()(
             } catch (error) {
               console.warn('[Auth] Failed to reinitialize MCP servers:', error)
               // Non-fatal error - don't block login
+            }
+
+            // Auto-populate Salesbox provider with JWT token
+            try {
+              const { useModelProvider } = await import('./useModelProvider')
+              const { updateProvider } = useModelProvider.getState()
+              updateProvider('salesbox', {
+                api_key: result.token,
+              })
+              console.log('[Auth] Salesbox provider updated with JWT token')
+            } catch (error) {
+              console.warn('[Auth] Failed to update Salesbox provider:', error)
             }
 
             set({
@@ -111,9 +134,21 @@ export const useSalesboxAuth = create<AuthStore>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
         // Clear credentials from Tauri
         clearCredentialsFromTauri()
+
+        // Clear Salesbox provider token
+        try {
+          const { useModelProvider } = await import('./useModelProvider')
+          const { updateProvider } = useModelProvider.getState()
+          updateProvider('salesbox', {
+            api_key: '',
+          })
+          console.log('[Auth] Salesbox provider token cleared')
+        } catch (error) {
+          console.warn('[Auth] Failed to clear Salesbox provider:', error)
+        }
 
         set({
           token: null,

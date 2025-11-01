@@ -341,4 +341,67 @@ export const predefinedProviders = [
       },
     ],
   },
+  {
+    active: true,
+    api_key: '',
+    base_url: 'http://localhost:6991/api/openai/v1',
+    provider: 'salesbox',
+    explore_models_url: 'https://platform.openai.com/docs/models',
+    settings: [
+      {
+        key: 'api-key',
+        title: 'JWT Token',
+        description:
+          'Authentication token automatically managed from your Salesbox.AI session. This is populated when you log in and cleared when you log out.',
+        controller_type: 'input',
+        controller_props: {
+          placeholder: 'Auto-filled from login',
+          value: '',
+          type: 'password',
+          input_actions: ['unobscure', 'copy'],
+        },
+      },
+      {
+        key: 'base-url',
+        title: 'Base URL',
+        description:
+          'Salesbox.AI OpenAI-compatible API endpoint. Change this to point to your production server or keep localhost for development.',
+        controller_type: 'input',
+        controller_props: {
+          placeholder: 'http://localhost:6991/api/openai/v1',
+          value: 'http://localhost:6991/api/openai/v1',
+        },
+      },
+    ],
+    models: [
+      {
+        id: 'gpt-4o',
+        name: 'GPT-4o',
+        version: '1.0',
+        description: 'OpenAI GPT-4o via Salesbox.AI proxy',
+        capabilities: ['completion', 'tools'],
+      },
+      {
+        id: 'gpt-4o-mini',
+        name: 'GPT-4o Mini',
+        version: '1.0',
+        description: 'OpenAI GPT-4o Mini via Salesbox.AI proxy',
+        capabilities: ['completion', 'tools'],
+      },
+      {
+        id: 'gpt-4',
+        name: 'GPT-4',
+        version: '1.0',
+        description: 'OpenAI GPT-4 via Salesbox.AI proxy',
+        capabilities: ['completion', 'tools'],
+      },
+      {
+        id: 'gpt-3.5-turbo',
+        name: 'GPT-3.5 Turbo',
+        version: '1.0',
+        description: 'OpenAI GPT-3.5 Turbo via Salesbox.AI proxy',
+        capabilities: ['completion'],
+      },
+    ],
+  },
 ]
