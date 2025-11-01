@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Briefcase, GraduationCap, MapPin, Users, FileText, ChevronDown, ChevronUp, ThumbsUp, MessageCircle, Share2, Repeat2, ExternalLink } from 'lucide-react'
 
 interface LinkedInProfileDisplayProps {

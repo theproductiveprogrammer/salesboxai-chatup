@@ -2,8 +2,6 @@ import { useMessages } from '@/hooks/useMessages'
 import { useModelProvider } from '@/hooks/useModelProvider'
 
 import { useAppUpdater } from '@/hooks/useAppUpdater'
-import { fetchMessages } from '@/services/messages'
-import { fetchThreads } from '@/services/threads'
 import { useEffect } from 'react'
 import { useMCPServers } from '@/hooks/useMCPServers'
 import { getMCPConfig } from '@/services/mcp'
@@ -23,11 +21,11 @@ export function DataProvider() {
   // No need to load or set providers
   const { selectModelProvider } = useModelProvider()
 
-  const { setMessages } = useMessages()
+  useMessages()
   const { checkForUpdate } = useAppUpdater()
   const { setServers } = useMCPServers()
   const { setAssistants, initializeWithLastUsed } = useAssistant()
-  const { setThreads } = useThreads()
+  useThreads()
   const navigate = useNavigate()
 
   // Local API Server hooks - TEMP: kept for when we re-enable

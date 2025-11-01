@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { ulid } from 'ulidx'
-import { createThread, deleteThread, updateThread } from '@/services/threads'
+import { deleteThread, updateThread } from '@/services/threads'
 import { Fzf } from 'fzf'
 import { sep } from '@tauri-apps/api/path'
 
@@ -27,7 +27,7 @@ type ThreadState = {
   getFilteredThreads: (searchTerm: string) => Thread[]
   updateCurrentThreadAssistant: (assistant: Assistant) => void
   updateThreadTimestamp: (threadId: string) => void
-  searchIndex: Fzf<Thread> | null
+  searchIndex: Fzf<any> | null
 }
 
 export const useThreads = create<ThreadState>()(
@@ -66,7 +66,7 @@ export const useThreads = create<ThreadState>()(
     )
     set({
       threads: threadMap,
-      searchIndex: new Fzf<Thread>(Object.values(threadMap), {
+      searchIndex: new Fzf(Object.values(threadMap), {
         selector: (item: Thread) => item.title,
       }),
     })
@@ -82,17 +82,17 @@ export const useThreads = create<ThreadState>()(
 
     let currentIndex = searchIndex
     if (!currentIndex?.find) {
-      currentIndex = new Fzf<Thread>(Object.values(threads), {
+      currentIndex = new Fzf(Object.values(threads), {
         selector: (item: Thread) => item.title,
       })
       set({ searchIndex: currentIndex })
     }
 
     // Use the index to search and return matching threads
-    const fzfResults = currentIndex.find(searchTerm)
+    const fzfResults = currentIndex!.find(searchTerm)
     return fzfResults.map(
-      (result: { item: Thread; positions: Set<number> }) => {
-        const thread = result.item // Fzf stores the original item here
+      (result: any) => {
+        const thread = result.item as Thread // Fzf stores the original item here
 
         return {
           ...thread,
@@ -126,7 +126,7 @@ export const useThreads = create<ThreadState>()(
       deleteThread(threadId)
       return {
         threads: remainingThreads,
-        searchIndex: new Fzf<Thread>(Object.values(remainingThreads), {
+        searchIndex: new Fzf(Object.values(remainingThreads), {
           selector: (item: Thread) => item.title,
         }),
       }
@@ -158,7 +158,7 @@ export const useThreads = create<ThreadState>()(
 
       return {
         threads: remainingThreads,
-        searchIndex: new Fzf<Thread>(Object.values(remainingThreads), {
+        searchIndex: new Fzf(Object.values(remainingThreads), {
           selector: (item: Thread) => item.title,
         }),
       }
@@ -276,7 +276,7 @@ export const useThreads = create<ThreadState>()(
       const newThreads = { ...state.threads, [threadId]: updatedThread }
       return {
         threads: newThreads,
-        searchIndex: new Fzf<Thread>(Object.values(newThreads), {
+        searchIndex: new Fzf(Object.values(newThreads), {
           selector: (item: Thread) => item.title,
         }),
       }
@@ -306,7 +306,7 @@ export const useThreads = create<ThreadState>()(
 
       return {
         threads: updatedThreads,
-        searchIndex: new Fzf<Thread>(Object.values(updatedThreads), {
+        searchIndex: new Fzf(Object.values(updatedThreads), {
           selector: (item: Thread) => item.title,
         }),
       }

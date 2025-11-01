@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { ThreadMessage } from '@janhq/core'
 import {
-  createMessage,
   deleteMessage as deleteMessageExt,
 } from '@/services/messages'
 import { useAssistant } from './useAssistant'

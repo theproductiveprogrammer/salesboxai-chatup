@@ -29,7 +29,6 @@ import { useModelProvider } from '@/hooks/useModelProvider'
 import { useAppState } from '@/hooks/useAppState'
 import { MovingBorder } from './MovingBorder'
 import { useChat } from '@/hooks/useChat'
-import { ModelLoader } from '@/containers/loaders/ModelLoader'
 import DropdownToolsAvailable from '@/containers/DropdownToolsAvailable'
 import { getConnectedServers } from '@/services/mcp'
 import { checkMmprojExists } from '@/services/models'
@@ -37,19 +36,17 @@ import { checkMmprojExists } from '@/services/models'
 type ChatInputProps = {
   className?: string
   showSpeedToken?: boolean
-  model?: ThreadModel
   initialMessage?: boolean
   initialPrompt?: string
 }
 
-const ChatInput = ({ model, className, initialMessage, initialPrompt }: ChatInputProps) => {
+const ChatInput = ({ className, initialMessage, initialPrompt }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isFocused, setIsFocused] = useState(false)
   const [rows, setRows] = useState(1)
   const {
     streamingContent,
     abortControllers,
-    loadingModel,
     tools,
     cancelToolCall,
   } = useAppState()

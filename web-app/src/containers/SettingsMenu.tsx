@@ -51,10 +51,15 @@ const SettingsMenu = () => {
 			match.search.step === 'setup_remote_provider'
 	)
 
-	const menuSettings = [
+	const menuSettings: Array<{ title: string; route: string; hasSubMenu?: boolean }> = [
 		{
 			title: 'common:general',
 			route: route.settings.general,
+		},
+		{
+			title: 'common:model_providers',
+			route: route.settings.model_providers,
+			hasSubMenu: true,
 		},
 		{
 			title: 'common:appearance',

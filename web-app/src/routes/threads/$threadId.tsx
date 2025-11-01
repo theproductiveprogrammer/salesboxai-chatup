@@ -14,7 +14,6 @@ import { ThreadContent } from '@/containers/ThreadContent'
 import { StreamingContent } from '@/containers/StreamingContent'
 
 import { useMessages } from '@/hooks/useMessages'
-import { fetchMessages } from '@/services/messages'
 import { useAppState } from '@/hooks/useAppState'
 import DropdownAssistant from '@/containers/DropdownAssistant'
 import { useAssistant } from '@/hooks/useAssistant'
@@ -49,7 +48,7 @@ function ThreadDetail() {
   const wasStreamingRef = useRef(false)
   const { currentThreadId, setCurrentThreadId } = useThreads()
   const { setCurrentAssistant, assistants } = useAssistant()
-  const { setMessages, deleteMessage, getMessages } = useMessages()
+  const { setMessages, deleteMessage } = useMessages()
   const { streamingContent } = useAppState()
   const { appMainViewBgColor, chatWidth } = useAppearance()
   const { sendMessage } = useChat()
@@ -411,7 +410,7 @@ function ThreadDetail() {
               </div>
             )}
           </div>
-          <ChatInput model={threadModel} initialPrompt={search.message} />
+          <ChatInput initialPrompt={search.message} />
         </div>
       </div>
     </div>

@@ -34,7 +34,6 @@ function Index() {
   const { user } = useSalesboxAuth()
   useTools()
 
-  const selectedModel = search.model
   const userName = user?.name || user?.username || 'there'
 
   useEffect(() => {
@@ -60,7 +59,6 @@ function Index() {
           <div className="flex-1 shrink-0">
             <ChatInput
               showSpeedToken={false}
-              model={selectedModel}
               initialMessage={true}
               initialPrompt={search.message}
             />
