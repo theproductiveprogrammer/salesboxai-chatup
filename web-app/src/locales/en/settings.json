@@ -182,6 +182,7 @@
   },
   "privacy": {
     "security": "Security",
+    "profile": "Profile",
     "apiKey": "API Key",
     "apiKeyDesc": "Enter the API key provided to you by Salesbox.AI"
   },

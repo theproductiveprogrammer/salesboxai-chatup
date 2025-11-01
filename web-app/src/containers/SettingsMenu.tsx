@@ -61,13 +61,8 @@ const SettingsMenu = () => {
 			route: route.settings.appearance,
 		},
 		{
-			title: 'common:security',
+			title: 'common:profile',
 			route: route.settings.privacy,
-		},
-		{
-			title: 'common:modelProviders',
-			route: route.settings.model_providers,
-			hasSubMenu: activeProviders.length > 0,
 		},
 		{
 			title: 'common:keyboardShortcuts',
@@ -80,10 +75,6 @@ const SettingsMenu = () => {
 		{
 			title: 'common:mcp-servers',
 			route: route.settings.mcp_servers,
-		},
-		{
-			title: 'common:local_api_server',
-			route: route.settings.local_api_server,
 		},
 		{
 			title: 'common:https_proxy',

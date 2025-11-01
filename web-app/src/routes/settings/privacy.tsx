@@ -28,7 +28,7 @@ function Privacy() {
               header={
                 <div className="flex items-center justify-between mb-4">
                   <h1 className="text-main-view-fg font-medium text-base">
-                    {t('settings:privacy.security')}
+                    {t('settings:privacy.profile')}
                   </h1>
                 </div>
               }
