@@ -49,7 +49,7 @@ function ThreadDetail() {
   const wasStreamingRef = useRef(false)
   const { currentThreadId, setCurrentThreadId } = useThreads()
   const { setCurrentAssistant, assistants } = useAssistant()
-  const { setMessages, deleteMessage } = useMessages()
+  const { setMessages, deleteMessage, getMessages } = useMessages()
   const { streamingContent } = useAppState()
   const { appMainViewBgColor, chatWidth } = useAppearance()
   const { sendMessage } = useChat()
@@ -95,10 +95,36 @@ function ThreadDetail() {
 
   useEffect(() => {
     fetchMessages(threadId).then((fetchedMessages) => {
-      if (fetchedMessages) {
-        // Update the messages in the store
-        setMessages(threadId, fetchedMessages)
+      // Get the current messages from store (not from closure) to avoid stale data
+      const currentMessages = getMessages(threadId) || []
+
+      console.log('[ThreadDetail] Fetched messages:', {
+        threadId,
+        fetchedCount: fetchedMessages?.length || 0,
+        inMemoryCount: currentMessages.length,
+      })
+
+      if (fetchedMessages && fetchedMessages.length > 0) {
+        // We have messages from disk - merge with in-memory ones
+        const messageIds = new Set(fetchedMessages.map((m) => m.id))
+        const inMemoryOnly = currentMessages.filter((m) => !messageIds.has(m.id))
+
+        // Combine fetched messages with any in-memory-only messages
+        const mergedMessages = [...fetchedMessages, ...inMemoryOnly]
+        console.log('[ThreadDetail] Merging messages:', {
+          fetchedCount: fetchedMessages.length,
+          inMemoryOnlyCount: inMemoryOnly.length,
+          totalCount: mergedMessages.length,
+        })
+        setMessages(threadId, mergedMessages)
+      } else if (currentMessages.length === 0) {
+        // No messages in memory and none on disk - initialize empty array
+        console.log('[ThreadDetail] No messages found, initializing empty array')
+        setMessages(threadId, [])
+      } else {
+        console.log('[ThreadDetail] Keeping in-memory messages:', currentMessages.length)
       }
+      // If fetchedMessages is empty but we have currentMessages, keep the in-memory ones
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId])
