@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
 import type { AsyncJobWidgetProps, AsyncJobAction } from '@/types/asyncJobs'
 import { AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
+import { LinkedInProfileDisplay } from './LinkedInProfileDisplay'
 
 const statusConfig = {
   [AsyncJobStatus.PENDING]: {
@@ -291,7 +292,7 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
             return (
               <div className="text-right text-sm gray-50">
-                <b>Done</b> {createdTime}
+                <b>Created</b> {createdTime}
                 {completedTime && (
                   <span className="text-muted-foreground/70">
                     , time taken: {duration}
@@ -313,11 +314,15 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
         {/* Result summary for completed jobs */}
         {job.status === AsyncJobStatus.COMPLETED && job.result && (
-          <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
-            <p className="text-sm text-green-800 dark:text-green-200">
-              <strong>Result:</strong> {JSON.stringify(job.result, null, 2)}
-            </p>
-          </div>
+          job.type === AsyncJobType.LINKEDIN_LEAD_INFO ? (
+            <LinkedInProfileDisplay result={job.result} />
+          ) : (
+            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                <strong>Result:</strong> {JSON.stringify(job.result, null, 2)}
+              </p>
+            </div>
+          )
         )}
 
         {/* Action buttons */}

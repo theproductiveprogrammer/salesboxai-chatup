@@ -6,6 +6,7 @@ import { Card, CardItem } from '@/containers/Card'
 import { useTranslation } from '@/i18n/react-i18next-compat'
 import { SalesboxAuthStatus } from '@/containers/SalesboxAuthStatus'
 import { SalesboxEndpointInput } from '@/containers/SalesboxEndpointInput'
+import { UnipileAccountIdInput } from '@/containers/UnipileAccountIdInput'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Route = createFileRoute(route.settings.privacy as any)({
@@ -44,6 +45,12 @@ function Privacy() {
                 description="Configure the backend endpoint for API calls (e.g., https://agent.salesbox.ai)"
                 align="start"
                 actions={<SalesboxEndpointInput />}
+              />
+              <CardItem
+                title="Unipile Account ID"
+                description="Configure your Unipile Account ID for LinkedIn lead information enrichment"
+                align="start"
+                actions={<UnipileAccountIdInput />}
               />
             </Card>
           </div>
