@@ -49,7 +49,7 @@ function Index() {
         <div className="w-full md:w-4/6 mx-auto">
           <div className="mb-8 text-center">
             <h1 className="font-editorialnew text-main-view-fg text-4xl">
-              {t('chat:welcome')}
+              Hi {userName}, how are you?
             </h1>
             <p className="text-main-view-fg/70 text-lg mt-2">
               {t('chat:description')}
