@@ -24,6 +24,7 @@ import {
   ConfigOptions,
 } from 'token.js'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
+import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 
 // Extended config options to include custom fetch function
 type ExtendedConfigOptions = ConfigOptions & {
@@ -186,18 +187,24 @@ export const sendCompletion = async (
 
   console.log('[sendCompletion] Using providerName:', providerName)
 
-  const useTauriFetch = providerName === 'openai-compatible' && provider.provider !== 'salesbox'
+  const useTauriFetch = providerName === 'openai-compatible'
   console.log('[sendCompletion] Will use Tauri fetch?', useTauriFetch, 'Provider:', provider.provider)
+
+  // Use dynamic endpoint for Salesbox provider (same as authentication)
+  const baseURL = provider.provider === 'salesbox'
+    ? `${useSalesboxEndpoint.getState().endpoint}/api/openai/v1`
+    : provider.base_url
+
+  console.log('[sendCompletion] Using baseURL:', baseURL)
 
   const tokenJS = new TokenJS({
     apiKey:
       provider.provider === 'salesbox'
         ? useSalesboxAuth.getState().token || ''
         : provider.api_key ?? (await invoke('app_token')),
-    // TODO: Retrieve from extension settings
-    baseURL: provider.base_url,
-    // Use Tauri's fetch to avoid CORS issues ONLY for openai-compatible provider
-    // DO NOT use it for salesbox because it breaks streaming
+    baseURL,
+    // Use Tauri's fetch to avoid CORS issues for openai-compatible providers (including Salesbox)
+    // This allows the app to make cross-origin requests without browser restrictions
     ...(useTauriFetch && {
       fetch: fetchTauri,
     }),

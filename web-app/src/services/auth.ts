@@ -1,6 +1,7 @@
 import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 import { isTokenExpiringSoon } from '@/lib/jwt'
 import type { TokenResponse } from '@/types/auth'
+import { fetch } from '@tauri-apps/plugin-http'
 
 // Use native fetch for all URLs to avoid Tauri security restrictions in release mode
 // Native fetch works for both localhost and remote URLs without permission issues
@@ -62,7 +63,10 @@ export async function loginWithCredentials(
       // Try to get error message from response body
       try {
         const errorData = await response.json()
-        const errorMsg = errorData.error || errorData.message || `${response.status} ${response.statusText}`
+        const errorMsg =
+          errorData.error ||
+          errorData.message ||
+          `${response.status} ${response.statusText}`
         return {
           success: false,
           error: errorMsg,
@@ -76,7 +80,10 @@ export async function loginWithCredentials(
     }
 
     const data: TokenResponse = await response.json()
-    console.log('[Auth] Response data:', { hasToken: !!data.access_token, hasError: !!data.error })
+    console.log('[Auth] Response data:', {
+      hasToken: !!data.access_token,
+      hasError: !!data.error,
+    })
 
     if (data.error) {
       return {
@@ -102,7 +109,10 @@ export async function loginWithCredentials(
     console.error('[Auth] Error details:', JSON.stringify(error, null, 2))
     return {
       success: false,
-      error: error instanceof Error ? error.message : `Unknown login error: ${String(error)}`,
+      error:
+        error instanceof Error
+          ? error.message
+          : `Unknown login error: ${String(error)}`,
     }
   }
 }
