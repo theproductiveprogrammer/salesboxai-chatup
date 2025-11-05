@@ -344,7 +344,7 @@ export const predefinedProviders = [
   {
     active: true,
     api_key: '',
-    base_url: 'http://localhost:6991/api/openai/v1',
+    base_url: 'https://agent.salesbox.ai/api/openai/v1',
     provider: 'salesbox',
     explore_models_url: 'https://platform.openai.com/docs/models',
     settings: [
@@ -368,8 +368,8 @@ export const predefinedProviders = [
           'Salesbox.AI OpenAI-compatible API endpoint. Change this to point to your production server or keep localhost for development.',
         controller_type: 'input',
         controller_props: {
-          placeholder: 'http://localhost:6991/api/openai/v1',
-          value: 'http://localhost:6991/api/openai/v1',
+          placeholder: 'https://agent.salesbox.ai/api/openai/v1',
+          value: 'https://agent.salesbox.ai/api/openai/v1',
         },
       },
     ],
