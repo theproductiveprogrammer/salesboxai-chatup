@@ -8,6 +8,7 @@ import type {
 import { AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { isTokenExpired } from '@/lib/jwt'
+import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
 
 /**
  * Service for managing AsyncJobs via Salesbox.AI API
@@ -85,7 +86,7 @@ export async function getAsyncJobs(
       throw new Error('Session expired. Please sign in again.')
     }
 
-    const response = await fetch(`${endpoint}/mcp/job-list`, {
+    const response = await fetchTauri(`${endpoint}/mcp/job-list`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
@@ -220,7 +221,7 @@ export async function getJobStatus(jobId: string, endpoint: string): Promise<Asy
       throw new Error('Session expired. Please sign in again.')
     }
 
-    const response = await fetch(`${endpoint}/mcp/job/${jobId}/status`, {
+    const response = await fetchTauri(`${endpoint}/mcp/job/${jobId}/status`, {
       method: 'POST',
       headers: {
         'accept': 'application/json',
