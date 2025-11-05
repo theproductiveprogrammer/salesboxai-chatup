@@ -31,6 +31,9 @@
           "url": "http://localhost:6991/*"
         },
         {
+          "url": "http://localhost:8769/*"
+        },
+        {
           "url": "https://api.github.com/*"
         },
         {
@@ -52,6 +55,9 @@
       "allow": [
         {
           "url": "http://localhost:6991/*"
+        },
+        {
+          "url": "http://localhost:8769/*"
         },
         {
           "url": "https://api.github.com/*"
