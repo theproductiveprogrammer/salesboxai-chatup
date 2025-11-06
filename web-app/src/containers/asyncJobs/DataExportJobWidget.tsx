@@ -83,7 +83,7 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
   const DataTypeIcon = getDataTypeIcon(input.dataType)
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md border-l-4 border-l-purple-500">
+    <Card className="transition-all duration-200 hover:shadow-md border-l-4 border-l-purple-500 select-text">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">

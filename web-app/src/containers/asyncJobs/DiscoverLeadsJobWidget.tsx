@@ -134,7 +134,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   }
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md border-l-4 border-l-blue-500">
+    <Card className="transition-all duration-200 hover:shadow-md border-l-4 border-l-blue-500 select-text">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">

@@ -331,7 +331,7 @@ function ThreadDetail() {
         >
           <div
             className={cn(
-              'w-4/6 mx-auto flex max-w-full flex-col grow',
+              'w-4/6 mx-auto flex max-w-full flex-col grow select-text',
               chatWidth === 'compact' ? 'w-full md:w-4/6' : 'w-full',
               isSmallScreen && 'w-full'
             )}

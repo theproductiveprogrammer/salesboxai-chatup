@@ -169,7 +169,7 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
   return (
     <Card
       className={cn(
-        'transition-all duration-200 hover:shadow-md',
+        'transition-all duration-200 hover:shadow-md select-text',
         statusInfo.bgColor,
         statusInfo.borderColor,
         'border'
