@@ -1,65 +1,23 @@
 import { Link } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
 import { useTranslation } from '@/i18n/react-i18next-compat'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
-	IconChevronDown,
-	IconChevronRight,
 	IconMenu2,
 	IconX,
 } from '@tabler/icons-react'
-import { useMatches, useNavigate } from '@tanstack/react-router'
+import { useMatches } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
-
-import { useModelProvider } from '@/hooks/useModelProvider'
-import { getProviderTitle } from '@/lib/utils'
-import ProvidersAvatar from '@/containers/ProvidersAvatar'
 
 const SettingsMenu = () => {
 	const { t } = useTranslation()
-	const [expandedProviders, setExpandedProviders] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const matches = useMatches()
-	const navigate = useNavigate()
-
-	const { providers } = useModelProvider()
-
-	// Filter providers that have active API keys (or are llama.cpp which doesn't need one)
-	const activeProviders = providers.filter((provider) => provider.active)
-
-	// Check if current route has a providerName parameter and expand providers submenu
-	useEffect(() => {
-		const hasProviderName = matches.some(
-			(match) =>
-				match.routeId === '/settings/providers/$providerName' &&
-				'providerName' in match.params
-		)
-		const isProvidersRoute = matches.some(
-			(match) => match.routeId === '/settings/providers/'
-		)
-		if (hasProviderName || isProvidersRoute) {
-			setExpandedProviders(true)
-		}
-	}, [matches])
-
-	// Check if we're in the setup remote provider step
-	const stepSetupRemoteProvider = matches.some(
-		(match) =>
-			match.search &&
-			typeof match.search === 'object' &&
-			'step' in match.search &&
-			match.search.step === 'setup_remote_provider'
-	)
 
 	const menuSettings: Array<{ title: string; route: string; hasSubMenu?: boolean }> = [
 		{
 			title: 'common:general',
 			route: route.settings.general,
-		},
-		{
-			title: 'common:model_providers',
-			route: route.settings.model_providers,
-			hasSubMenu: true,
 		},
 		{
 			title: 'common:appearance',
@@ -90,10 +48,6 @@ const SettingsMenu = () => {
 			route: route.settings.extensions,
 		},
 	]
-
-	const toggleProvidersExpansion = () => {
-		setExpandedProviders(!expandedProviders)
-	}
 
 	const toggleMenu = () => {
 		setIsMenuOpen(!isMenuOpen)
@@ -128,71 +82,8 @@ const SettingsMenu = () => {
 								to={menu.route}
 								className="block px-2 gap-1.5 cursor-pointer hover:bg-main-view-fg/5 py-1 w-full rounded [&.active]:bg-main-view-fg/5"
 							>
-								<div className="flex items-center justify-between">
-									<span className="text-main-view-fg/80">{t(menu.title)}</span>
-									{menu.hasSubMenu && (
-										<button
-											onClick={(e) => {
-												e.preventDefault()
-												e.stopPropagation()
-												toggleProvidersExpansion()
-											}}
-											className="text-main-view-fg/60 hover:text-main-view-fg/80"
-										>
-											{expandedProviders ? (
-												<IconChevronDown size={16} />
-											) : (
-												<IconChevronRight size={16} />
-											)}
-										</button>
-									)}
-								</div>
+								<span className="text-main-view-fg/80">{t(menu.title)}</span>
 							</Link>
-
-							{/* Sub-menu for model providers */}
-							{menu.hasSubMenu && expandedProviders && (
-								<div className="ml-2 mt-1 space-y-1 first-step-setup-remote-provider">
-									{activeProviders.map((provider) => {
-										const isActive = matches.some(
-											(match) =>
-												match.routeId === '/settings/providers/$providerName' &&
-												'providerName' in match.params &&
-												match.params.providerName === provider.provider
-										)
-
-										return (
-											<div key={provider.provider}>
-												<div
-													className={cn(
-														'flex px-2 items-center gap-1.5 cursor-pointer hover:bg-main-view-fg/5 py-1 w-full rounded [&.active]:bg-main-view-fg/5 text-main-view-fg/80',
-														isActive && 'bg-main-view-fg/5',
-														// hidden for llama.cpp provider for setup remote provider
-														provider.provider === 'llama.cpp' &&
-															stepSetupRemoteProvider &&
-															'hidden'
-													)}
-													onClick={() =>
-														navigate({
-															to: route.settings.providers,
-															params: {
-																providerName: provider.provider,
-															},
-															...(stepSetupRemoteProvider
-																? { search: { step: 'setup_remote_provider' } }
-																: {}),
-														})
-													}
-												>
-													<ProvidersAvatar provider={provider} />
-													<div className="truncate">
-														<span>{getProviderTitle(provider.provider)}</span>
-													</div>
-												</div>
-											</div>
-										)
-									})}
-								</div>
-							)}
 						</div>
 					))}
 				</div>
