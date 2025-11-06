@@ -1,8 +1,8 @@
-# Contributing to Salesbox.AI Agent Extensions
+# Contributing to SalesboxAI Agent Extensions
 
 [← Back to Main Contributing Guide](../CONTRIBUTING.md)
 
-Extensions add specific features to Salesbox.AI Agent as self-contained modules.
+Extensions add specific features to SalesboxAI Agent as self-contained modules.
 
 ## Current Extensions
 
@@ -93,7 +93,7 @@ async onLoad() {
 
 ## Extension Lifecycle
 
-1. **Salesbox.AI Agent starts** → Discovers extensions
+1. **SalesboxAI Agent starts** → Discovers extensions
 2. **Loading** → Calls `onLoad()` method  
 3. **Active** → Extension responds to events
 4. **Unloading** → Calls `onUnload()` on shutdown

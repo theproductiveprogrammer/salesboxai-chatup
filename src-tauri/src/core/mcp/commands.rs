@@ -110,9 +110,9 @@ pub async fn reinitialize_mcp_servers(app: AppHandle, state: State<'_, AppState>
         log::warn!("Failed to download MCP from remote: {}", e);
     }
 
-    // Start the built-in SalesBox.AI MCP server (if credentials are configured)
+    // Start the built-in SalesboxAI MCP server (if credentials are configured)
     if let Err(e) = start_builtin_salesbox_mcp(&app, servers.clone()).await {
-        log::warn!("SalesBox.AI builtin MCP server not started: {}", e);
+        log::warn!("SalesboxAI builtin MCP server not started: {}", e);
     }
 
     app.emit("mcp-update", "MCP servers updated")

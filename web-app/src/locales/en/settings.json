@@ -184,7 +184,7 @@
     "security": "Security",
     "profile": "Profile",
     "apiKey": "API Key",
-    "apiKeyDesc": "Enter the API key provided to you by Salesbox.AI"
+    "apiKeyDesc": "Enter the API key provided to you by SalesboxAI"
   },
   "general": {
     "showInFinder": "Show in Finder",

@@ -33,7 +33,7 @@ const GPT_4O_MINI_MODEL: Model = {
   id: 'gpt-4o-mini',
   name: 'GPT-4o Mini',
   version: '1.0',
-  description: 'OpenAI GPT-4o Mini via Salesbox.AI proxy',
+  description: 'OpenAI GPT-4o Mini via SalesboxAI proxy',
   capabilities: ['completion', 'tools'],
 }
 
@@ -53,7 +53,7 @@ const constructProvider = (): ModelProvider => {
         key: 'api-key',
         title: 'JWT Token',
         description:
-          'Authentication token automatically managed from your Salesbox.AI session.',
+          'Authentication token automatically managed from your SalesboxAI session.',
         controller_type: 'input',
         controller_props: {
           placeholder: 'Auto-filled from login',
@@ -65,7 +65,7 @@ const constructProvider = (): ModelProvider => {
       {
         key: 'base-url',
         title: 'Base URL',
-        description: 'Salesbox.AI OpenAI-compatible API endpoint.',
+        description: 'SalesboxAI OpenAI-compatible API endpoint.',
         controller_type: 'input',
         controller_props: {
           placeholder: endpoint,
@@ -103,7 +103,7 @@ export const useModelProvider = create<ModelProviderState>((set, get) => ({
           key: 'api-key',
           title: 'JWT Token',
           description:
-            'Authentication token automatically managed from your Salesbox.AI session.',
+            'Authentication token automatically managed from your SalesboxAI session.',
           controller_type: 'input',
           controller_props: {
             placeholder: 'Auto-filled from login',
@@ -115,7 +115,7 @@ export const useModelProvider = create<ModelProviderState>((set, get) => ({
         {
           key: 'base-url',
           title: 'Base URL',
-          description: 'Salesbox.AI OpenAI-compatible API endpoint.',
+          description: 'SalesboxAI OpenAI-compatible API endpoint.',
           controller_type: 'input',
           controller_props: {
             placeholder: endpoint,

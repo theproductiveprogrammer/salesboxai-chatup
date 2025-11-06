@@ -394,7 +394,7 @@ export const ThreadContent = memo(
 
                 <div className="flex flex-col">
                   <span className="text-main-view-fg font-medium">
-                    {assistant?.name || 'Salesbox.AI Agent'}
+                    {assistant?.name || 'SalesboxAI Agent'}
                   </span>
                   {item?.created_at && item?.created_at !== 0 && (
                     <span className="text-xs mt-0.5">

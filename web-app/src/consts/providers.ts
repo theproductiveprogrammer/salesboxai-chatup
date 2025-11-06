@@ -352,7 +352,7 @@ export const predefinedProviders = [
         key: 'api-key',
         title: 'JWT Token',
         description:
-          'Authentication token automatically managed from your Salesbox.AI session. This is populated when you log in and cleared when you log out.',
+          'Authentication token automatically managed from your SalesboxAI session. This is populated when you log in and cleared when you log out.',
         controller_type: 'input',
         controller_props: {
           placeholder: 'Auto-filled from login',
@@ -365,7 +365,7 @@ export const predefinedProviders = [
         key: 'base-url',
         title: 'Base URL',
         description:
-          'Salesbox.AI OpenAI-compatible API endpoint. Change this to point to your production server or keep localhost for development.',
+          'SalesboxAI OpenAI-compatible API endpoint. Change this to point to your production server or keep localhost for development.',
         controller_type: 'input',
         controller_props: {
           placeholder: 'https://agent.salesbox.ai/api/openai/v1',
@@ -378,28 +378,28 @@ export const predefinedProviders = [
         id: 'gpt-4o',
         name: 'GPT-4o',
         version: '1.0',
-        description: 'OpenAI GPT-4o via Salesbox.AI proxy',
+        description: 'OpenAI GPT-4o via SalesboxAI proxy',
         capabilities: ['completion', 'tools'],
       },
       {
         id: 'gpt-4o-mini',
         name: 'GPT-4o Mini',
         version: '1.0',
-        description: 'OpenAI GPT-4o Mini via Salesbox.AI proxy',
+        description: 'OpenAI GPT-4o Mini via SalesboxAI proxy',
         capabilities: ['completion', 'tools'],
       },
       {
         id: 'gpt-4',
         name: 'GPT-4',
         version: '1.0',
-        description: 'OpenAI GPT-4 via Salesbox.AI proxy',
+        description: 'OpenAI GPT-4 via SalesboxAI proxy',
         capabilities: ['completion', 'tools'],
       },
       {
         id: 'gpt-3.5-turbo',
         name: 'GPT-3.5 Turbo',
         version: '1.0',
-        description: 'OpenAI GPT-3.5 Turbo via Salesbox.AI proxy',
+        description: 'OpenAI GPT-3.5 Turbo via SalesboxAI proxy',
         capabilities: ['completion'],
       },
     ],

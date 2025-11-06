@@ -329,9 +329,9 @@ pub fn setup_mcp(app: &App) {
             log::warn!("Failed to download MCP from remote: {}", e);
         }
 
-        // Then start the built-in SalesBox.AI MCP server (if API key is configured)
+        // Then start the built-in SalesboxAI MCP server (if API key is configured)
         if let Err(e) = start_builtin_salesbox_mcp(&app_handle, servers.clone()).await {
-            log::warn!("SalesBox.AI builtin MCP server not started: {}", e);
+            log::warn!("SalesboxAI builtin MCP server not started: {}", e);
         }
 
         // Finally start other configured MCP servers

@@ -36,7 +36,7 @@ function Privacy() {
             >
               <CardItem
                 title="Authentication"
-                description="Manage your SalesBox.AI account authentication and JWT tokens"
+                description="Manage your SalesboxAI account authentication and JWT tokens"
                 align="start"
                 actions={<SalesboxAuthStatus />}
               />

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SalesBox.AI - Reset Script for Testing First-Launch Experience
+# SalesboxAI - Reset Script for Testing First-Launch Experience
 # This script clears all app data to simulate a fresh installation
 
 echo "🔄 SalesBoxAI - Reset for Testing"

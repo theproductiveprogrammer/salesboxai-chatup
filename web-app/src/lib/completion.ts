@@ -208,7 +208,7 @@ export const sendCompletion = async (
     ...(useTauriFetch && {
       fetch: fetchTauri,
     }),
-    // Salesbox.AI JWT authentication and headers
+    // SalesboxAI JWT authentication and headers
     ...(provider.provider === 'salesbox' && {
       defaultHeaders: {
         Authorization: `Bearer ${useSalesboxAuth.getState().token}`,
@@ -216,12 +216,12 @@ export const sendCompletion = async (
         'Content-Type': 'application/json',
       },
     }),
-    // OpenRouter identification headers for Salesbox.AI Agent
+    // OpenRouter identification headers for SalesboxAI Agent
     // ref: https://openrouter.ai/docs/api-reference/overview#headers
     ...(provider.provider === 'openrouter' && {
       defaultHeaders: {
         'HTTP-Referer': 'https://salesbox.ai',
-        'X-Title': 'Salesbox.AI Agent',
+        'X-Title': 'SalesboxAI Agent',
       },
     }),
   } as ExtendedConfigOptions)

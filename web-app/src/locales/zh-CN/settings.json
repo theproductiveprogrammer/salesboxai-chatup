@@ -180,7 +180,7 @@
   "privacy": {
     "security": "安全",
     "apiKey": "API 密钥",
-    "apiKeyDesc": "输入 Salesbox.AI 为您提供的 API 密钥。"
+    "apiKeyDesc": "输入 SalesboxAI 为您提供的 API 密钥。"
   },
   "general": {
     "showInFinder": "在 Finder 中显示",

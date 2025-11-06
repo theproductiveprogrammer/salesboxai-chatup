@@ -1,8 +1,8 @@
-# Contributing to Salesbox.AI Agent
+# Contributing to SalesboxAI Agent
 
-First off, thank you for considering contributing to Salesbox.AI Agent. It's people like you that make Salesbox.AI Agent such an amazing project.
+First off, thank you for considering contributing to SalesboxAI Agent. It's people like you that make SalesboxAI Agent such an amazing project.
 
-Salesbox.AI Agent is an AI assistant that can run 100% offline on your device. Think ChatGPT, but private, local, and under your complete control. If you're thinking about contributing, you're already awesome - let's make AI accessible to everyone, one commit at a time.
+SalesboxAI Agent is an AI assistant that can run 100% offline on your device. Think ChatGPT, but private, local, and under your complete control. If you're thinking about contributing, you're already awesome - let's make AI accessible to everyone, one commit at a time.
 
 ## Quick Links to Component Guides
 
@@ -12,9 +12,9 @@ Salesbox.AI Agent is an AI assistant that can run 100% offline on your device. T
 - **[Tauri Backend](./src-tauri/CONTRIBUTING.md)** - Rust native integration
 - **[Tauri Plugins](./src-tauri/plugins/CONTRIBUTING.md)** - Hardware and system plugins
 
-## How Salesbox.AI Agent Actually Works
+## How SalesboxAI Agent Actually Works
 
-Salesbox.AI Agent is a desktop app that runs local AI models. Here's how the components actually connect:
+SalesboxAI Agent is a desktop app that runs local AI models. Here's how the components actually connect:
 
 ```
 ┌──────────────────────────────────────────────────────────┐

@@ -109,7 +109,7 @@ function General() {
         // Create a new logs window using Tauri v2 WebviewWindow API
         const logsWindow = new WebviewWindow(windowKey.logsAppWindow, {
           url: route.appLogs,
-          title: 'App Logs - Salesbox.AI Agent',
+          title: 'App Logs - SalesboxAI Agent',
           width: 800,
           height: 600,
           resizable: true,

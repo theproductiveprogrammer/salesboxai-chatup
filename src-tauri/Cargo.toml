@@ -1,8 +1,8 @@
 [package]
 name = "SalesboxAIAgent"
 version = "0.6.599"
-description = "The Salesbox.AI Agent"
-authors = ["Salesbox.AI <service@salesbox.ai>"]
+description = "The SalesboxAI Agent"
+authors = ["SalesboxAI <service@salesbox.ai>"]
 license = "MIT"
 repository = "https://github.com/theproductiveprogrammer/salesboxai-chatup"
 edition = "2021"

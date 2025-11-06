@@ -19,7 +19,7 @@ vi.mock('@/lib/extension', () => ({
 vi.mock('@/hooks/useAssistant', () => ({
   defaultAssistant: {
     id: 'salesbox-ai-agent',
-    name: 'Salesbox.AI Agent',
+    name: 'SalesboxAI Agent',
     instructions: 'You are a helpful assistant.',
   },
 }))
@@ -420,7 +420,7 @@ describe('threads service', () => {
             {
               model: { id: 'gpt-4', engine: 'openai' },
               id: 'salesbox-ai-agent',
-              name: 'Salesbox.AI Agent',
+              name: 'SalesboxAI Agent',
             },
           ],
         })

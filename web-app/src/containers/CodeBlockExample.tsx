@@ -8,8 +8,8 @@ function greeting(name: string) {
 }
 
 // Call the function
-const message = greeting('Salesbox.AI Agent');
-console.log(message);  // Outputs: Hello, Salesbox.AI Agent!
+const message = greeting('SalesboxAI Agent');
+console.log(message);  // Outputs: Hello, SalesboxAI Agent!
 \`\`\``
 
 export function CodeBlockExample() {

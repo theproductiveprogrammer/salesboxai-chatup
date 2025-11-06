@@ -6,115 +6,115 @@ import { fetch } from '@tauri-apps/plugin-http'
 // Use native fetch for all URLs to avoid Tauri security restrictions in release mode
 // Native fetch works for both localhost and remote URLs without permission issues
 const smartFetch = (url: string, options?: RequestInit) => {
-  console.log('[Auth] Using native fetch for URL:', url)
-  return fetch(url, options)
+	console.log('[Auth] Using native fetch for URL:', url)
+	return fetch(url, options)
 }
 
 /**
- * Authentication service for SalesBox.AI
+ * Authentication service for SalesboxAI
  * Handles login, token refresh, and auto-refresh scheduling
  */
 
 export interface LoginResult {
-  success: boolean
-  token?: string
-  error?: string
+	success: boolean
+	token?: string
+	error?: string
 }
 
 /**
  * Login with username and password to get JWT token
  */
 export async function loginWithCredentials(
-  username: string,
-  password: string
+	username: string,
+	password: string
 ): Promise<LoginResult> {
-  const { endpoint: baseEndpoint } = useSalesboxEndpoint.getState()
+	const { endpoint: baseEndpoint } = useSalesboxEndpoint.getState()
 
-  if (!username || !password) {
-    return {
-      success: false,
-      error: 'Username and password are required',
-    }
-  }
+	if (!username || !password) {
+		return {
+			success: false,
+			error: 'Username and password are required',
+		}
+	}
 
-  try {
-    const loginUrl = `${baseEndpoint}/user-token/login`
-    console.log('[Auth] Attempting login to:', loginUrl)
-    console.log('[Auth] Base endpoint:', baseEndpoint)
-    console.log('[Auth] Username:', username)
+	try {
+		const loginUrl = `${baseEndpoint}/user-token/login`
+		console.log('[Auth] Attempting login to:', loginUrl)
+		console.log('[Auth] Base endpoint:', baseEndpoint)
+		console.log('[Auth] Username:', username)
 
-    const requestBody = {
-      username,
-      password,
-    }
+		const requestBody = {
+			username,
+			password,
+		}
 
-    const response = await smartFetch(loginUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    })
+		const response = await smartFetch(loginUrl, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(requestBody),
+		})
 
-    console.log('[Auth] Response received')
-    console.log('[Auth] Response status:', response.status, response.statusText)
+		console.log('[Auth] Response received')
+		console.log('[Auth] Response status:', response.status, response.statusText)
 
-    if (!response.ok) {
-      // Try to get error message from response body
-      try {
-        const errorData = await response.json()
-        const errorMsg =
-          errorData.error ||
-          errorData.message ||
-          `${response.status} ${response.statusText}`
-        return {
-          success: false,
-          error: errorMsg,
-        }
-      } catch {
-        return {
-          success: false,
-          error: `Login failed: ${response.status} ${response.statusText}`,
-        }
-      }
-    }
+		if (!response.ok) {
+			// Try to get error message from response body
+			try {
+				const errorData = await response.json()
+				const errorMsg =
+					errorData.error ||
+					errorData.message ||
+					`${response.status} ${response.statusText}`
+				return {
+					success: false,
+					error: errorMsg,
+				}
+			} catch {
+				return {
+					success: false,
+					error: `Login failed: ${response.status} ${response.statusText}`,
+				}
+			}
+		}
 
-    const data: TokenResponse = await response.json()
-    console.log('[Auth] Response data:', {
-      hasToken: !!data.access_token,
-      hasError: !!data.error,
-    })
+		const data: TokenResponse = await response.json()
+		console.log('[Auth] Response data:', {
+			hasToken: !!data.access_token,
+			hasError: !!data.error,
+		})
 
-    if (data.error) {
-      return {
-        success: false,
-        error: data.error,
-      }
-    }
+		if (data.error) {
+			return {
+				success: false,
+				error: data.error,
+			}
+		}
 
-    if (!data.access_token) {
-      return {
-        success: false,
-        error: 'No access token received',
-      }
-    }
+		if (!data.access_token) {
+			return {
+				success: false,
+				error: 'No access token received',
+			}
+		}
 
-    console.log('[Auth] Login successful')
-    return {
-      success: true,
-      token: data.access_token,
-    }
-  } catch (error) {
-    console.error('[Auth] Login error:', error)
-    console.error('[Auth] Error details:', JSON.stringify(error, null, 2))
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : `Unknown login error: ${String(error)}`,
-    }
-  }
+		console.log('[Auth] Login successful')
+		return {
+			success: true,
+			token: data.access_token,
+		}
+	} catch (error) {
+		console.error('[Auth] Login error:', error)
+		console.error('[Auth] Error details:', JSON.stringify(error, null, 2))
+		return {
+			success: false,
+			error:
+				error instanceof Error
+					? error.message
+					: `Unknown login error: ${String(error)}`,
+		}
+	}
 }
 
 /**
@@ -124,55 +124,55 @@ export async function loginWithCredentials(
 let refreshInterval: ReturnType<typeof setInterval> | null = null
 
 export function startAutoRefresh() {
-  // Clear any existing interval
-  stopAutoRefresh()
+	// Clear any existing interval
+	stopAutoRefresh()
 
-  // Check immediately
-  checkAndRefreshToken()
+	// Check immediately
+	checkAndRefreshToken()
 
-  // Then check every 30 minutes
-  refreshInterval = setInterval(
-    () => {
-      checkAndRefreshToken()
-    },
-    30 * 60 * 1000
-  ) // 30 minutes
+	// Then check every 30 minutes
+	refreshInterval = setInterval(
+		() => {
+			checkAndRefreshToken()
+		},
+		30 * 60 * 1000
+	) // 30 minutes
 }
 
 export function stopAutoRefresh() {
-  if (refreshInterval) {
-    clearInterval(refreshInterval)
-    refreshInterval = null
-  }
+	if (refreshInterval) {
+		clearInterval(refreshInterval)
+		refreshInterval = null
+	}
 }
 
 async function checkAndRefreshToken() {
-  // Dynamically import to avoid circular dependency
-  const { useSalesboxAuth } = await import('@/hooks/useSalesboxAuth')
-  const { token, refreshToken, isAuthenticated } = useSalesboxAuth.getState()
+	// Dynamically import to avoid circular dependency
+	const { useSalesboxAuth } = await import('@/hooks/useSalesboxAuth')
+	const { token, refreshToken, isAuthenticated } = useSalesboxAuth.getState()
 
-  if (!isAuthenticated || !token) {
-    return
-  }
+	if (!isAuthenticated || !token) {
+		return
+	}
 
-  // Check if token expires within 60 minutes
-  if (isTokenExpiringSoon(token, 60)) {
-    console.log('Token expiring soon, refreshing...')
-    const success = await refreshToken()
+	// Check if token expires within 60 minutes
+	if (isTokenExpiringSoon(token, 60)) {
+		console.log('Token expiring soon, refreshing...')
+		const success = await refreshToken()
 
-    if (success) {
-      console.log('Token refreshed successfully')
-    } else {
-      console.error('Failed to refresh token')
-    }
-  }
+		if (success) {
+			console.log('Token refreshed successfully')
+		} else {
+			console.error('Failed to refresh token')
+		}
+	}
 }
 
 /**
  * Manually trigger token refresh
  */
 export async function manualRefreshToken(): Promise<boolean> {
-  const { useSalesboxAuth } = await import('@/hooks/useSalesboxAuth')
-  const { refreshToken } = useSalesboxAuth.getState()
-  return await refreshToken()
+	const { useSalesboxAuth } = await import('@/hooks/useSalesboxAuth')
+	const { refreshToken } = useSalesboxAuth.getState()
+	return await refreshToken()
 }

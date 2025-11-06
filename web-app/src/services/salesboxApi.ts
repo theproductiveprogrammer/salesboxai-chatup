@@ -4,7 +4,7 @@ import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 import { isTokenExpired } from '@/lib/jwt'
 
 /**
- * Service for making authenticated API calls to Salesbox.AI using JWT tokens
+ * Service for making authenticated API calls to SalesboxAI using JWT tokens
  */
 
 export interface SalesboxApiResponse<T = any> {
@@ -14,7 +14,7 @@ export interface SalesboxApiResponse<T = any> {
 }
 
 /**
- * Makes an authenticated request to Salesbox.AI API using JWT token
+ * Makes an authenticated request to SalesboxAI API using JWT token
  * @param endpoint - The API endpoint (e.g., '/users', '/models')
  * @param options - Fetch options (method, body, etc.)
  * @returns Promise with the API response
@@ -75,7 +75,7 @@ export async function callSalesboxApi<T = any>(
       status: response.status,
     }
   } catch (error) {
-    console.error('Error calling Salesbox.AI API:', error)
+    console.error('Error calling SalesboxAI API:', error)
     return {
       error: error instanceof Error ? error.message : 'Unknown error occurred',
       status: 0,
@@ -84,21 +84,21 @@ export async function callSalesboxApi<T = any>(
 }
 
 /**
- * Example: Get user profile from Salesbox.AI
+ * Example: Get user profile from SalesboxAI
  */
 export async function getSalesboxUserProfile() {
   return callSalesboxApi('/user/profile')
 }
 
 /**
- * Example: Get available models from Salesbox.AI
+ * Example: Get available models from SalesboxAI
  */
 export async function getSalesboxModels() {
   return callSalesboxApi('/models')
 }
 
 /**
- * Example: Send a message to Salesbox.AI
+ * Example: Send a message to SalesboxAI
  */
 export async function sendSalesboxMessage(message: string, model?: string) {
   return callSalesboxApi('/chat/completions', {

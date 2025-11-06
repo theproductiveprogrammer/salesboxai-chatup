@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SalesBox.AI - Reset Script for Release Build
+# SalesboxAI - Reset Script for Release Build
 # This script clears all app data including localStorage (Tauri store)
 
 echo "🔄 SalesBoxAI - Reset Release Build"

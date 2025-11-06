@@ -134,7 +134,7 @@ export function DownloadProgressScreen({
             <div className="pt-6 border-t border-main-view-fg/10">
               <p className="text-sm text-main-view-fg/60 italic">
                 💡 Tip: {modelName} is optimized for function calling and tool
-                integration, perfect for your SalesBox.AI workflows!
+                integration, perfect for your SalesboxAI workflows!
               </p>
             </div>
           </div>

@@ -104,7 +104,7 @@ export const updateThread = (thread: Thread) => {
             engine: thread.model?.provider ?? 'llamacpp',
           },
             id: 'salesbox-ai-agent',
-  name: 'Salesbox.AI Agent',
+  name: 'SalesboxAI Agent',
         },
       ],
       metadata: {

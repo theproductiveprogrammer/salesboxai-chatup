@@ -180,7 +180,7 @@
   "privacy": {
     "security": "Bảo mật",
     "apiKey": "Khóa API",
-    "apiKeyDesc": "Nhập khóa API được cung cấp bởi Salesbox.AI cho bạn."
+    "apiKeyDesc": "Nhập khóa API được cung cấp bởi SalesboxAI cho bạn."
   },
   "general": {
     "showInFinder": "Hiển thị trong Finder",

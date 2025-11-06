@@ -183,7 +183,7 @@
   "privacy": {
     "security": "Bezpieczeństwo",
     "apiKey": "Klucz API",
-    "apiKeyDesc": "Wprowadź klucz API dostarczony przez Salesbox.AI"
+    "apiKeyDesc": "Wprowadź klucz API dostarczony przez SalesboxAI"
   },
   "general": {
     "showInFinder": "Pokaż w Finderze",

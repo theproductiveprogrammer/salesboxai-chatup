@@ -935,7 +935,7 @@ pub async fn should_restart_server(
     }
 }
 
-/// Start the built-in SalesBox.AI MCP server if API key is configured
+/// Start the built-in SalesboxAI MCP server if API key is configured
 /// This server is hidden from the UI and provides lead discovery/CRM tools
 pub async fn start_builtin_salesbox_mcp<R: Runtime>(
     app: &AppHandle<R>,
@@ -979,12 +979,12 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
     let (username, password) = match (username, password) {
         (Some(u), Some(p)) if !u.trim().is_empty() && !p.trim().is_empty() => (u, p),
         _ => {
-            log::info!("SalesBox.AI credentials not configured, skipping builtin MCP server");
+            log::info!("SalesboxAI credentials not configured, skipping builtin MCP server");
             return Ok(());
         }
     };
 
-    log::info!("Starting built-in SalesBox.AI MCP server with endpoint: {}", api_endpoint);
+    log::info!("Starting built-in SalesboxAI MCP server with endpoint: {}", api_endpoint);
 
     // Get path to mcp-services/salesboxai (no hardcoded paths!)
     let data_path = get_jan_data_folder_path(app.clone());
@@ -992,10 +992,10 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
     let launch_script = service_path.join("launch-mcp.js");
 
     if !launch_script.exists() {
-        log::error!("SalesBox.AI MCP service not found at {:?}", launch_script);
+        log::error!("SalesboxAI MCP service not found at {:?}", launch_script);
         log::error!("Expected location: <data-folder>/mcp-services/salesboxai/");
         log::error!("Run 'npm run deploy' in w2/salesboxai-chatgpt/mcp-server/ to deploy it");
-        return Err("SalesBox.AI MCP service not found".to_string());
+        return Err("SalesboxAI MCP service not found".to_string());
     }
 
     // Build the MCP server configuration
@@ -1010,7 +1010,7 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
         "active": true
     });
 
-    log::info!("Launching SalesBox.AI MCP server from {:?}", launch_script);
+    log::info!("Launching SalesboxAI MCP server from {:?}", launch_script);
 
     // Start the server using the existing MCP infrastructure
     match start_mcp_server_with_restart(
@@ -1023,11 +1023,11 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
     .await
     {
         Ok(_) => {
-            log::info!("SalesBox.AI builtin MCP server started successfully");
+            log::info!("SalesboxAI builtin MCP server started successfully");
             Ok(())
         }
         Err(e) => {
-            log::error!("Failed to start SalesBox.AI builtin MCP server: {}", e);
+            log::error!("Failed to start SalesboxAI builtin MCP server: {}", e);
             Err(e)
         }
     }

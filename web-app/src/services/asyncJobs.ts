@@ -11,7 +11,7 @@ import { isTokenExpired } from '@/lib/jwt'
 import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
 
 /**
- * Service for managing AsyncJobs via Salesbox.AI API
+ * Service for managing AsyncJobs via SalesboxAI API
  */
 
 // Transform backend job data to our frontend format

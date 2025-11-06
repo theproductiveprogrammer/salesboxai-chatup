@@ -1,6 +1,6 @@
-# Salesbox.AI Agent - Local AI Assistant
+# SalesboxAI Agent - Local AI Assistant
 
-![Salesbox.AI Agent](docs/src/pages/docs/_assets/jan-app.png)
+![SalesboxAI Agent](docs/src/pages/docs/_assets/jan-app.png)
 
 <p align="center">
   <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
@@ -19,7 +19,7 @@
   - <a href="https://discord.gg/AsJ8krTT3N">Discord</a>
 </p>
 
-Salesbox.AI Agent is an AI assistant that can run 100% offline on your device. Download and run LLMs with
+SalesboxAI Agent is an AI assistant that can run 100% offline on your device. Download and run LLMs with
 **full control** and **privacy**.
 
 ## Installation

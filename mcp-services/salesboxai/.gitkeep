@@ -1,2 +1,2 @@
-# This folder contains the built SalesBox.AI MCP server
+# This folder contains the built SalesboxAI MCP server
 # Files are deployed here from w2/salesboxai-chatgpt/mcp-server via npm run deploy

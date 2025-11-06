@@ -180,7 +180,7 @@
   "privacy": {
     "security": "Sicherheit",
     "apiKey": "API-Schlüssel",
-    "apiKeyDesc": "Geben Sie den von Salesbox.AI bereitgestellten API-Schlüssel ein."
+    "apiKeyDesc": "Geben Sie den von SalesboxAI bereitgestellten API-Schlüssel ein."
   },
   "general": {
     "showInFinder": "Im Finder zeigen",
