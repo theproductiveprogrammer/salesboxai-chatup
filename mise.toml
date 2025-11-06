@@ -201,6 +201,10 @@ fi
 echo "Clean completed!"
 '''
 
+[tasks.set-version]
+description = "Set version across Cargo.toml, tauri.conf.json, and web-app/package.json"
+run = "node scripts/set-version.js"
+
 [tasks.all]
 description = "Default target - shows available commands (matches Makefile)"
 run = "echo 'Specify a target to run. Use: mise tasks'"
