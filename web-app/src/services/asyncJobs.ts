@@ -39,27 +39,32 @@ function transformBackendJob(backendJob: any): AsyncJob {
     message: backendJob.job_message,
     input: jobData?.input || {},
     result: jobData?.output ? { output: jobData.output } : undefined,
-    error: backendJob.job_status === 'FAILED' ? backendJob.job_message : undefined,
+    error: ['FAILED', 'ERROR'].includes(backendJob.job_status) ? backendJob.job_message : undefined,
     progress: undefined, // Backend doesn't provide progress
     createdAt: backendJob.created || new Date().toISOString(),
     updatedAt: backendJob.modified || new Date().toISOString(),
-    completedAt: backendJob.job_status === 'SUCCESS' || backendJob.job_status === 'FAILED' ? backendJob.modified : undefined,
+    completedAt: ['SUCCESS', 'FAILED', 'ERROR', 'CANCELLED'].includes(backendJob.job_status) ? backendJob.modified : undefined,
     userId: backendJob.owner_id?.toString() || 'unknown',
   }
 }
 
 function mapBackendStatus(backendStatus: string): AsyncJobStatus {
+  // Backend statuses: RUNNING, SUCCESS, ERROR, FAILED, CANCELLED
+  // Frontend enum now matches backend exactly
   switch (backendStatus) {
-    case 'SUCCESS':
-      return AsyncJobStatus.COMPLETED
-    case 'FAILED':
-      return AsyncJobStatus.FAILED
     case 'RUNNING':
       return AsyncJobStatus.RUNNING
-    case 'PENDING':
-      return AsyncJobStatus.PENDING
+    case 'SUCCESS':
+      return AsyncJobStatus.SUCCESS
+    case 'ERROR':
+      return AsyncJobStatus.ERROR
+    case 'FAILED':
+      return AsyncJobStatus.FAILED
+    case 'CANCELLED':
+      return AsyncJobStatus.CANCELLED
     default:
-      return AsyncJobStatus.PENDING
+      console.warn(`Unknown job status: ${backendStatus}, mapping to FAILED`)
+      return AsyncJobStatus.FAILED
   }
 }
 

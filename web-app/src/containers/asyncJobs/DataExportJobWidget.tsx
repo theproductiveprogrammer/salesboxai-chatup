@@ -174,7 +174,7 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )}
 
         {/* Result for completed jobs */}
-        {job.status === AsyncJobStatus.COMPLETED && result && (
+        {job.status === AsyncJobStatus.SUCCESS && result && (
           <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <IconFileDownload className="h-5 w-5 text-green-600" />
@@ -260,7 +260,7 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
         {/* Action buttons */}
         <div className="flex gap-2 mt-4">
-          {job.status === AsyncJobStatus.COMPLETED && result?.downloadUrl && (
+          {job.status === AsyncJobStatus.SUCCESS && result?.downloadUrl && (
             <Button
               onClick={() => onAction?.('download', job)}
               className="flex items-center gap-2"

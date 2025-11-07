@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import {
-  IconClock,
   IconLoader2,
   IconCheck,
   IconX,
@@ -17,14 +16,6 @@ import { AsyncJobStatus, AsyncJobType } from '@/types/asyncJobs'
 import { LinkedInProfileDisplay } from './LinkedInProfileDisplay'
 
 const statusConfig = {
-  [AsyncJobStatus.PENDING]: {
-    icon: IconClock,
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
-    borderColor: 'border-yellow-200 dark:border-yellow-800',
-    label: 'Pending',
-    animated: false,
-  },
   [AsyncJobStatus.RUNNING]: {
     icon: IconLoader2,
     color: 'text-blue-500',
@@ -33,12 +24,20 @@ const statusConfig = {
     label: 'Running',
     animated: true,
   },
-  [AsyncJobStatus.COMPLETED]: {
+  [AsyncJobStatus.SUCCESS]: {
     icon: IconCheck,
     color: 'text-green-500',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
     borderColor: 'border-green-200 dark:border-green-800',
-    label: 'Completed',
+    label: 'Success',
+    animated: false,
+  },
+  [AsyncJobStatus.ERROR]: {
+    icon: IconX,
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+    borderColor: 'border-orange-200 dark:border-orange-800',
+    label: 'Error',
     animated: false,
   },
   [AsyncJobStatus.FAILED]: {
@@ -113,7 +112,7 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
           onClick: () => onAction?.('cancel', job),
         })
         break
-      case AsyncJobStatus.COMPLETED:
+      case AsyncJobStatus.SUCCESS:
         if (job.result?.downloadUrl) {
           actions.push({
             id: 'download',
@@ -131,6 +130,7 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
           onClick: () => onAction?.('delete', job),
         })
         break
+      case AsyncJobStatus.ERROR:
       case AsyncJobStatus.FAILED:
         actions.push(
           {
@@ -150,7 +150,6 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )
         break
       case AsyncJobStatus.CANCELLED:
-      case AsyncJobStatus.PENDING:
         actions.push({
           id: 'delete',
           label: 'Delete',
@@ -313,7 +312,7 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )}
 
         {/* Result summary for completed jobs */}
-        {job.status === AsyncJobStatus.COMPLETED && job.result && (
+        {job.status === AsyncJobStatus.SUCCESS && job.result && (
           job.type === AsyncJobType.LINKEDIN_LEAD_INFO ? (
             <LinkedInProfileDisplay result={job.result} />
           ) : (

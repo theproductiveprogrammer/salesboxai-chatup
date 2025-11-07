@@ -20,6 +20,7 @@ import type {
   DiscoverLeadsResult,
   DiscoverLeadsInput,
 } from '@/types/asyncJobs'
+import { AsyncJobStatus } from '@/types/asyncJobs'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { invoke } from '@tauri-apps/api/core'
 import { useRouter } from '@tanstack/react-router'
@@ -224,7 +225,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )}
 
         {/* Running job animation */}
-        {job.status === 'running' && (
+        {job.status === AsyncJobStatus.RUNNING && (
           <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -254,7 +255,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )}
 
         {/* Results for successful jobs */}
-        {job.status === 'completed' && result?.output && (
+        {job.status === AsyncJobStatus.SUCCESS && result?.output && (
           <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <IconUsers className="h-5 w-5 text-green-600" />
@@ -373,7 +374,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
         )}
 
         {/* Error for failed jobs */}
-        {job.status === 'failed' && job.error && (
+        {(job.status === AsyncJobStatus.FAILED || job.status === AsyncJobStatus.ERROR) && job.error && (
           <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">
               Discovery Failed
@@ -438,7 +439,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
         {/* Action buttons */}
         <div className="flex gap-2 mt-4">
-          {job.status === 'completed' &&
+          {job.status === AsyncJobStatus.SUCCESS &&
             result?.output &&
             result.output.length > 0 && (
               <Button
@@ -449,12 +450,12 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                 Export Leads
               </Button>
             )}
-          {job.status === 'running' && (
+          {job.status === AsyncJobStatus.RUNNING && (
             <Button variant="default" onClick={() => onAction?.('cancel', job)}>
               Cancel Discovery
             </Button>
           )}
-          {job.status === 'failed' && (
+          {(job.status === AsyncJobStatus.FAILED || job.status === AsyncJobStatus.ERROR) && (
             <Button variant="default" onClick={() => onAction?.('retry', job)}>
               <IconRefresh className="h-4 w-4 mr-2" />
               Retry Discovery

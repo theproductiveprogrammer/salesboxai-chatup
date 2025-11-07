@@ -12,7 +12,6 @@ import {
   IconLoader2,
   IconAlertCircle,
   IconCircle,
-  IconClock,
   IconX,
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
@@ -33,7 +32,21 @@ export const Route = createFileRoute('/async-jobs')({
   component: AsyncJobsPage,
 })
 
-const POLLING_INTERVAL = 5000 // 5 seconds
+// Age-based polling intervals (in milliseconds)
+const getPollingInterval = (jobAgeMinutes: number): number | null => {
+  if (jobAgeMinutes < 1) return 5000 // 0-1 min: 5 seconds
+  if (jobAgeMinutes < 5) return 30000 // 1-5 min: 30 seconds
+  if (jobAgeMinutes < 30) return 300000 // 5-30 min: 5 minutes
+  if (jobAgeMinutes < 60) return 300000 // 30-60 min: 5 minutes
+  return null // 60+ min: stop polling
+}
+
+// Calculate job age in minutes
+const getJobAgeMinutes = (createdAt: string): number => {
+  const now = new Date().getTime()
+  const created = new Date(createdAt).getTime()
+  return (now - created) / (1000 * 60)
+}
 
 function AsyncJobsPage() {
   const { endpoint } = useSalesboxEndpoint()
@@ -135,35 +148,50 @@ function AsyncJobsPage() {
     })
   }, [])
 
-  // Poll for job status updates
+  // Poll for job status updates with age-based intervals
   useEffect(() => {
     if (pollingJobs.size === 0) return
 
-    const interval = setInterval(async () => {
-      if (!endpoint) return
+    const intervals: NodeJS.Timeout[] = []
 
-      for (const jobId of pollingJobs) {
+    // Set up polling for each job based on its age
+    for (const jobId of pollingJobs) {
+      const job = jobs.find(j => j.id === jobId)
+      if (!job) continue
+
+      const jobAge = getJobAgeMinutes(job.createdAt)
+      const pollingInterval = getPollingInterval(jobAge)
+
+      // Stop polling if job is too old (> 60 minutes)
+      if (pollingInterval === null) {
+        stopPolling(jobId)
+        continue
+      }
+
+      const interval = setInterval(async () => {
+        if (!endpoint) return
+
         try {
           const updatedJob = await getJobStatus(jobId, endpoint)
-          setJobs(prev => prev.map(job =>
-            job.id === jobId
-              ? updatedJob
-              : job
+          setJobs(prev => prev.map(j =>
+            j.id === jobId ? updatedJob : j
           ))
 
-          // Stop polling if job is completed, failed, or cancelled
-          if ([JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED].includes(updatedJob.status)) {
+          // Stop polling if job is completed, failed, error, or cancelled
+          if ([JobStatus.SUCCESS, JobStatus.FAILED, JobStatus.ERROR, JobStatus.CANCELLED].includes(updatedJob.status)) {
             stopPolling(jobId)
           }
         } catch (error) {
           console.error(`Failed to poll job ${jobId}:`, error)
           stopPolling(jobId)
         }
-      }
-    }, POLLING_INTERVAL)
+      }, pollingInterval)
 
-    return () => clearInterval(interval)
-  }, [pollingJobs, stopPolling, endpoint])
+      intervals.push(interval)
+    }
+
+    return () => intervals.forEach(interval => clearInterval(interval))
+  }, [pollingJobs, jobs, stopPolling, endpoint])
 
   // Start polling for running jobs
   useEffect(() => {
@@ -186,9 +214,9 @@ function AsyncJobsPage() {
   const getStatusCounts = () => {
     const counts = {
       all: jobs.length,
-      [JobStatus.PENDING]: 0,
       [JobStatus.RUNNING]: 0,
-      [JobStatus.COMPLETED]: 0,
+      [JobStatus.SUCCESS]: 0,
+      [JobStatus.ERROR]: 0,
       [JobStatus.FAILED]: 0,
       [JobStatus.CANCELLED]: 0,
     }
@@ -276,9 +304,9 @@ function AsyncJobsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value={JobStatus.PENDING}>Pending</SelectItem>
               <SelectItem value={JobStatus.RUNNING}>Running</SelectItem>
-              <SelectItem value={JobStatus.COMPLETED}>Completed</SelectItem>
+              <SelectItem value={JobStatus.SUCCESS}>Success</SelectItem>
+              <SelectItem value={JobStatus.ERROR}>Error</SelectItem>
               <SelectItem value={JobStatus.FAILED}>Failed</SelectItem>
               <SelectItem value={JobStatus.CANCELLED}>Cancelled</SelectItem>
             </SelectContent>
@@ -306,20 +334,20 @@ function AsyncJobsPage() {
               All
               <Badge variant="secondary">{statusCounts.all}</Badge>
             </TabsTrigger>
-            <TabsTrigger value={JobStatus.PENDING} className="flex items-center gap-2">
-              <IconClock className="h-4 w-4" />
-              Pending
-              <Badge variant="secondary">{statusCounts[JobStatus.PENDING]}</Badge>
-            </TabsTrigger>
             <TabsTrigger value={JobStatus.RUNNING} className="flex items-center gap-2">
               <IconLoader2 className="h-4 w-4" />
               Running
               <Badge variant="secondary">{statusCounts[JobStatus.RUNNING]}</Badge>
             </TabsTrigger>
-            <TabsTrigger value={JobStatus.COMPLETED} className="flex items-center gap-2">
+            <TabsTrigger value={JobStatus.SUCCESS} className="flex items-center gap-2">
               <IconCircle className="h-4 w-4" />
-              Completed
-              <Badge variant="secondary">{statusCounts[JobStatus.COMPLETED]}</Badge>
+              Success
+              <Badge variant="secondary">{statusCounts[JobStatus.SUCCESS]}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value={JobStatus.ERROR} className="flex items-center gap-2">
+              <IconAlertCircle className="h-4 w-4" />
+              Error
+              <Badge variant="secondary">{statusCounts[JobStatus.ERROR]}</Badge>
             </TabsTrigger>
             <TabsTrigger value={JobStatus.FAILED} className="flex items-center gap-2">
               <IconX className="h-4 w-4" />
