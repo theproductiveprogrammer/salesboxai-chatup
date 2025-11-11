@@ -2,11 +2,21 @@ import { useEffect, useState } from 'react'
 import { useRouter } from '@tanstack/react-router'
 import { createFileRoute } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import {IconMessageCircle, IconRefresh} from '@tabler/icons-react'
+import {
+  IconMessageCircle,
+  IconRefresh,
+  IconUser,
+  IconCheck,
+} from '@tabler/icons-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { RenderMarkdown } from '@/containers/RenderMarkdown'
-import { getVisitorConversations, extractVisitorInfo, isICPMatch } from '@/services/visitors'
+import {
+  getVisitorConversations,
+  extractVisitorInfo,
+  isICPMatch,
+} from '@/services/visitors'
 import type { ParsedVisitorConversation } from '@/types/visitors'
 import { route } from '@/constants/routes'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
@@ -86,20 +96,21 @@ function VisitorsPage() {
       <div className="flex-none px-6 py-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">{t('common:visitors')}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-2xl font-bold">Visitors</h1>
+            <p className="text-muted-foreground">
               Website visitors identified by your AI agent
             </p>
           </div>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={handleRefresh}
             disabled={loading}
-            className="gap-2"
           >
-            <IconRefresh className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            {t('common:refresh')}
+            <IconRefresh
+              className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+            />
+            Refresh
           </Button>
         </div>
       </div>
@@ -122,7 +133,7 @@ function VisitorsPage() {
             <p className="text-muted-foreground">No visitors yet</p>
           </div>
         ) : (
-          <div className="space-y-4 max-w-4xl mx-auto">
+          <div className="space-y-6 max-w-4xl mx-auto">
             {visitors.map((visitor) => (
               <VisitorCard
                 key={visitor.id}
@@ -145,26 +156,77 @@ function VisitorCard({
   onEngage: () => void
 }) {
   const icpMatch = isICPMatch(visitor.data.content)
+  const info = extractVisitorInfo(visitor.data.content)
 
   return (
-    <Card className={`${icpMatch ? 'border-green-500/50 bg-green-50/5' : ''}`}>
-      <CardContent className="pt-6">
-        {/* Markdown content */}
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <RenderMarkdown content={visitor.data.content} className="select-text" />
+    <div
+      className={`relative rounded-xl border bg-card shadow-sm transition-all hover:shadow-md ${
+        icpMatch
+          ? 'border-l-2 border-green-500 bg-green-50/5 dark:bg-green-950/10'
+          : 'border-l-2 border-blue-500/30 bg-blue-100/10'
+      }`}
+    >
+      <div className="p-5">
+        {/* Header with avatar and metadata */}
+        <div className="flex items-start gap-3 mb-3">
+          <div
+            className={`flex-shrink-0 rounded-full p-2 ${
+              icpMatch
+                ? 'bg-green-100 dark:bg-green-900/30'
+                : 'bg-blue-100 dark:bg-blue-900/30'
+            }`}
+          >
+            <IconUser
+              className={`h-5 w-5 ${
+                icpMatch
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-blue-600 dark:text-blue-400'
+              }`}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-semibold text-sm">
+                {info.visitorName || 'Anonymous Visitor'}
+              </span>
+              {icpMatch && (
+                <Badge
+                  variant="outline"
+                  className="gap-1 text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700"
+                >
+                  <IconCheck className="h-3 w-3" />
+                  ICP Match
+                </Badge>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {info.companyName && <span>{info.companyName} • </span>}
+              {formatRelativeTime(visitor.timestamp, { addSuffix: true })}
+            </div>
+          </div>
         </div>
 
-        {/* Footer with timestamp and action */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-          <div className="text-xs text-muted-foreground">
-            {formatRelativeTime(visitor.timestamp, { addSuffix: true })}
-          </div>
-          <Button size="sm" onClick={onEngage} className="gap-2">
+        {/* Markdown content */}
+        <div className="prose prose-sm dark:prose-invert max-w-none ml-11 mb-3">
+          <RenderMarkdown
+            content={visitor.data.content}
+            className="select-text"
+          />
+        </div>
+
+        {/* Footer with action */}
+        <div className="flex items-center justify-end ml-11">
+          <Button
+            size="sm"
+            onClick={onEngage}
+            variant="default"
+            className="gap-2"
+          >
             <IconMessageCircle className="h-4 w-4" />
             Chat
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
