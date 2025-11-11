@@ -38,18 +38,20 @@ type ChatInputProps = {
   showSpeedToken?: boolean
   initialMessage?: boolean
   initialPrompt?: string
+  strongBorder?: boolean
 }
 
-const ChatInput = ({ className, initialMessage, initialPrompt }: ChatInputProps) => {
+const ChatInput = ({
+  className,
+  initialMessage,
+  initialPrompt,
+  strongBorder = false,
+}: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isFocused, setIsFocused] = useState(false)
   const [rows, setRows] = useState(1)
-  const {
-    streamingContent,
-    abortControllers,
-    tools,
-    cancelToolCall,
-  } = useAppState()
+  const { streamingContent, abortControllers, tools, cancelToolCall } =
+    useAppState()
   const { prompt, setPrompt } = usePrompt()
   const { currentThreadId } = useThreads()
   const { t } = useTranslation()
@@ -513,8 +515,11 @@ const ChatInput = ({ className, initialMessage, initialPrompt }: ChatInputProps)
 
           <div
             className={cn(
-              'relative z-20 px-0 pb-10 border border-main-view-fg/5 rounded-lg text-main-view-fg bg-main-view',
-              isFocused && 'ring-1 ring-main-view-fg/10',
+              'relative z-20 px-0 pb-10 rounded-lg text-main-view-fg bg-main-view',
+              strongBorder
+                ? 'border border-border/20 shadow-sm'
+                : 'border border-main-view-fg/5',
+              isFocused && !strongBorder && 'ring-1 ring-main-view-fg/10',
               isDragOver && 'ring-2 ring-accent border-accent'
             )}
             data-drop-zone={hasMmproj ? 'true' : undefined}
@@ -756,7 +761,7 @@ const ChatInput = ({ className, initialMessage, initialPrompt }: ChatInputProps)
                                 return (
                                   <div
                                     className={cn(
-                                      'h-7 p-1 flex items-center justify-center rounded-sm hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out gap-1 cursor-pointer relative',
+                                      'h-7 p-1 pr-3 flex items-center justify-center rounded-sm hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out gap-1 cursor-pointer relative',
                                       isOpen && 'bg-main-view-fg/10'
                                     )}
                                   >
@@ -765,7 +770,7 @@ const ChatInput = ({ className, initialMessage, initialPrompt }: ChatInputProps)
                                       className="text-main-view-fg/50"
                                     />
                                     {toolsCount > 0 && (
-                                      <div className="absolute -top-2 -right-2 bg-accent text-accent-fg text-xs rounded-full size-5 flex items-center justify-center font-medium">
+                                      <div className="absolute -top-0.5 -right-1 bg-accent text-accent-fg text-xs rounded-full size-5 flex items-center justify-center font-medium">
                                         <span className="leading-0 text-xs">
                                           {toolsCount > 99 ? '99+' : toolsCount}
                                         </span>
