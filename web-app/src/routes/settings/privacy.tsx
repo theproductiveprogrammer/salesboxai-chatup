@@ -47,8 +47,8 @@ function Privacy() {
                 actions={<SalesboxEndpointInput />}
               />
               <CardItem
-                title="Unipile Account ID"
-                description="Configure your Unipile Account ID for LinkedIn lead information enrichment"
+                title="LinkedIn Account ID"
+                description="Configure your LinkedIn Account ID for lead information enrichment"
                 align="start"
                 actions={<UnipileAccountIdInput />}
               />

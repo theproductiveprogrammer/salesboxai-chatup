@@ -49,19 +49,29 @@ function VisitorsPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Handle engage button click
+  // Handle chat button click
   const handleEngageVisitor = async (visitor: ParsedVisitorConversation) => {
     const info = extractVisitorInfo(visitor.data.content)
-    const visitorDescription = info.visitorName
-      ? `${info.visitorName}${info.companyName ? ` from ${info.companyName}` : ''}`
-      : 'this visitor'
 
-    const message = `Tell me more about ${visitorDescription} and suggest next steps:\n\n${visitor.data.content}`
+    if (!info.linkedinUrl) {
+      console.log('No LinkedIn URL found for visitor:', visitor.id)
+      return
+    }
 
-    await router.navigate({
-      to: route.home,
-      search: { message },
-    })
+    try {
+      // Pre-fill message for the user to edit/submit
+      const message = `Please get detailed information about this lead: ${info.linkedinUrl}`
+
+      // Navigate to home (New Chat) with pre-filled message
+      await router.navigate({
+        to: route.home,
+        search: { message },
+      })
+
+      console.log('Successfully navigated to new chat with pre-filled message')
+    } catch (error) {
+      console.error('Error navigating to chat:', error)
+    }
   }
 
   // Handle refresh

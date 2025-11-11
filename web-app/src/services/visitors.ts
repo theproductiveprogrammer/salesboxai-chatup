@@ -61,12 +61,14 @@ export function extractVisitorInfo(content: string): {
   companyName?: string
   leadId?: string
   accountId?: string
+  linkedinUrl?: string
 } {
   const result: {
     visitorName?: string
     companyName?: string
     leadId?: string
     accountId?: string
+    linkedinUrl?: string
   } = {}
 
   // Extract visitor name and lead ID
@@ -81,6 +83,12 @@ export function extractVisitorInfo(content: string): {
   if (companyMatch) {
     result.companyName = companyMatch[1]
     result.accountId = companyMatch[2]
+  }
+
+  // Extract LinkedIn URL - look for linkedin.com/in/ URLs
+  const linkedinMatch = content.match(/https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s)]+/)
+  if (linkedinMatch) {
+    result.linkedinUrl = linkedinMatch[0]
   }
 
   return result
