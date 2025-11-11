@@ -9,11 +9,11 @@ import {
   IconTrash,
   IconStar,
   IconMessageFilled,
-  IconAppsFilled,
   IconX,
   IconSearch,
   IconClipboardSmileFilled,
   IconGrain,
+  IconUsers,
 } from '@tabler/icons-react'
 import { route } from '@/constants/routes'
 import ThreadList from './ThreadList'
@@ -57,9 +57,9 @@ const mainMenus = [
     route: route.assistant,
   },
   {
-    title: 'common:hub',
-    icon: IconAppsFilled,
-    route: route.hub.index,
+    title: 'common:visitors',
+    icon: IconUsers,
+    route: route.visitors,
   },
   {
     title: 'common:asyncJobs',

@@ -18,9 +18,10 @@ export const route = {
     hardware: '/settings/hardware',
   },
   hub: {
-    index: '/hub/',
+    index: '/hub',
     model: '/hub/$modelId',
   },
+  visitors: '/visitors',
   asyncJobs: '/async-jobs',
   localApiServerlogs: '/local-api-server/logs',
   systemMonitor: '/system-monitor',
