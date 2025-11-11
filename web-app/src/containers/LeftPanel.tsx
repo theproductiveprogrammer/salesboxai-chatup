@@ -52,11 +52,6 @@ const mainMenus = [
     route: route.home,
   },
   {
-    title: 'common:assistants',
-    icon: IconClipboardSmileFilled,
-    route: route.assistant,
-  },
-  {
     title: 'common:visitors',
     icon: IconUsers,
     route: route.visitors,
