@@ -732,7 +732,7 @@ const ChatInput = ({
 
               {selectedModel?.capabilities?.includes('tools') &&
                 hasActiveMCPServers && (
-                  <div className="opacity-80">
+                  <div className="opacity-80 hidden">
                     <TooltipProvider>
                       <Tooltip
                         open={tooltipToolsAvailable}
