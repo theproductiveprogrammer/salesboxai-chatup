@@ -9,6 +9,7 @@ import {
   IconUserSearch,
   IconMail,
   IconBrandLinkedin,
+  IconCalendarBolt,
 } from '@tabler/icons-react'
 
 import { route } from '@/constants/routes'
@@ -24,6 +25,7 @@ import DropdownAssistant from '@/containers/DropdownAssistant'
 import { useEffect } from 'react'
 import { useThreads } from '@/hooks/useThreads'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
+import { usePrompt } from '@/hooks/usePrompt'
 
 export const Route = createFileRoute(route.home as any)({
   component: Index,
@@ -38,6 +40,7 @@ function Index() {
   const search = useSearch({ from: route.home as any })
   const { setCurrentThreadId } = useThreads()
   const { user } = useSalesboxAuth()
+  const { setPrompt } = usePrompt()
   useTools()
 
   const userName = user?.name || user?.username || 'there'
@@ -50,8 +53,7 @@ function Index() {
     {
       icon: IconSearch,
       label: 'Discover leads',
-      prompt:
-        'Please help me discover new leads matching my ideal customer profile',
+      prompt: 'Please find find leads from: ',
       color: 'text-blue-600 dark:text-blue-400',
       bgColor:
         'bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 dark:hover:bg-blue-950/50',
@@ -59,7 +61,7 @@ function Index() {
     {
       icon: IconUserSearch,
       label: 'Find lead information',
-      prompt: 'Please get detailed information about this lead: ',
+      prompt: 'Please find detailed information about this lead: ',
       color: 'text-purple-600 dark:text-purple-400',
       bgColor:
         'bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-950/50',
@@ -67,7 +69,7 @@ function Index() {
     {
       icon: IconMail,
       label: 'Send email',
-      prompt: 'Please help me draft and send an email to ',
+      prompt: 'Please send an email to: ',
       color: 'text-green-600 dark:text-green-400',
       bgColor:
         'bg-green-50 dark:bg-green-950/30 hover:bg-green-100 dark:hover:bg-green-950/50',
@@ -75,10 +77,18 @@ function Index() {
     {
       icon: IconBrandLinkedin,
       label: 'Send LinkedIn message',
-      prompt: 'Please help me draft and send a LinkedIn message to ',
+      prompt: 'Please send a LinkedIn message to: ',
       color: 'text-orange-600 dark:text-orange-400',
       bgColor:
         'bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-950/50',
+    },
+    {
+      icon: IconCalendarBolt,
+      label: 'Appointment Setting',
+      prompt: 'Please try and set an appointment with: ',
+      color: 'text-pink-600 dark:text-pink-400',
+      bgColor:
+        'bg-pink-50 dark:bg-pink-950/30 hover:bg-pink-100 dark:hover:bg-pink-950/50',
     },
   ]
 
@@ -116,16 +126,16 @@ function Index() {
                   key={index}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border/20 transition-all ${action.bgColor}`}
                   onClick={() => {
-                    const input = document.querySelector(
-                      'textarea'
-                    ) as HTMLTextAreaElement
-                    if (input) {
-                      input.value = action.prompt
-                      input.focus()
-                      // Trigger input event to update the ChatInput component state
-                      const event = new Event('input', { bubbles: true })
-                      input.dispatchEvent(event)
-                    }
+                    setPrompt(action.prompt)
+                    // Focus the textarea after setting the prompt
+                    setTimeout(() => {
+                      const input = document.querySelector(
+                        'textarea'
+                      ) as HTMLTextAreaElement
+                      if (input) {
+                        input.focus()
+                      }
+                    }, 0)
                   }}
                 >
                   <action.icon
