@@ -26,6 +26,7 @@ import { useEffect } from 'react'
 import { useThreads } from '@/hooks/useThreads'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { usePrompt } from '@/hooks/usePrompt'
+import { useLeadContext } from '@/hooks/useLeadContext'
 
 export const Route = createFileRoute(route.home as any)({
   component: Index,
@@ -41,6 +42,7 @@ function Index() {
   const { setCurrentThreadId } = useThreads()
   const { user } = useSalesboxAuth()
   const { setPrompt } = usePrompt()
+  const { leadContext } = useLeadContext()
   useTools()
 
   const userName = user?.name || user?.username || 'there'
@@ -48,6 +50,20 @@ function Index() {
   useEffect(() => {
     setCurrentThreadId(undefined)
   }, [setCurrentThreadId])
+
+  // Helper function to format lead context for prompt
+  const formatLeadForPrompt = (): string => {
+    if (!leadContext) return ''
+
+    // Build a readable representation of the lead
+    const parts: string[] = []
+
+    if (leadContext.name) parts.push(leadContext.name)
+    if (leadContext.linkedin) parts.push(leadContext.linkedin)
+    if (leadContext.email) parts.push(leadContext.email)
+
+    return parts.join(' - ')
+  }
 
   const suggestedActions = [
     {
@@ -61,7 +77,7 @@ function Index() {
     {
       icon: IconUserSearch,
       label: 'Find lead information',
-      prompt: 'Please find detailed information about this lead: ',
+      prompt: 'Please find detailed information about this lead: {{lead}}',
       color: 'text-purple-600 dark:text-purple-400',
       bgColor:
         'bg-purple-50 dark:bg-purple-950/30 hover:bg-purple-100 dark:hover:bg-purple-950/50',
@@ -69,7 +85,7 @@ function Index() {
     {
       icon: IconMail,
       label: 'Send email',
-      prompt: 'Please send an email to: ',
+      prompt: 'Please send an email to: {{lead}}',
       color: 'text-green-600 dark:text-green-400',
       bgColor:
         'bg-green-50 dark:bg-green-950/30 hover:bg-green-100 dark:hover:bg-green-950/50',
@@ -77,7 +93,7 @@ function Index() {
     {
       icon: IconBrandLinkedin,
       label: 'Send LinkedIn message',
-      prompt: 'Please send a LinkedIn message to: ',
+      prompt: 'Please send a LinkedIn message to: {{lead}}',
       color: 'text-orange-600 dark:text-orange-400',
       bgColor:
         'bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-950/50',
@@ -85,7 +101,7 @@ function Index() {
     {
       icon: IconCalendarBolt,
       label: 'Appointment Setting',
-      prompt: 'Please try and set an appointment with: ',
+      prompt: 'Please try and set an appointment with: {{lead}}',
       color: 'text-pink-600 dark:text-pink-400',
       bgColor:
         'bg-pink-50 dark:bg-pink-950/30 hover:bg-pink-100 dark:hover:bg-pink-950/50',
@@ -126,7 +142,11 @@ function Index() {
                   key={index}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border/20 transition-all ${action.bgColor}`}
                   onClick={() => {
-                    setPrompt(action.prompt)
+                    // Replace {{lead}} placeholder with actual lead data
+                    const leadData = formatLeadForPrompt()
+                    const filledPrompt = action.prompt.replace(/\{\{lead\}\}/g, leadData)
+                    setPrompt(filledPrompt)
+
                     // Focus the textarea after setting the prompt
                     setTimeout(() => {
                       const input = document.querySelector(

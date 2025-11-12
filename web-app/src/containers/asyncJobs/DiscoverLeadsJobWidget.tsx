@@ -25,12 +25,14 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { invoke } from '@tauri-apps/api/core'
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
+import { useLeadContext } from '@/hooks/useLeadContext'
 
 export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   job,
   onAction,
 }) => {
   const router = useRouter()
+  const { setLeadContext } = useLeadContext()
 
   console.log('DiscoverLeadsJobWidget - job:', job)
   console.log('DiscoverLeadsJobWidget - job.status:', job.status)
@@ -89,6 +91,16 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
     }
 
     try {
+      // Set lead context before navigation
+      setLeadContext({
+        name: getLeadDisplayName(lead),
+        linkedin: linkedinUrl,
+        email: lead.email,
+        id: lead.id,
+        company: lead.company,
+        title: lead.title,
+      })
+
       // Pre-fill message for the user to edit/submit
       const message = `Please get detailed information about this lead: ${linkedinUrl}`
 

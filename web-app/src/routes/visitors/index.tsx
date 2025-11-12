@@ -20,6 +20,7 @@ import {
 import type { ParsedVisitorConversation } from '@/types/visitors'
 import { route } from '@/constants/routes'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
+import { useLeadContext } from '@/hooks/useLeadContext'
 
 export const Route = createFileRoute('/visitors/')({
   component: VisitorsPage,
@@ -28,6 +29,7 @@ export const Route = createFileRoute('/visitors/')({
 function VisitorsPage() {
   const { t } = useTranslation()
   const router = useRouter()
+  const { setLeadContext } = useLeadContext()
   const [visitors, setVisitors] = useState<ParsedVisitorConversation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -69,6 +71,14 @@ function VisitorsPage() {
     }
 
     try {
+      // Set lead context before navigation
+      setLeadContext({
+        name: info.visitorName,
+        linkedin: info.linkedinUrl,
+        id: info.leadId,
+        company: info.companyName,
+      })
+
       // Pre-fill message for the user to edit/submit
       const message = `Please get detailed information about this lead: ${info.linkedinUrl}`
 

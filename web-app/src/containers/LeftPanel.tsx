@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { useThreads } from '@/hooks/useThreads'
+import { useLeadContext } from '@/hooks/useLeadContext'
 
 import { useTranslation } from '@/i18n/react-i18next-compat'
 import { useMemo, useState, useEffect, useRef } from 'react'
@@ -70,6 +71,7 @@ const mainMenus = [
 
 const LeftPanel = () => {
   const { open, setLeftPanel } = useLeftPanel()
+  const { clearLeadContext } = useLeadContext()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
@@ -484,7 +486,13 @@ const LeftPanel = () => {
                 <Link
                   key={menu.title}
                   to={menu.route}
-                  onClick={() => isSmallScreen && setLeftPanel(false)}
+                  onClick={() => {
+                    // Clear lead context when clicking "New Chat"
+                    if (menu.route === route.home) {
+                      clearLeadContext()
+                    }
+                    isSmallScreen && setLeftPanel(false)
+                  }}
                   data-test-id={`menu-${menu.title}`}
                   className={cn(
                     'flex items-center gap-1.5 cursor-pointer hover:bg-left-panel-fg/10 py-1 px-1 rounded',
