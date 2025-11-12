@@ -314,7 +314,7 @@ export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({
         {/* Result summary for completed jobs */}
         {job.status === AsyncJobStatus.SUCCESS && job.result && (
           job.type === AsyncJobType.LINKEDIN_LEAD_INFO ? (
-            <LinkedInProfileDisplay result={job.result} />
+            <LinkedInProfileDisplay result={job.result} input={job.input} />
           ) : (
             <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
               <p className="text-sm text-green-800 dark:text-green-200">

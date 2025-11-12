@@ -1,11 +1,18 @@
 import { useState } from 'react'
-import { Briefcase, GraduationCap, MapPin, Users, FileText, ChevronDown, ChevronUp, ThumbsUp, MessageCircle, Share2, Repeat2, ExternalLink } from 'lucide-react'
+import { Briefcase, GraduationCap, MapPin, Users, FileText, ChevronDown, ChevronUp, ThumbsUp, MessageCircle, Share2, Repeat2, ExternalLink, MessageSquare } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useRouter } from '@tanstack/react-router'
+import { route } from '@/constants/routes'
+import { useLeadContext } from '@/hooks/useLeadContext'
 
 interface LinkedInProfileDisplayProps {
   result: any
+  input?: any
 }
 
-export function LinkedInProfileDisplay({ result }: LinkedInProfileDisplayProps) {
+export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplayProps) {
+  const router = useRouter()
+  const { setLeadContext } = useLeadContext()
   // The result structure is: result.output.profile and result.output.posts
   const output = result?.output
   const [showPosts, setShowPosts] = useState(false)
@@ -21,6 +28,55 @@ export function LinkedInProfileDisplay({ result }: LinkedInProfileDisplayProps) 
   const profile = output.profile
   const posts = output.posts || []
 
+  // Get LinkedIn URL from input (try different field names)
+  const getLinkedInUrl = (): string | undefined => {
+    return input?.linkedin || input?.linkedinUrl || input?.linkedInUrl || input?.url
+  }
+
+  // Format lead data for prompt
+  const formatLeadForPrompt = (): string => {
+    const parts: string[] = []
+    const name = `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
+    const linkedinUrl = getLinkedInUrl()
+
+    if (name) parts.push(name)
+    if (linkedinUrl) parts.push(linkedinUrl)
+
+    return parts.join(' - ')
+  }
+
+  // Handler to navigate to chat with Appointment Setting prompt
+  const handleChatWithLead = async () => {
+    const linkedinUrl = getLinkedInUrl()
+
+    try {
+      // Set lead context before navigation
+      setLeadContext({
+        name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+        linkedin: linkedinUrl,
+        id: input?.leadId || input?.id,
+        title: profile.headline,
+      })
+
+      // Pre-fill with Appointment Setting prompt
+      const leadData = formatLeadForPrompt()
+      const message = `Please try and set an appointment with: ${leadData}`
+
+      // Navigate to home (New Chat) with pre-filled message
+      await router.navigate({
+        to: route.home,
+        search: { message },
+      })
+
+      console.log('Successfully navigated to new chat with pre-filled message')
+    } catch (error) {
+      console.error('Error navigating to chat:', error)
+    }
+  }
+
+  const linkedinUrl = getLinkedInUrl()
+  const showChatButton = linkedinUrl || input  // Show if we have LinkedIn URL or any input
+
   return (
     <div className="mt-4 space-y-4">
       {/* Profile Header */}
@@ -34,24 +90,39 @@ export function LinkedInProfileDisplay({ result }: LinkedInProfileDisplayProps) 
             />
           )}
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100">
-              {profile.first_name} {profile.last_name}
-            </h3>
-            {profile.headline && (
-              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">{profile.headline}</p>
-            )}
-            <div className="flex flex-wrap gap-3 mt-2 text-xs text-blue-600 dark:text-blue-400">
-              {profile.location && (
-                <span className="flex items-center gap-1">
-                  <MapPin size={14} />
-                  {profile.location}
-                </span>
-              )}
-              {profile.follower_count !== undefined && (
-                <span className="flex items-center gap-1">
-                  <Users size={14} />
-                  {profile.follower_count} connections
-                </span>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100">
+                  {profile.first_name} {profile.last_name}
+                </h3>
+                {profile.headline && (
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">{profile.headline}</p>
+                )}
+                <div className="flex flex-wrap gap-3 mt-2 text-xs text-blue-600 dark:text-blue-400">
+                  {profile.location && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={14} />
+                      {profile.location}
+                    </span>
+                  )}
+                  {profile.follower_count !== undefined && (
+                    <span className="flex items-center gap-1">
+                      <Users size={14} />
+                      {profile.follower_count} connections
+                    </span>
+                  )}
+                </div>
+              </div>
+              {showChatButton && (
+                <Button
+                  size="sm"
+                  onClick={handleChatWithLead}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  title="Start appointment setting chat"
+                >
+                  <MessageSquare size={16} />
+                  Chat
+                </Button>
               )}
             </div>
           </div>
