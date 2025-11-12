@@ -5,7 +5,7 @@ import { useThreads } from './useThreads'
 import { useAppState } from './useAppState'
 import { useMessages } from './useMessages'
 import { useRouter } from '@tanstack/react-router'
-import { useUserContext } from './useUserContext'
+import { useLeadContext } from './useLeadContext'
 import { defaultModel } from '@/lib/models'
 import { route } from '@/constants/routes'
 import {
@@ -18,11 +18,11 @@ import {
   sendCompletion,
 } from '@/lib/completion'
 import { CompletionMessagesBuilder } from '@/lib/messages'
-import { renderInstructions } from '@/lib/instructionTemplate'
 import { ChatCompletionMessageToolCall } from 'openai/resources'
 import { useAssistant } from './useAssistant'
 
 import { stopModel, startModel, stopAllModels } from '@/services/models'
+import { getSystemPrompt } from '@/services/systemPrompt'
 
 import { useToolApproval } from '@/hooks/useToolApproval'
 import { useToolAvailable } from '@/hooks/useToolAvailable'
@@ -47,7 +47,7 @@ export const useChat = () => {
   } = useAppState()
   const { assistants, currentAssistant } = useAssistant()
   const { updateProvider } = useModelProvider()
-  const { contextMarkdown } = useUserContext()
+  const { leadContext } = useLeadContext()
 
   const { approvedTools, showApprovalModal, allowAllMCPPermissions } =
     useToolApproval()
@@ -248,19 +248,17 @@ export const useChat = () => {
           updateLoadingModel(false)
         }
 
-        const renderedInstructions = renderInstructions(currentAssistant?.instructions, {
-          userContext: contextMarkdown
-        })
-        console.log('[useChat] Sending message with context:', {
-          hasContext: !!contextMarkdown,
-          contextLength: contextMarkdown?.length || 0,
-          instructionsLength: renderedInstructions?.length || 0,
-          contextPreview: contextMarkdown?.substring(0, 200)
+        const systemPrompt = await getSystemPrompt(leadContext)
+        console.log('[useChat] Sending message with system prompt:', {
+          hasLeadContext: !!leadContext,
+          leadId: leadContext?.id,
+          systemPromptLength: systemPrompt?.length || 0,
+          systemPromptPreview: systemPrompt?.substring(0, 200)
         })
 
         const builder = new CompletionMessagesBuilder(
           messages,
-          renderedInstructions
+          systemPrompt
         )
         if (troubleshooting) builder.addUserMessage(message, attachments)
 
@@ -588,7 +586,7 @@ export const useChat = () => {
       setPrompt,
       selectedModel,
       currentAssistant,
-      contextMarkdown,
+      leadContext,
       tools,
       updateLoadingModel,
       getDisabledToolsForThread,
