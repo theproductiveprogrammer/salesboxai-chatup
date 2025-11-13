@@ -148,7 +148,7 @@ function Index() {
               {suggestedActions.map((action, index) => (
                 <button
                   key={index}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border/20 transition-all ${action.bgColor}`}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border/20 transition-all ${action.bgColor} cursor-pointer opacity-50 hover:opacity-100`}
                   onClick={() => {
                     // Replace {{lead}} placeholder with actual lead data
                     const leadData = formatLeadForPrompt()
