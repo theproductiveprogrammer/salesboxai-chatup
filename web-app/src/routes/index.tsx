@@ -58,7 +58,15 @@ function Index() {
     // Build a readable representation of the lead
     const parts: string[] = []
 
-    if (leadContext.name) parts.push(leadContext.name)
+    if (leadContext.name) {
+      if (leadContext.id) {
+        parts.push(`${leadContext.name}[id:${leadContext.id}]`)
+      } else {
+        parts.push(leadContext.name)
+      }
+    } else if (leadContext.id) {
+      parts.push(`[id:${leadContext.id}]`)
+    }
     if (leadContext.linkedin) parts.push(leadContext.linkedin)
     if (leadContext.email) parts.push(leadContext.email)
 
@@ -144,7 +152,10 @@ function Index() {
                   onClick={() => {
                     // Replace {{lead}} placeholder with actual lead data
                     const leadData = formatLeadForPrompt()
-                    const filledPrompt = action.prompt.replace(/\{\{lead\}\}/g, leadData)
+                    const filledPrompt = action.prompt.replace(
+                      /\{\{lead\}\}/g,
+                      leadData
+                    )
                     setPrompt(filledPrompt)
 
                     // Focus the textarea after setting the prompt
