@@ -18,7 +18,7 @@ export interface TextSummaryResDTO {
 export async function getSystemPrompt(
   leadContext?: LeadContext | null
 ): Promise<string> {
-  const response = await callSalesboxApi<TextSummaryResDTO>('/mcp/system-prompt', {
+  const response = await callSalesboxApi<TextSummaryResDTO>('/mcp/agent-system-prompt', {
     method: 'POST',
     body: JSON.stringify({
       leadContext: leadContext || null,
