@@ -5,8 +5,8 @@ export interface SystemPromptRequest {
   leadContext?: LeadContext | null
 }
 
-export interface ChatSystemPromptResDTO {
-  systemPrompt?: string
+export interface TextSummaryResDTO {
+  text?: string
   error?: string
 }
 
@@ -18,7 +18,7 @@ export interface ChatSystemPromptResDTO {
 export async function getSystemPrompt(
   leadContext?: LeadContext | null
 ): Promise<string> {
-  const response = await callSalesboxApi<ChatSystemPromptResDTO>('/mcp/system-prompt', {
+  const response = await callSalesboxApi<TextSummaryResDTO>('/mcp/system-prompt', {
     method: 'POST',
     body: JSON.stringify({
       leadContext: leadContext || null,
@@ -35,5 +35,5 @@ export async function getSystemPrompt(
     throw new Error(response.data.error)
   }
 
-  return response.data?.systemPrompt || ''
+  return response.data?.text || ''
 }
