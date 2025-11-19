@@ -8,8 +8,7 @@ import {
   IconSearch,
   IconUserSearch,
   IconMail,
-  IconBrandLinkedin,
-  IconCalendarBolt,
+  IconTargetArrow,
 } from '@tabler/icons-react'
 
 import { route } from '@/constants/routes'
@@ -99,20 +98,12 @@ function Index() {
         'bg-green-50 dark:bg-green-950/30 hover:bg-green-100 dark:hover:bg-green-950/50',
     },
     {
-      icon: IconBrandLinkedin,
-      label: 'Send LinkedIn message',
-      prompt: 'Please send a LinkedIn message to: {{lead}}',
+      icon: IconTargetArrow,
+      label: 'Prospect Lead',
+      prompt: 'Please start prospecting: {{lead}}',
       color: 'text-orange-600 dark:text-orange-400',
       bgColor:
         'bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-950/50',
-    },
-    {
-      icon: IconCalendarBolt,
-      label: 'Appointment Setting',
-      prompt: 'Please try and set an appointment with: {{lead}}',
-      color: 'text-pink-600 dark:text-pink-400',
-      bgColor:
-        'bg-pink-50 dark:bg-pink-950/30 hover:bg-pink-100 dark:hover:bg-pink-950/50',
     },
   ]
 

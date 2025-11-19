@@ -45,7 +45,7 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
     return parts.join(' - ')
   }
 
-  // Handler to navigate to chat with Appointment Setting prompt
+  // Handler to navigate to chat with Prospect Lead prompt
   const handleChatWithLead = async () => {
     const linkedinUrl = getLinkedInUrl()
 
@@ -58,9 +58,9 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
         title: profile.headline,
       })
 
-      // Pre-fill with Appointment Setting prompt
+      // Pre-fill with Prospect Lead prompt
       const leadData = formatLeadForPrompt()
-      const message = `Please try and set an appointment with: ${leadData}`
+      const message = `Please start prospecting: ${leadData}`
 
       // Navigate to home (New Chat) with pre-filled message
       await router.navigate({
@@ -118,10 +118,10 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
                   size="sm"
                   onClick={handleChatWithLead}
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                  title="Start appointment setting chat"
+                  title="Start prospecting this lead"
                 >
                   <MessageSquare size={16} />
-                  Chat
+                  Prospect
                 </Button>
               )}
             </div>
