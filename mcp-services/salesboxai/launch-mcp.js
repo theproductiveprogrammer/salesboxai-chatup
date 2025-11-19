@@ -29,3 +29,21 @@ child.on('exit', (code) => {
     process.exit(code);
 });
 
+// Forward termination signals to child process to prevent orphans
+process.on('SIGTERM', () => {
+    child.kill('SIGTERM');
+});
+
+process.on('SIGINT', () => {
+    child.kill('SIGINT');
+});
+
+process.on('SIGHUP', () => {
+    child.kill('SIGHUP');
+});
+
+// Handle parent process exit
+process.on('exit', () => {
+    child.kill();
+});
+
