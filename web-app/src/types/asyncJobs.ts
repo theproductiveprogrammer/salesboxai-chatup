@@ -18,6 +18,7 @@ export enum AsyncJobType {
   DISCOVER_LEADS = 'DISCOVER_LEADS',
   DISCOVER_EMAIL = 'DISCOVER_EMAIL',
   LINKEDIN_LEAD_INFO = 'LINKEDIN_LEAD_INFO',
+  LEAD_PROSPECTING = 'LEAD_PROSPECTING',
 }
 
 export interface AsyncJob {
@@ -110,4 +111,48 @@ export interface DiscoverLeadsOutput {
 export interface DiscoverLeadsResult {
   input: DiscoverLeadsInput
   output: DiscoverLeadsOutput[]
+}
+
+// Lead Prospecting specific types
+export interface ProspectingTouch {
+  touchType: string // LINKEDIN_CONNECT, LINKEDIN_MESSAGE, EMAIL
+  timestamp: number
+  message: string
+  status: string // SENT, FAILED
+}
+
+export interface ProspectingInput {
+  leadContext: {
+    id?: number
+    linkedin?: string
+    name?: string
+    email?: string
+    title?: string
+    company?: string
+  }
+  botId?: number
+  maxTouches?: number
+}
+
+export interface ProspectingOutput {
+  providerId?: string
+  networkDistance?: string // FIRST_DEGREE, SECOND_DEGREE, THIRD_DEGREE, OUT_OF_NETWORK
+  currentStatus?: string
+  touches: ProspectingTouch[]
+  llmReasoning?: string
+  nextCheckTimestamp?: number
+  profile?: {
+    first_name?: string
+    last_name?: string
+    headline?: string
+    location?: string
+    profile_picture_url?: string
+    connections_count?: number
+    follower_count?: number
+  }
+}
+
+export interface ProspectingResult {
+  input: ProspectingInput
+  output: ProspectingOutput
 }

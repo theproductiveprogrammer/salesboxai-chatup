@@ -8,7 +8,6 @@ import {
   IconUser,
   IconCheck,
 } from '@tabler/icons-react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RenderMarkdown } from '@/containers/RenderMarkdown'
@@ -134,7 +133,7 @@ function VisitorsPage() {
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-64 gap-4">
             <p className="text-destructive">{error}</p>
-            <Button onClick={handleRefresh} variant="outline">
+            <Button onClick={handleRefresh} variant="default">
               {t('common:retry')}
             </Button>
           </div>

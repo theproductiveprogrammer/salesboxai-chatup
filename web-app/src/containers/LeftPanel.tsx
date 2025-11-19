@@ -11,9 +11,9 @@ import {
   IconMessageFilled,
   IconX,
   IconSearch,
-  IconClipboardSmileFilled,
   IconGrain,
   IconUsers,
+  IconTargetArrow,
 } from '@tabler/icons-react'
 import { route } from '@/constants/routes'
 import ThreadList from './ThreadList'
@@ -56,6 +56,11 @@ const mainMenus = [
     title: 'common:visitors',
     icon: IconUsers,
     route: route.visitors,
+  },
+  {
+    title: 'common:prospecting',
+    icon: IconTargetArrow,
+    route: route.prospecting,
   },
   {
     title: 'common:asyncJobs',

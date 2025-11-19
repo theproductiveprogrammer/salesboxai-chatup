@@ -806,18 +806,27 @@ pub async fn restart_active_mcp_servers<R: Runtime>(
 pub async fn clean_up_mcp_servers(state: State<'_, AppState>) {
     log::info!("Cleaning up MCP servers");
 
-    // Stop all running MCP servers
-    let _ = stop_mcp_servers(state.mcp_servers.clone()).await;
-
-    // Clear active servers and restart counts
+    // Mark all servers as not connected to prevent monitoring tasks from restarting
     {
-        let mut active_servers = state.mcp_active_servers.lock().await;
-        active_servers.clear();
+        let mut connected = state.mcp_successfully_connected.lock().await;
+        connected.clear();
     }
+
+    // Clear restart counts first
     {
         let mut restart_counts = state.mcp_restart_counts.lock().await;
         restart_counts.clear();
     }
+
+    // Clear active servers
+    {
+        let mut active_servers = state.mcp_active_servers.lock().await;
+        active_servers.clear();
+    }
+
+    // Stop all running MCP servers
+    let _ = stop_mcp_servers(state.mcp_servers.clone()).await;
+
     log::info!("MCP servers cleaned up successfully");
 }
 
@@ -942,6 +951,15 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
     servers_state: SharedMcpServers,
 ) -> Result<(), String> {
     use tauri_plugin_store::StoreExt;
+
+    // Check if server already exists to prevent duplicate spawning
+    {
+        let servers = servers_state.lock().await;
+        if servers.contains_key("salesboxai-builtin") {
+            log::info!("SalesboxAI MCP server already running, skipping duplicate start");
+            return Ok(());
+        }
+    }
 
     // Get API key and endpoint from store
     let mut store_path = get_jan_data_folder_path(app.clone());

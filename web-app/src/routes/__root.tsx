@@ -26,7 +26,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from '@/components/ui/resizable'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import GlobalError from '@/containers/GlobalError'
 import { GlobalEventHandler } from '@/providers/GlobalEventHandler'
 import ErrorDialog from '@/containers/dialogs/ErrorDialog'
@@ -190,6 +190,7 @@ function RootLayout() {
   const { isAuthenticated, loadStoredCredentials } = useSalesboxAuth()
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [authInitialized, setAuthInitialized] = useState(false)
+  const authInitStarted = useRef(false)
 
   const isLocalAPIServerLogsRoute =
     router.location.pathname === route.localApiServerlogs ||
@@ -198,6 +199,10 @@ function RootLayout() {
 
   // Initialize authentication on app startup
   useEffect(() => {
+    // Prevent duplicate initialization (React StrictMode or re-renders)
+    if (authInitStarted.current) return
+    authInitStarted.current = true
+
     const initAuth = async () => {
       try {
         // Try to load stored credentials and auto-login
@@ -210,7 +215,7 @@ function RootLayout() {
     }
 
     initAuth()
-  }, [loadStoredCredentials])
+  }, []) // Empty deps - only run once on mount
 
   // Show login dialog if not authenticated after initialization
   useEffect(() => {

@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as SystemMonitorImport } from './routes/system-monitor'
+import { Route as ProspectingImport } from './routes/prospecting'
 import { Route as LogsImport } from './routes/logs'
 import { Route as AsyncJobsImport } from './routes/async-jobs'
 import { Route as AssistantImport } from './routes/assistant'
@@ -38,6 +39,12 @@ import { Route as SettingsProvidersProviderNameImport } from './routes/settings/
 const SystemMonitorRoute = SystemMonitorImport.update({
   id: '/system-monitor',
   path: '/system-monitor',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ProspectingRoute = ProspectingImport.update({
+  id: '/prospecting',
+  path: '/prospecting',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -194,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LogsImport
       parentRoute: typeof rootRoute
     }
+    '/prospecting': {
+      id: '/prospecting'
+      path: '/prospecting'
+      fullPath: '/prospecting'
+      preLoaderRoute: typeof ProspectingImport
+      parentRoute: typeof rootRoute
+    }
     '/system-monitor': {
       id: '/system-monitor'
       path: '/system-monitor'
@@ -323,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AssistantRoute
   '/async-jobs': typeof AsyncJobsRoute
   '/logs': typeof LogsRoute
+  '/prospecting': typeof ProspectingRoute
   '/system-monitor': typeof SystemMonitorRoute
   '/hub/$modelId': typeof HubModelIdRoute
   '/local-api-server/logs': typeof LocalApiServerLogsRoute
@@ -347,6 +362,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AssistantRoute
   '/async-jobs': typeof AsyncJobsRoute
   '/logs': typeof LogsRoute
+  '/prospecting': typeof ProspectingRoute
   '/system-monitor': typeof SystemMonitorRoute
   '/hub/$modelId': typeof HubModelIdRoute
   '/local-api-server/logs': typeof LocalApiServerLogsRoute
@@ -372,6 +388,7 @@ export interface FileRoutesById {
   '/assistant': typeof AssistantRoute
   '/async-jobs': typeof AsyncJobsRoute
   '/logs': typeof LogsRoute
+  '/prospecting': typeof ProspectingRoute
   '/system-monitor': typeof SystemMonitorRoute
   '/hub/$modelId': typeof HubModelIdRoute
   '/local-api-server/logs': typeof LocalApiServerLogsRoute
@@ -398,6 +415,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/async-jobs'
     | '/logs'
+    | '/prospecting'
     | '/system-monitor'
     | '/hub/$modelId'
     | '/local-api-server/logs'
@@ -421,6 +439,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/async-jobs'
     | '/logs'
+    | '/prospecting'
     | '/system-monitor'
     | '/hub/$modelId'
     | '/local-api-server/logs'
@@ -444,6 +463,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/async-jobs'
     | '/logs'
+    | '/prospecting'
     | '/system-monitor'
     | '/hub/$modelId'
     | '/local-api-server/logs'
@@ -469,6 +489,7 @@ export interface RootRouteChildren {
   AssistantRoute: typeof AssistantRoute
   AsyncJobsRoute: typeof AsyncJobsRoute
   LogsRoute: typeof LogsRoute
+  ProspectingRoute: typeof ProspectingRoute
   SystemMonitorRoute: typeof SystemMonitorRoute
   HubModelIdRoute: typeof HubModelIdRoute
   LocalApiServerLogsRoute: typeof LocalApiServerLogsRoute
@@ -493,6 +514,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssistantRoute: AssistantRoute,
   AsyncJobsRoute: AsyncJobsRoute,
   LogsRoute: LogsRoute,
+  ProspectingRoute: ProspectingRoute,
   SystemMonitorRoute: SystemMonitorRoute,
   HubModelIdRoute: HubModelIdRoute,
   LocalApiServerLogsRoute: LocalApiServerLogsRoute,
@@ -526,6 +548,7 @@ export const routeTree = rootRoute
         "/assistant",
         "/async-jobs",
         "/logs",
+        "/prospecting",
         "/system-monitor",
         "/hub/$modelId",
         "/local-api-server/logs",
@@ -556,6 +579,9 @@ export const routeTree = rootRoute
     },
     "/logs": {
       "filePath": "logs.tsx"
+    },
+    "/prospecting": {
+      "filePath": "prospecting.tsx"
     },
     "/system-monitor": {
       "filePath": "system-monitor.tsx"

@@ -1,6 +1,8 @@
 use rmcp::model::{CallToolRequestParam, CallToolResult};
 use serde_json::{Map, Value};
+use std::sync::OnceLock;
 use tauri::{AppHandle, Emitter, Runtime, State};
+use tokio::sync::Mutex as TokioMutex;
 use tokio::time::timeout;
 use tokio::sync::oneshot;
 
@@ -14,6 +16,9 @@ use crate::core::{
     state::{RunningServiceEnum, SharedMcpServers},
 };
 use std::fs;
+
+/// Global mutex to prevent concurrent reinitialization of MCP servers
+static REINIT_LOCK: OnceLock<TokioMutex<()>> = OnceLock::new();
 
 #[tauri::command]
 pub async fn activate_mcp_server<R: Runtime>(
@@ -101,9 +106,41 @@ pub async fn reinitialize_mcp_servers(app: AppHandle, state: State<'_, AppState>
     use crate::core::setup::install_mcp_from_remote;
     use super::helpers::start_builtin_salesbox_mcp;
 
+    // Acquire global mutex to prevent concurrent reinitialization calls
+    let lock = REINIT_LOCK.get_or_init(|| TokioMutex::new(()));
+    let _guard = lock.lock().await;
+
     let servers = state.mcp_servers.clone();
 
     log::info!("Reinitializing MCP servers after login/endpoint change");
+
+    // Mark server as not connected to prevent monitoring tasks from restarting it
+    {
+        let mut connected = state.mcp_successfully_connected.lock().await;
+        connected.insert("salesboxai-builtin".to_string(), false);
+        log::info!("Marked SalesboxAI MCP server as not connected to prevent restart loops");
+    }
+
+    // Reset restart count to prevent accumulation
+    {
+        let mut counts = state.mcp_restart_counts.lock().await;
+        counts.remove("salesboxai-builtin");
+    }
+
+    // Stop existing builtin server first to prevent orphaned processes
+    {
+        let mut servers_map = servers.lock().await;
+        if let Some(service) = servers_map.remove("salesboxai-builtin") {
+            log::info!("Stopping existing SalesboxAI MCP server before reinitialize");
+            match service {
+                RunningServiceEnum::NoInit(s) => { let _ = s.cancel().await; }
+                RunningServiceEnum::WithInit(s) => { let _ = s.cancel().await; }
+            }
+        }
+    }
+
+    // Small delay to allow monitoring tasks to exit after seeing the server removed
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
     // Download/update MCP services from remote (uses current endpoint from store)
     if let Err(e) = install_mcp_from_remote(app.clone()).await {

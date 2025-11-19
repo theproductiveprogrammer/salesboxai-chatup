@@ -86,6 +86,10 @@ const typeConfig = {
     label: 'LinkedIn Lead Info',
     color: 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-300',
   },
+  [AsyncJobType.LEAD_PROSPECTING]: {
+    label: 'Lead Prospecting',
+    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
+  },
 }
 
 export const AsyncJobWidget: React.FC<AsyncJobWidgetProps> = ({

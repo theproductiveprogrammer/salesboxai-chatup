@@ -23,6 +23,7 @@ export const route = {
   },
   visitors: '/visitors',
   asyncJobs: '/async-jobs',
+  prospecting: '/prospecting',
   localApiServerlogs: '/local-api-server/logs',
   systemMonitor: '/system-monitor',
   threadsDetail: '/threads/$threadId',
