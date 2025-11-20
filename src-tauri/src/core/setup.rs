@@ -324,10 +324,11 @@ pub fn setup_mcp(app: &App) {
     let servers = state.mcp_servers.clone();
     let app_handle: tauri::AppHandle = app.handle().clone();
     tauri::async_runtime::spawn(async move {
+        // NOTE: No longer downloading Node.js MCP server since we use Java SSE implementation
         // First, download/update MCP services from remote
-        if let Err(e) = install_mcp_from_remote(app_handle.clone()).await {
-            log::warn!("Failed to download MCP from remote: {}", e);
-        }
+        // if let Err(e) = install_mcp_from_remote(app_handle.clone()).await {
+        //     log::warn!("Failed to download MCP from remote: {}", e);
+        // }
 
         // Then start the built-in SalesboxAI MCP server (if API key is configured)
         if let Err(e) = start_builtin_salesbox_mcp(&app_handle, servers.clone()).await {
