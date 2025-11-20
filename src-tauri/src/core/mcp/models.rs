@@ -8,8 +8,8 @@ use serde_json::Value;
 pub struct McpServerConfig {
     pub transport_type: Option<String>,
     pub url: Option<String>,
-    pub command: String,
-    pub args: Vec<Value>,
+    pub command: Option<String>,
+    pub args: Option<Vec<Value>>,
     pub envs: serde_json::Map<String, Value>,
     pub timeout: Option<Duration>,
     pub headers: serde_json::Map<String, Value>,

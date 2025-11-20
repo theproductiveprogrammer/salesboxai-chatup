@@ -626,8 +626,12 @@ async fn schedule_mcp_start_task<R: Runtime>(
             }
         }
     } else {
-        let mut cmd = Command::new(config_params.command.clone());
-        if config_params.command.clone() == "npx" && can_override_npx() {
+        // For stdio transport, command and args are guaranteed to be Some by extract_command_args
+        let command = config_params.command.as_ref().expect("command required for stdio transport");
+        let args = config_params.args.as_ref().expect("args required for stdio transport");
+
+        let mut cmd = Command::new(command.clone());
+        if command == "npx" && can_override_npx() {
             let mut cache_dir = app_path.clone();
             cache_dir.push(".npx");
             let bun_x_path = format!("{}/bun", bin_path.display());
@@ -635,7 +639,7 @@ async fn schedule_mcp_start_task<R: Runtime>(
             cmd.arg("x");
             cmd.env("BUN_INSTALL", cache_dir.to_str().unwrap().to_string());
         }
-        if config_params.command.clone() == "uvx" {
+        if command == "uvx" {
             let mut cache_dir = app_path.clone();
             cache_dir.push(".uvx");
             let bun_x_path = format!("{}/uv", bin_path.display());
@@ -651,8 +655,7 @@ async fn schedule_mcp_start_task<R: Runtime>(
 
         cmd.kill_on_drop(true);
 
-        config_params
-            .args
+        args
             .iter()
             .filter_map(Value::as_str)
             .for_each(|arg| {
@@ -731,10 +734,23 @@ async fn schedule_mcp_start_task<R: Runtime>(
 
 pub fn extract_command_args(config: &Value) -> Option<McpServerConfig> {
     let obj = config.as_object()?;
-    let command = obj.get("command")?.as_str()?.to_string();
-    let args = obj.get("args")?.as_array()?.clone();
-    let url = obj.get("url").and_then(|u| u.as_str()).map(String::from);
     let transport_type = obj.get("type").and_then(|t| t.as_str()).map(String::from);
+    let url = obj.get("url").and_then(|u| u.as_str()).map(String::from);
+
+    // For HTTP/SSE transport, command and args are not required
+    let is_network_transport = matches!(
+        transport_type.as_deref(),
+        Some("http") | Some("sse")
+    );
+
+    let command = obj.get("command").and_then(|c| c.as_str()).map(String::from);
+    let args = obj.get("args").and_then(|a| a.as_array()).cloned();
+
+    // For stdio transport, command and args are required
+    if !is_network_transport && (command.is_none() || args.is_none()) {
+        return None;
+    }
+
     let timeout = obj
         .get("timeout")
         .and_then(|t| t.as_u64())
@@ -1004,31 +1020,72 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
 
     log::info!("Starting built-in SalesboxAI MCP server with endpoint: {}", api_endpoint);
 
-    // Get path to mcp-services/salesboxai (no hardcoded paths!)
-    let data_path = get_jan_data_folder_path(app.clone());
-    let service_path = data_path.join("mcp-services").join("salesboxai");
-    let launch_script = service_path.join("launch-mcp.js");
+    // Login to get JWT token
+    let login_url = format!("{}/user-token/login", api_endpoint);
+    log::info!("Logging in to SalesboxAI at {}", login_url);
 
-    if !launch_script.exists() {
-        log::error!("SalesboxAI MCP service not found at {:?}", launch_script);
-        log::error!("Expected location: <data-folder>/mcp-services/salesboxai/");
-        log::error!("Run 'npm run deploy' in w2/salesboxai-chatgpt/mcp-server/ to deploy it");
-        return Err("SalesboxAI MCP service not found".to_string());
+    let client = reqwest::Client::new();
+    let login_response = client
+        .post(&login_url)
+        .json(&serde_json::json!({
+            "username": username,
+            "password": password
+        }))
+        .send()
+        .await
+        .map_err(|e| format!("Failed to login to SalesboxAI: {}", e))?;
+
+    if !login_response.status().is_success() {
+        let status = login_response.status();
+        let error_text = login_response.text().await.unwrap_or_default();
+        log::error!("SalesboxAI login failed with status {}: {}", status, error_text);
+        return Err(format!("SalesboxAI login failed: {} - {}", status, error_text));
     }
 
-    // Build the MCP server configuration
+    let login_result: serde_json::Value = login_response
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse login response: {}", e))?;
+
+    let jwt_token = login_result
+        .get("access_token")
+        .and_then(|t| t.as_str())
+        .ok_or_else(|| "No access_token in login response".to_string())?;
+
+    log::info!("Successfully logged in to SalesboxAI, got JWT token");
+
+    // Store JWT token in the store for client access (needed for authToken parameter in tool calls)
+    if let Some(store_value) = store.get("salesbox-credentials") {
+        let mut store_value = store_value.clone();
+        if let Some(state) = store_value.get_mut("state") {
+            state["jwt_token"] = serde_json::Value::String(jwt_token.to_string());
+            let _ = store.set("salesbox-credentials".to_string(), store_value);
+            let _ = store.save();
+            log::info!("Stored JWT token in credentials for client access");
+        }
+    }
+
+    // Build the MCP server configuration using SSE transport
+    // Connect directly to core port 6991 to avoid nginx SSE buffering issues
+    // Extract host from api_endpoint and use direct port
+    let mcp_sse_url = if api_endpoint.contains("localhost") || api_endpoint.contains("127.0.0.1") {
+        // For local development, connect directly to core port
+        "http://localhost:6991/mcp/sse".to_string()
+    } else {
+        // For production, use the configured endpoint
+        format!("{}/mcp/sse", api_endpoint.replace("/core", ""))
+    };
+
     let config = serde_json::json!({
-        "command": "node",
-        "args": [launch_script.to_string_lossy().to_string()],
-        "env": {
-            "SALESBOX_USERNAME": username,
-            "SALESBOX_PASSWORD": password,
-            "SALESBOX_API_ENDPOINT": api_endpoint,
+        "type": "sse",
+        "url": mcp_sse_url,
+        "headers": {
+            "Authorization": format!("Bearer {}", jwt_token)
         },
         "active": true
     });
 
-    log::info!("Launching SalesboxAI MCP server from {:?}", launch_script);
+    log::info!("Connecting to SalesboxAI MCP server via SSE at {}", mcp_sse_url);
 
     // Start the server using the existing MCP infrastructure
     match start_mcp_server_with_restart(
