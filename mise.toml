@@ -62,6 +62,13 @@ depends = ["build-extensions"]
 
 [tasks.dev]
 description = "Start development server (matches Makefile)"
+run = [
+  "yarn download:bin",
+  "yarn dev"
+]
+
+[tasks.dev-full]
+description = "Start development server (matches Makefile)"
 depends = ["install-and-build"]
 run = [
   "yarn download:bin",
