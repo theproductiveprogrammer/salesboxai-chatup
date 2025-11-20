@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AsyncJob, AsyncJobStatus, ProspectingOutput, ProspectingTouch } from '@/types/asyncJobs'
 import { Button } from '@/components/ui/button'
 import {
@@ -9,11 +10,16 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  FastForward
 } from 'lucide-react'
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
 import { useLeadContext } from '@/hooks/useLeadContext'
+import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
+import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
+import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
+import { toast } from 'sonner'
 
 interface ProspectingJobWidgetProps {
   job: AsyncJob
@@ -23,11 +29,65 @@ interface ProspectingJobWidgetProps {
 export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps) {
   const router = useRouter()
   const { setLeadContext } = useLeadContext()
+  const { endpoint } = useSalesboxEndpoint()
+  const [isSkipping, setIsSkipping] = useState(false)
 
   // Parse the job result to get prospecting data
   const input = job.input as any
   const result = (job.result as any)?.output as ProspectingOutput | undefined
   const leadContext = input?.leadContext
+
+  // Check if job is in waiting state
+  const isInWaitingState = () => {
+    if (job.status !== AsyncJobStatus.RUNNING) return false
+    if (job.message?.toLowerCase().includes('waiting')) return true
+    return false
+  }
+
+  // Handler to skip wait by calling prospect-lead again
+  const handleSkipWait = async () => {
+    if (!endpoint || !leadContext) return
+
+    const { token, isAuthenticated } = useSalesboxAuth.getState()
+    if (!isAuthenticated || !token) {
+      toast.error('Not authenticated. Please sign in.')
+      return
+    }
+
+    setIsSkipping(true)
+    try {
+      const response = await fetchTauri(`${endpoint}/mcp/prospect-lead`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'content-type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          leadContext: {
+            name: leadContext.name,
+            linkedin: leadContext.linkedin,
+            email: leadContext.email,
+            id: leadContext.id,
+            company: leadContext.company,
+            title: leadContext.title,
+          }
+        })
+      })
+
+      if (response.ok) {
+        toast.success('Wait skipped - job will continue')
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        toast.error(errorData.error || 'Failed to skip wait')
+      }
+    } catch (error) {
+      console.error('Error skipping wait:', error)
+      toast.error('Failed to skip wait')
+    } finally {
+      setIsSkipping(false)
+    }
+  }
 
   // Extract LinkedIn username from URL
   const extractLinkedInUsername = (url: string): string | null => {
@@ -235,14 +295,31 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                   )}
                 </div>
                 {leadContext && (
-                  <Button
-                    size="sm"
-                    onClick={handleChatWithLead}
-                    className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <MessageSquare size={14} />
-                    Continue
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {isInWaitingState() && (
+                      <Button
+                        size="sm"
+                        onClick={handleSkipWait}
+                        disabled={isSkipping}
+                        className="flex items-center gap-1 text-xs bg-orange-500 hover:bg-orange-600 text-white"
+                      >
+                        {isSkipping ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <FastForward size={14} />
+                        )}
+                        {isSkipping ? 'Skipping...' : 'Skip Wait'}
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={handleChatWithLead}
+                      className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <MessageSquare size={14} />
+                      Continue
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
