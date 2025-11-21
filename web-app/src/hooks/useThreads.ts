@@ -4,6 +4,7 @@ import { ulid } from 'ulidx'
 import { deleteThread, updateThread } from '@/services/threads'
 import { Fzf } from 'fzf'
 import { sep } from '@tauri-apps/api/path'
+import type { LeadContext } from './useLeadContext'
 
 type ThreadState = {
   threads: Record<string, Thread>
@@ -27,6 +28,7 @@ type ThreadState = {
   getFilteredThreads: (searchTerm: string) => Thread[]
   updateCurrentThreadAssistant: (assistant: Assistant) => void
   updateThreadTimestamp: (threadId: string) => void
+  updateThreadLeadContext: (threadId: string, leadContext: LeadContext | null) => void
   searchIndex: Fzf<any> | null
 }
 
@@ -259,6 +261,24 @@ export const useThreads = create<ThreadState>()(
             ...state.threads[state.currentThreadId as string],
             model,
           },
+        },
+      }
+    })
+  },
+  updateThreadLeadContext: (threadId, leadContext) => {
+    set((state) => {
+      const thread = state.threads[threadId]
+      if (!thread) return state
+      const updatedThread = {
+        ...thread,
+        leadContext,
+        updated: Date.now() / 1000,
+      }
+      updateThread(updatedThread)
+      return {
+        threads: {
+          ...state.threads,
+          [threadId]: updatedThread,
         },
       }
     })

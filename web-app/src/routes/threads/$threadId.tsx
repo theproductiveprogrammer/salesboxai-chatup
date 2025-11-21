@@ -58,7 +58,7 @@ function ThreadDetail() {
   const isSmallScreen = useSmallScreen()
   useTools()
 
-  const { leadContext } = useLeadContext()
+  const { leadContext, setLeadContext } = useLeadContext()
   const { setPrompt } = usePrompt()
 
   const handleProspectLead = () => {
@@ -130,6 +130,15 @@ function ThreadDetail() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId, currentThreadId, assistants])
+
+  // Restore lead context from thread when thread loads
+  useEffect(() => {
+    if (thread?.leadContext) {
+      console.log('[ThreadDetail] Restoring lead context from thread:', thread.leadContext)
+      setLeadContext(thread.leadContext)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadId, thread?.leadContext])
 
   useEffect(() => {
     // DISABLED: Extensions are disabled, messages are persisted via Zustand

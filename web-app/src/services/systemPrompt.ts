@@ -5,20 +5,26 @@ export interface SystemPromptRequest {
   leadContext?: LeadContext | null
 }
 
-export interface TextSummaryResDTO {
+export interface AgentSystemPromptResDTO {
   text?: string
   error?: string
+  leadContext?: LeadContext | null
+}
+
+export interface SystemPromptResponse {
+  systemPrompt: string
+  leadContext?: LeadContext | null
 }
 
 /**
  * Fetches the system prompt from the backend
  * @param leadContext - Optional lead context to include in the prompt
- * @returns The system prompt string
+ * @returns Object containing the system prompt and resolved lead context
  */
 export async function getSystemPrompt(
   leadContext?: LeadContext | null
-): Promise<string> {
-  const response = await callSalesboxApi<TextSummaryResDTO>('/mcp/agent-system-prompt', {
+): Promise<SystemPromptResponse> {
+  const response = await callSalesboxApi<AgentSystemPromptResDTO>('/mcp/agent-system-prompt', {
     method: 'POST',
     body: JSON.stringify({
       leadContext: leadContext || null,
@@ -35,5 +41,8 @@ export async function getSystemPrompt(
     throw new Error(response.data.error)
   }
 
-  return response.data?.text || ''
+  return {
+    systemPrompt: response.data?.text || '',
+    leadContext: response.data?.leadContext || null
+  }
 }

@@ -62,6 +62,7 @@ export const useChat = () => {
     getCurrentThread: retrieveThread,
     createThread,
     updateThreadTimestamp,
+    updateThreadLeadContext,
   } = useThreads()
   const { getMessages, addMessage } = useMessages()
   const { setModelLoadError } = useModelLoad()
@@ -248,13 +249,24 @@ export const useChat = () => {
           updateLoadingModel(false)
         }
 
-        const systemPrompt = await getSystemPrompt(leadContext)
+        const { systemPrompt, leadContext: resolvedLeadContext } = await getSystemPrompt(leadContext)
         console.log('[useChat] Sending message with system prompt:', {
           hasLeadContext: !!leadContext,
           leadId: leadContext?.id,
+          resolvedLeadContextId: resolvedLeadContext?.id,
           systemPromptLength: systemPrompt?.length || 0,
           systemPromptPreview: systemPrompt?.substring(0, 200)
         })
+
+        // Update global lead context if backend resolved it
+        if (resolvedLeadContext?.id) {
+          setLeadContext(resolvedLeadContext)
+        }
+
+        // Store lead context with current thread
+        if (activeThread.id && resolvedLeadContext) {
+          updateThreadLeadContext(activeThread.id, resolvedLeadContext)
+        }
 
         const builder = new CompletionMessagesBuilder(
           messages,

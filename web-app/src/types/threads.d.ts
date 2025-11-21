@@ -1,3 +1,5 @@
+import type { LeadContext } from '@/hooks/useLeadContext'
+
 /**
  * The content type of the message.
  */
@@ -44,6 +46,7 @@ type Thread = {
   model?: ThreadModel
   updated: number
   order?: number
+  leadContext?: LeadContext | null
 }
 
 type Assistant = {
