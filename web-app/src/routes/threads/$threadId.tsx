@@ -4,7 +4,7 @@ import { UIEventHandler } from 'react'
 import debounce from 'lodash.debounce'
 import cloneDeep from 'lodash.clonedeep'
 import { cn } from '@/lib/utils'
-import { ArrowDown, Play } from 'lucide-react'
+import { ArrowDown, Play, UserPlus } from 'lucide-react'
 
 import HeaderPage from '@/containers/HeaderPage'
 import { useThreads } from '@/hooks/useThreads'
@@ -23,6 +23,9 @@ import { useTranslation } from '@/i18n/react-i18next-compat'
 import { useChat } from '@/hooks/useChat'
 import { useSmallScreen } from '@/hooks/useMediaQuery'
 import { useTools } from '@/hooks/useTools'
+import { useLeadContext } from '@/hooks/useLeadContext'
+import { usePrompt } from '@/hooks/usePrompt'
+import { Button } from '@/components/ui/button'
 
 type ThreadSearchParams = {
   message?: string
@@ -54,6 +57,42 @@ function ThreadDetail() {
   const { sendMessage } = useChat()
   const isSmallScreen = useSmallScreen()
   useTools()
+
+  const { leadContext } = useLeadContext()
+  const { setPrompt } = usePrompt()
+
+  const handleProspectLead = () => {
+    if (!leadContext) return
+
+    // Build lead data string like LinkedInProfileDisplay does
+    const parts: string[] = []
+
+    if (leadContext.name) {
+      parts.push(leadContext.name)
+    }
+    if (leadContext.linkedin) {
+      parts.push(leadContext.linkedin)
+    }
+    if (leadContext.email) {
+      parts.push(leadContext.email)
+    }
+
+    const leadData = parts.join(' - ')
+    const message = `Please start prospecting: ${leadData}`
+
+    // Populate the chat input so user can review/edit before sending
+    setPrompt(message)
+
+    // Focus the textarea
+    setTimeout(() => {
+      const input = document.querySelector('textarea') as HTMLTextAreaElement
+      if (input) {
+        input.focus()
+        // Move cursor to end
+        input.setSelectionRange(input.value.length, input.value.length)
+      }
+    }, 0)
+  }
 
   const { messages } = useMessages(
     useShallow((state) => ({
@@ -319,6 +358,17 @@ function ThreadDetail() {
       <HeaderPage>
         <div className="flex items-center justify-between w-full pr-2">
           <DropdownAssistant />
+          {leadContext && (leadContext.id || leadContext.linkedin) && (
+            <Button
+              size="sm"
+              onClick={handleProspectLead}
+              className="gap-1.5 bg-primary hover:bg-primary/90"
+              variant="default"
+            >
+              <UserPlus size={14} />
+              Prospect Lead
+            </Button>
+          )}
         </div>
       </HeaderPage>
       <div className="flex flex-col h-[calc(100%-40px)] ">
