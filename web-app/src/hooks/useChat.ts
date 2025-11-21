@@ -47,7 +47,7 @@ export const useChat = () => {
   } = useAppState()
   const { assistants, currentAssistant } = useAssistant()
   const { updateProvider } = useModelProvider()
-  const { leadContext } = useLeadContext()
+  const { leadContext, setLeadContext } = useLeadContext()
 
   const { approvedTools, showApprovalModal, allowAllMCPPermissions } =
     useToolApproval()
