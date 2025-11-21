@@ -11,7 +11,10 @@ export const checkOSDarkMode = (): boolean => {
   )
 }
 
+const THEME_VERSION = 2 // Increment to force reset to light theme
+
 export type ThemeState = {
+  version: number
   activeTheme: AppTheme
   setTheme: (theme: AppTheme) => void
   isDark: boolean
@@ -23,8 +26,9 @@ export const useTheme = create<ThemeState>()(
     (set) => {
       // Initialize isDark based on OS preference if theme is auto
       const initialState = {
-        activeTheme: 'auto' as AppTheme,
-        isDark: checkOSDarkMode(),
+        version: THEME_VERSION,
+        activeTheme: 'light' as AppTheme,
+        isDark: false,
         setTheme: async (activeTheme: AppTheme) => {
           if (activeTheme === 'auto') {
             const isDarkMode = checkOSDarkMode()
@@ -50,6 +54,18 @@ export const useTheme = create<ThemeState>()(
     {
       name: localStorageKey.theme,
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Check version and reset to light theme if outdated
+          if (!state.version || state.version < THEME_VERSION) {
+            console.log('Theme version outdated, resetting to light theme')
+            setTimeout(async () => {
+              await useTheme.getState().setTheme('light')
+            }, 0)
+          }
+        }
+        return state
+      },
     }
   )
 )

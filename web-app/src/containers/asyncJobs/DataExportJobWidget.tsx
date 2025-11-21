@@ -83,12 +83,12 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
   const DataTypeIcon = getDataTypeIcon(input.dataType)
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md border-l-4 border-l-purple-500 select-text">
-      <CardHeader className="pb-3">
+    <Card className="transition-all duration-200 hover:shadow-md border-l-[5px] border-primary/60 border border-border select-text">
+      <CardHeader className="pb-3 bg-primary/[0.02]">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/20">
-              <DataTypeIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <div className="p-2 rounded-full bg-accent/20">
+              <DataTypeIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
               <CardTitle className="text-lg font-semibold">
@@ -99,7 +99,7 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
               </p>
             </div>
           </div>
-          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300">
+          <Badge className="bg-primary/10 text-primary">
             Data Export
           </Badge>
         </div>
@@ -146,20 +146,20 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
         {/* Running job animation */}
         {job.status === AsyncJobStatus.RUNNING && (
-          <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+          <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-0 w-3 h-3 bg-purple-500 rounded-full animate-ping opacity-75"></div>
+                  <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                  <div className="absolute inset-0 w-3 h-3 bg-primary rounded-full animate-ping opacity-75"></div>
                 </div>
-                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                <span className="text-sm font-medium text-primary">
                   Exporting data...
                 </span>
               </div>
               {job.progress !== undefined && (
                 <div className="flex-1 ml-4">
-                  <div className="flex justify-between text-xs text-purple-600 dark:text-purple-400 mb-1">
+                  <div className="flex justify-between text-xs text-primary mb-1">
                     <span>Progress</span>
                     <span>{job.progress}%</span>
                   </div>
@@ -167,7 +167,7 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
                 </div>
               )}
             </div>
-            <div className="mt-2 text-xs text-purple-600 dark:text-purple-400">
+            <div className="mt-2 text-xs text-primary/80">
               Preparing your {getDataTypeLabel(input.dataType)} export. This may take a few minutes.
             </div>
           </div>
@@ -175,10 +175,10 @@ export const DataExportJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
         {/* Result for completed jobs */}
         {job.status === AsyncJobStatus.SUCCESS && result && (
-          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <div className="mb-4 p-4 bg-accent/20 border border-accent/40 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
-              <IconFileDownload className="h-5 w-5 text-green-600" />
-              <h4 className="font-semibold text-green-800 dark:text-green-200">
+              <IconFileDownload className="h-5 w-5 text-primary" />
+              <h4 className="font-semibold text-primary">
                 Export Complete
               </h4>
             </div>

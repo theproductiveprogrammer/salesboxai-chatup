@@ -102,11 +102,11 @@ function VisitorsPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex-none px-6 py-4 border-b border-border">
+      <div className="flex-none px-6 py-5 border-b border-border/50 bg-gradient-to-b from-main-view to-transparent">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Visitors</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold text-main-view-fg">Visitors</h1>
+            <p className="text-main-view-fg/70 text-sm">
               Website visitors identified by your AI agent
             </p>
           </div>
@@ -115,6 +115,7 @@ function VisitorsPage() {
             size="sm"
             onClick={handleRefresh}
             disabled={loading}
+            className="gap-2"
           >
             <IconRefresh
               className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
@@ -125,24 +126,24 @@ function VisitorsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-6 bg-main-view">
         {loading && visitors.length === 0 ? (
           <div className="flex items-center justify-center h-64">
-            <p className="text-muted-foreground">{t('common:loading')}</p>
+            <p className="text-main-view-fg/60">{t('common:loading')}</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-64 gap-4">
-            <p className="text-destructive">{error}</p>
+            <p className="text-destructive font-medium">{error}</p>
             <Button onClick={handleRefresh} variant="default">
               {t('common:retry')}
             </Button>
           </div>
         ) : visitors.length === 0 ? (
           <div className="flex items-center justify-center h-64">
-            <p className="text-muted-foreground">No visitors yet</p>
+            <p className="text-main-view-fg/60">No visitors yet</p>
           </div>
         ) : (
-          <div className="space-y-6 max-w-4xl mx-auto">
+          <div className="space-y-5 max-w-4xl mx-auto pb-6">
             {visitors.map((visitor) => (
               <VisitorCard
                 key={visitor.id}
@@ -169,46 +170,46 @@ function VisitorCard({
 
   return (
     <div
-      className={`relative rounded-xl border bg-card shadow-sm transition-all hover:shadow-md ${
+      className={`relative rounded-lg border bg-card shadow-sm transition-all hover:shadow-lg hover:border-l-[5px] ${
         icpMatch
-          ? 'border-l-2 border-green-500 bg-green-50/5 dark:bg-green-950/10'
-          : 'border-l-2 border-blue-500/30 bg-blue-100/10'
+          ? 'border-l-[5px] border-green-500 bg-green-50/5 dark:bg-green-950/10'
+          : 'border-l-[5px] border-primary/60 bg-primary/[0.03]'
       }`}
     >
-      <div className="p-5">
+      <div className="p-6">
         {/* Header with avatar and metadata */}
         <div className="flex items-start gap-3 mb-3">
           <div
-            className={`flex-shrink-0 rounded-full p-2 ${
+            className={`flex-shrink-0 rounded-full p-2.5 ${
               icpMatch
                 ? 'bg-green-100 dark:bg-green-900/30'
-                : 'bg-blue-100 dark:bg-blue-900/30'
+                : 'bg-accent/20'
             }`}
           >
             <IconUser
               className={`h-5 w-5 ${
                 icpMatch
                   ? 'text-green-600 dark:text-green-400'
-                  : 'text-blue-600 dark:text-blue-400'
+                  : 'text-primary'
               }`}
             />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-semibold text-sm">
+              <span className="font-semibold text-base text-main-view-fg">
                 {info.visitorName || 'Anonymous Visitor'}
               </span>
               {icpMatch && (
                 <Badge
                   variant="outline"
-                  className="gap-1 text-xs bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700"
+                  className="gap-1 text-xs font-medium bg-green-100 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700"
                 >
                   <IconCheck className="h-3 w-3" />
                   ICP Match
                 </Badge>
               )}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-main-view-fg/60 font-medium">
               {info.companyName && <span>{info.companyName} • </span>}
               {formatRelativeTime(visitor.timestamp, { addSuffix: true })}
             </div>
@@ -216,23 +217,23 @@ function VisitorCard({
         </div>
 
         {/* Markdown content */}
-        <div className="prose prose-sm dark:prose-invert max-w-none ml-11 mb-3">
+        <div className="prose prose-sm dark:prose-invert max-w-none ml-11 mb-4">
           <RenderMarkdown
             content={visitor.data.content}
-            className="select-text"
+            className="select-text text-main-view-fg/90"
           />
         </div>
 
         {/* Footer with action */}
-        <div className="flex items-center justify-end ml-11">
+        <div className="flex items-center justify-end ml-11 pt-2 border-t border-border/40">
           <Button
             size="sm"
             onClick={onEngage}
             variant="default"
-            className="gap-2"
+            className="gap-2 mt-2"
           >
             <IconMessageCircle className="h-4 w-4" />
-            Chat
+            Chat with Agent
           </Button>
         </div>
       </div>

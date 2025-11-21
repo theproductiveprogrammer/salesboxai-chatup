@@ -179,11 +179,11 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'SENT':
-        return 'text-green-600 bg-green-50 dark:bg-green-900/20'
+        return 'text-primary bg-accent/30'
       case 'FAILED':
-        return 'text-red-600 bg-red-50 dark:bg-red-900/20'
+        return 'text-destructive bg-destructive/10'
       default:
-        return 'text-gray-600 bg-gray-50 dark:bg-gray-900/20'
+        return 'text-main-view-fg/60 bg-main-view-fg/5'
     }
   }
 
@@ -209,19 +209,19 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
   const touches = result?.touches || []
 
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
+    <div className="border-l-[5px] border-primary/60 border border-border rounded-lg overflow-hidden bg-card shadow-sm hover:shadow-lg transition-all">
       {/* Header with lead info */}
-      <div className="p-4 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/40 dark:to-gray-900/40 border-b border-gray-200 dark:border-gray-700">
+      <div className="p-5 bg-primary/[0.02] border-b border-border/50">
         <div className="flex items-start gap-4">
           {/* Profile picture or initials */}
           {result?.profile?.profile_picture_url ? (
             <img
               src={result.profile.profile_picture_url}
               alt={getLeadDisplayName()}
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+              className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-xl font-semibold text-blue-700 dark:text-blue-300">
+            <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center text-xl font-semibold text-primary">
               {getLeadDisplayName().charAt(0).toUpperCase()}
             </div>
           )}
@@ -230,7 +230,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  <h3 className="text-lg font-semibold text-main-view-fg truncate">
                     {getLeadDisplayName()}
                   </h3>
                   {linkedInUrl && (
@@ -238,7 +238,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                       href={linkedInUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                      className="text-primary hover:text-primary/80"
                       title="View LinkedIn Profile"
                     >
                       <LinkIcon size={16} />
@@ -246,11 +246,11 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                   )}
                 </div>
                 {(result?.profile?.headline || leadContext?.title) && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5 truncate">
+                  <p className="text-sm text-main-view-fg/70 mt-0.5 truncate">
                     {result?.profile?.headline || leadContext?.title}
                   </p>
                 )}
-                <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex flex-wrap gap-3 mt-2 text-xs text-main-view-fg/60">
                   {(result?.profile?.location || leadContext?.company) && (
                     <span className="flex items-center gap-1">
                       <MapPin size={12} />
@@ -258,7 +258,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                     </span>
                   )}
                   {result?.networkDistance && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full">
+                    <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-medium rounded-full">
                       <Users size={12} />
                       {formatNetworkDistance(result.networkDistance)}
                     </span>
@@ -276,19 +276,19 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
               <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-2">
                   {job.status === AsyncJobStatus.RUNNING && (
-                    <span className="flex items-center gap-1 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-primary/10 text-primary font-medium rounded-full">
                       <Loader2 size={12} className="animate-spin" />
                       Running
                     </span>
                   )}
                   {job.status === AsyncJobStatus.SUCCESS && (
-                    <span className="flex items-center gap-1 text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
+                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-accent/30 text-primary font-medium rounded-full">
                       <CheckCircle size={12} />
                       Complete
                     </span>
                   )}
                   {(job.status === AsyncJobStatus.FAILED || job.status === AsyncJobStatus.ERROR) && (
-                    <span className="flex items-center gap-1 text-xs px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full">
+                    <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-destructive/10 text-destructive font-medium rounded-full">
                       <XCircle size={12} />
                       Failed
                     </span>
@@ -301,7 +301,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                         size="sm"
                         onClick={handleSkipWait}
                         disabled={isSkipping}
-                        className="flex items-center gap-1 text-xs bg-orange-500 hover:bg-orange-600 text-white"
+                        className="flex items-center gap-1 text-xs bg-accent/20 hover:bg-accent/30 text-primary"
                       >
                         {isSkipping ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -314,7 +314,8 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                     <Button
                       size="sm"
                       onClick={handleChatWithLead}
-                      className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                      className="flex items-center gap-1 text-xs"
+                      variant="default"
                     >
                       <MessageSquare size={14} />
                       Continue
@@ -328,8 +329,8 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
         {/* Job message - show as status indicator */}
         {job.message && (
-          <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-            <Clock size={14} />
+          <div className="mt-3 flex items-center gap-2 text-sm text-main-view-fg/70">
+            <Clock size={14} className="text-primary" />
             <span>{job.message}</span>
           </div>
         )}
@@ -337,9 +338,9 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
       {/* Touches timeline */}
       {touches.length > 0 && (
-        <div className="p-4">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-            <Clock size={14} />
+        <div className="p-5">
+          <h4 className="text-sm font-semibold text-main-view-fg mb-3 flex items-center gap-2">
+            <Clock size={14} className="text-primary" />
             Outreach Timeline ({touches.length} {touches.length === 1 ? 'touch' : 'touches'})
           </h4>
           <div className="space-y-3">
@@ -349,27 +350,27 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
               return (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg"
+                  className="flex items-start gap-3 p-3 bg-main-view-fg/[0.03] rounded-lg border border-border/30"
                 >
                   <div className={`mt-0.5 ${touchInfo.color}`}>
                     <TouchIcon size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-medium text-main-view-fg">
                         {touchInfo.label}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(touch.status)}`}>
+                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${getStatusColor(touch.status)}`}>
                           {touch.status}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-main-view-fg/60">
                           {formatTimestamp(touch.timestamp)}
                         </span>
                       </div>
                     </div>
                     {touch.message && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                      <p className="text-sm text-main-view-fg/70 line-clamp-2">
                         {touch.message}
                       </p>
                     )}
@@ -383,21 +384,21 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
       {/* Empty state for no touches */}
       {touches.length === 0 && job.status === AsyncJobStatus.RUNNING && (
-        <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-          <Loader2 size={20} className="animate-spin mx-auto mb-2" />
+        <div className="p-5 text-center text-sm text-main-view-fg/60">
+          <Loader2 size={20} className="animate-spin mx-auto mb-2 text-primary" />
           Analyzing lead and planning outreach...
         </div>
       )}
 
       {/* Error message */}
       {job.error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
-          <p className="text-sm text-red-700 dark:text-red-300">{job.error}</p>
+        <div className="p-4 bg-destructive/10 border-t border-destructive/20">
+          <p className="text-sm text-destructive font-medium">{job.error}</p>
         </div>
       )}
 
       {/* Footer with timing info */}
-      <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
+      <div className="px-5 py-2.5 bg-main-view-fg/[0.02] border-t border-border/50 text-xs text-main-view-fg/60 flex justify-between">
         <span>Started: {new Date(job.createdAt).toLocaleString()}</span>
         {job.completedAt && (
           <span>Completed: {new Date(job.completedAt).toLocaleString()}</span>

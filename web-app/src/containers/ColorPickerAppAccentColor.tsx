@@ -13,22 +13,22 @@ export function ColorPickerAppAccentColor() {
 
   const predefineAppAccentBgColor: RgbaColor[] = [
     {
-      r: 45,
-      g: 120,
-      b: 220,
+      r: 191,
+      g: 161,
+      b: 199,
       a: 1,
     },
     {
-      r: 220,
-      g: 45,
-      b: 120,
+      r: 212,
+      g: 196,
+      b: 218,
       a: 1,
     },
 
     {
-      r: 180,
-      g: 120,
-      b: 45,
+      r: 168,
+      g: 141,
+      b: 176,
       a: 1,
     },
   ]

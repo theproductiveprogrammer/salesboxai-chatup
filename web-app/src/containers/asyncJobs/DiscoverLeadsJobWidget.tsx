@@ -119,15 +119,15 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
+        return 'bg-accent/30 text-primary'
       case 'failed':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+        return 'bg-destructive/10 text-destructive'
       case 'running':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+        return 'bg-primary/10 text-primary'
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300'
+        return 'bg-accent/20 text-primary'
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
+        return 'bg-main-view-fg/5 text-main-view-fg/60'
     }
   }
 
@@ -147,12 +147,12 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   }
 
   return (
-    <Card className="transition-all duration-200 hover:shadow-md border-l-4 border-l-blue-500 select-text">
-      <CardHeader className="pb-3">
+    <Card className="transition-all duration-200 hover:shadow-md border-l-[5px] border-primary/60 border border-border select-text">
+      <CardHeader className="pb-3 bg-primary/[0.02]">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/20">
-              <IconUsers className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 rounded-full bg-accent/20">
+              <IconUsers className="h-5 w-5 text-primary" />
             </div>
             <div>
               <CardTitle className="text-lg font-semibold">
@@ -164,7 +164,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+            <Badge className="bg-primary/10 text-primary">
               Lead Discovery
             </Badge>
             <Badge className={getStatusColor(job.status)}>
@@ -187,7 +187,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                     href={input.companyLinkedinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                    className="flex items-center gap-1"
                   >
                     {getCompanyName(input.companyLinkedinUrl)}
                     <IconExternalLink className="h-3 w-3" />
@@ -238,20 +238,20 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
         {/* Running job animation */}
         {job.status === AsyncJobStatus.RUNNING && (
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="mb-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                  <div className="absolute inset-0 w-3 h-3 bg-blue-500 rounded-full animate-ping opacity-75"></div>
+                  <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                  <div className="absolute inset-0 w-3 h-3 bg-primary rounded-full animate-ping opacity-75"></div>
                 </div>
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                <span className="text-sm font-medium text-primary">
                   Discovering leads...
                 </span>
               </div>
               {job.progress !== undefined && (
                 <div className="flex-1 ml-4">
-                  <div className="flex justify-between text-xs text-blue-600 dark:text-blue-400 mb-1">
+                  <div className="flex justify-between text-xs text-primary mb-1">
                     <span>Progress</span>
                     <span>{job.progress}%</span>
                   </div>
@@ -259,7 +259,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                 </div>
               )}
             </div>
-            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+            <div className="mt-2 text-xs text-primary/80">
               Searching for leads based on your criteria. This may take a few
               minutes.
             </div>
@@ -268,10 +268,10 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
 
         {/* Results for successful jobs */}
         {job.status === AsyncJobStatus.SUCCESS && result?.output && (
-          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <div className="mb-4 p-4 bg-accent/20 border border-accent/40 rounded-lg">
             <div className="flex items-center gap-2 mb-3">
-              <IconUsers className="h-5 w-5 text-green-600" />
-              <h4 className="font-semibold text-green-800 dark:text-green-200">
+              <IconUsers className="h-5 w-5 text-primary" />
+              <h4 className="font-semibold text-primary">
                 Discovery Complete - {result.output.length} leads found
               </h4>
             </div>
@@ -337,8 +337,8 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                     }}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                      <div className="w-8 h-8 bg-accent/30 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-medium text-primary">
                           {getLeadInitials(lead)}
                         </span>
                       </div>
@@ -349,7 +349,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span>Lead #{lead.id}</span>
                           {getLeadLinkedInUrl(lead) && (
-                            <div className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                            <div className="flex items-center gap-1 text-primary hover:text-primary/80">
                               <IconExternalLink className="h-3 w-3" />
                               <span>LinkedIn</span>
                             </div>
@@ -371,7 +371,7 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
                       {getLeadLinkedInUrl(lead) && (
                         <Button
                           size="sm"
-                          className="text-xs hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer bg-transparent shadow-none"
+                          className="text-xs hover:bg-accent/20 border border-primary/20 text-primary hover:border-primary/30 cursor-pointer bg-transparent shadow-none"
                           onClick={(e) => handleChatWithLead(lead, e)}
                           title="Chat with lead info"
                         >

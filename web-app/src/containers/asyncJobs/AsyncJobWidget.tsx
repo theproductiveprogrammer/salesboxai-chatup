@@ -18,41 +18,41 @@ import { LinkedInProfileDisplay } from './LinkedInProfileDisplay'
 const statusConfig = {
   [AsyncJobStatus.RUNNING]: {
     icon: IconLoader2,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-    borderColor: 'border-blue-200 dark:border-blue-800',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
+    borderColor: 'border-primary/20',
     label: 'Running',
     animated: true,
   },
   [AsyncJobStatus.SUCCESS]: {
     icon: IconCheck,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
-    borderColor: 'border-green-200 dark:border-green-800',
+    color: 'text-primary',
+    bgColor: 'bg-accent/30',
+    borderColor: 'border-accent/40',
     label: 'Success',
     animated: false,
   },
   [AsyncJobStatus.ERROR]: {
     icon: IconX,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
-    borderColor: 'border-orange-200 dark:border-orange-800',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/20',
     label: 'Error',
     animated: false,
   },
   [AsyncJobStatus.FAILED]: {
     icon: IconX,
-    color: 'text-red-500',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
-    borderColor: 'border-red-200 dark:border-red-800',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/20',
     label: 'Failed',
     animated: false,
   },
   [AsyncJobStatus.CANCELLED]: {
     icon: IconBan,
-    color: 'text-gray-500',
-    bgColor: 'bg-gray-50 dark:bg-gray-900/20',
-    borderColor: 'border-gray-200 dark:border-gray-800',
+    color: 'text-main-view-fg/60',
+    bgColor: 'bg-main-view-fg/5',
+    borderColor: 'border-main-view-fg/10',
     label: 'Cancelled',
     animated: false,
   },
@@ -62,33 +62,33 @@ const typeConfig = {
   [AsyncJobType.DATA_EXPORT]: {
     label: 'Data Export',
     color:
-      'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300',
+      'bg-primary/10 text-primary',
   },
   [AsyncJobType.REPORT_GENERATION]: {
     label: 'Report Generation',
     color:
-      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300',
+      'bg-accent/30 text-primary',
   },
   [AsyncJobType.BULK_OPERATION]: {
     label: 'Bulk Operation',
     color:
-      'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
+      'bg-destructive/10 text-destructive',
   },
   [AsyncJobType.DISCOVER_LEADS]: {
     label: 'Lead Discovery',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
+    color: 'bg-primary/10 text-primary',
   },
   [AsyncJobType.DISCOVER_EMAIL]: {
     label: 'Email Discovery',
-    color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/20 dark:text-cyan-300',
+    color: 'bg-accent/20 text-primary',
   },
   [AsyncJobType.LINKEDIN_LEAD_INFO]: {
     label: 'LinkedIn Lead Info',
-    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-300',
+    color: 'bg-primary/15 text-primary',
   },
   [AsyncJobType.LEAD_PROSPECTING]: {
     label: 'Lead Prospecting',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
+    color: 'bg-accent/30 text-primary',
   },
 }
 

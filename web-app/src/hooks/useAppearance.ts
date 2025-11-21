@@ -9,6 +9,7 @@ export type FontSize = '14px' | '15px' | '16px' | '18px'
 export type ChatWidth = 'full' | 'compact'
 
 interface AppearanceState {
+  version: number
   chatWidth: ChatWidth
   fontSize: FontSize
   appBgColor: RgbaColor
@@ -42,6 +43,7 @@ export const fontSizeOptions = [
 ]
 
 // Default appearance settings
+const APPEARANCE_VERSION = 4 // Increment this to force a reset to new defaults
 const defaultFontSize: FontSize = '15px'
 const defaultAppBgColor: RgbaColor = {
   r: 25,
@@ -50,9 +52,9 @@ const defaultAppBgColor: RgbaColor = {
   a: IS_WINDOWS || IS_LINUX || !IS_TAURI ? 1 : 0.4,
 }
 const defaultLightAppBgColor: RgbaColor = {
-  r: 255,
-  g: 255,
-  b: 255,
+  r: 246,
+  g: 246,
+  b: 247,
   a: IS_WINDOWS || IS_LINUX || !IS_TAURI ? 1 : 0.4,
 }
 const defaultAppMainViewBgColor: RgbaColor = { r: 25, g: 25, b: 25, a: 1 }
@@ -63,15 +65,15 @@ const defaultLightAppMainViewBgColor: RgbaColor = {
   a: 1,
 }
 
-const defaultAppPrimaryBgColor: RgbaColor = { r: 219, g: 88, b: 44, a: 1 }
-const defaultLightAppPrimaryBgColor: RgbaColor = { r: 219, g: 88, b: 44, a: 1 }
-const defaultAppAccentBgColor: RgbaColor = { r: 45, g: 120, b: 220, a: 1 }
-const defaultLightAppAccentBgColor: RgbaColor = { r: 45, g: 120, b: 220, a: 1 }
-const defaultAppDestructiveBgColor: RgbaColor = { r: 144, g: 60, b: 60, a: 1 }
+const defaultAppPrimaryBgColor: RgbaColor = { r: 86, g: 23, b: 126, a: 1 }
+const defaultLightAppPrimaryBgColor: RgbaColor = { r: 86, g: 23, b: 126, a: 1 }
+const defaultAppAccentBgColor: RgbaColor = { r: 191, g: 161, b: 199, a: 1 }
+const defaultLightAppAccentBgColor: RgbaColor = { r: 191, g: 161, b: 199, a: 1 }
+const defaultAppDestructiveBgColor: RgbaColor = { r: 217, g: 123, b: 166, a: 1 }
 const defaultLightAppDestructiveBgColor: RgbaColor = {
   r: 217,
-  g: 95,
-  b: 95,
+  g: 123,
+  b: 166,
   a: 1,
 }
 const defaultDarkLeftPanelTextColor: string = '#FFF'
@@ -132,17 +134,18 @@ export const useAppearance = create<AppearanceState>()(
   persist(
     (set) => {
       return {
+        version: APPEARANCE_VERSION,
         chatWidth: 'compact',
         fontSize: defaultFontSize,
-        appBgColor: defaultAppBgColor,
-        appMainViewBgColor: defaultAppMainViewBgColor,
-        appPrimaryBgColor: defaultAppPrimaryBgColor,
-        appAccentBgColor: defaultAppAccentBgColor,
-        appDestructiveBgColor: defaultAppDestructiveBgColor,
-        appLeftPanelTextColor: getDefaultTextColor(useTheme.getState().isDark),
-        appMainViewTextColor: getDefaultTextColor(useTheme.getState().isDark),
-        appPrimaryTextColor: getDefaultTextColor(useTheme.getState().isDark),
-        appAccentTextColor: getDefaultTextColor(useTheme.getState().isDark),
+        appBgColor: defaultLightAppBgColor,
+        appMainViewBgColor: defaultLightAppMainViewBgColor,
+        appPrimaryBgColor: defaultLightAppPrimaryBgColor,
+        appAccentBgColor: defaultLightAppAccentBgColor,
+        appDestructiveBgColor: defaultLightAppDestructiveBgColor,
+        appLeftPanelTextColor: getDefaultTextColor(false),
+        appMainViewTextColor: getDefaultTextColor(false),
+        appPrimaryTextColor: '#FFF',
+        appAccentTextColor: '#000',
         appDestructiveTextColor: '#FFF',
 
         resetAppearance: () => {
@@ -260,6 +263,7 @@ export const useAppearance = create<AppearanceState>()(
 
           // Update state
           set({
+            version: APPEARANCE_VERSION,
             fontSize: defaultFontSize,
             appBgColor: defaultBg,
             appMainViewBgColor: defaultMainView,
@@ -556,6 +560,15 @@ export const useAppearance = create<AppearanceState>()(
       // Apply settings when hydrating from storage
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Check version and reset if outdated
+          if (!state.version || state.version < APPEARANCE_VERSION) {
+            console.log('Appearance version outdated, resetting to new defaults')
+            // Get the reset function and call it
+            setTimeout(() => {
+              useAppearance.getState().resetAppearance()
+            }, 0)
+            return state
+          }
           // Apply font size from storage
           document.documentElement.style.setProperty(
             '--font-size-base',

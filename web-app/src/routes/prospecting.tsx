@@ -191,12 +191,12 @@ function ProspectingPage() {
   const statusCounts = getStatusCounts()
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-main-view">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-border/50 bg-gradient-to-b from-main-view to-transparent">
         <div>
-          <h1 className="text-2xl font-bold">Prospecting</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-main-view-fg">Prospecting</h1>
+          <p className="text-main-view-fg/70 text-sm">
             Monitor your lead prospecting campaigns
           </p>
         </div>
@@ -206,17 +206,18 @@ function ProspectingPage() {
             size="sm"
             onClick={refreshJobs}
             disabled={refreshing}
+            className="gap-2"
           >
-            <IconRefresh className={cn("h-4 w-4 mr-1", refreshing && "animate-spin")} />
+            <IconRefresh className={cn("h-4 w-4", refreshing && "animate-spin")} />
             Refresh
           </Button>
         </div>
       </div>
 
       {/* Search */}
-      <div className="p-6 border-b">
+      <div className="px-6 py-4 border-b border-border/50">
         <div className="relative max-w-sm">
-          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-main-view-fg/50" />
           <Input
             placeholder="Search by lead name or company..."
             value={searchTerm}
@@ -259,25 +260,25 @@ function ProspectingPage() {
       </div>
 
       {/* Jobs List */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto px-6 py-6">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <IconLoader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">Loading prospecting campaigns...</span>
+            <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-main-view-fg/70">Loading prospecting campaigns...</span>
           </div>
         ) : filteredJobs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-32 text-main-view-fg/60">
             <IconAlertCircle className="h-8 w-8 mb-2" />
-            <p>No prospecting campaigns found</p>
+            <p className="font-medium">No prospecting campaigns found</p>
             {searchTerm && (
-              <p className="text-sm">Try adjusting your search</p>
+              <p className="text-sm mt-1">Try adjusting your search</p>
             )}
             {!searchTerm && statusFilter === 'all' && (
               <p className="text-sm mt-2">Start a new prospecting campaign from the chat</p>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5 max-w-4xl mx-auto pb-6">
             {filteredJobs.map(job => (
               <ProspectingJobWidget
                 key={job.id}
@@ -290,10 +291,11 @@ function ProspectingPage() {
                   variant="default"
                   onClick={() => loadJobs(false)}
                   disabled={refreshing}
+                  className="gap-2"
                 >
                   {refreshing ? (
                     <>
-                      <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+                      <IconLoader2 className="h-4 w-4 animate-spin" />
                       Loading...
                     </>
                   ) : (

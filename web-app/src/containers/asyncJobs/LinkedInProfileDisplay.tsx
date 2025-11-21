@@ -80,25 +80,25 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
   return (
     <div className="mt-4 space-y-4">
       {/* Profile Header */}
-      <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+      <div className="p-5 bg-gradient-to-r from-primary/15 to-primary/8 border-2 border-primary/40 rounded-lg shadow-sm">
         <div className="flex items-start gap-4">
           {profile.profile_picture_url && (
             <img
               src={profile.profile_picture_url}
               alt={`${profile.first_name} ${profile.last_name}`}
-              className="w-20 h-20 rounded-full object-cover border-2 border-blue-300 dark:border-blue-700"
+              className="w-20 h-20 rounded-full object-cover border-3 border-primary shadow-md"
             />
           )}
           <div className="flex-1">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-blue-900 dark:text-blue-100">
+                <h3 className="text-xl font-bold text-main-view-fg">
                   {profile.first_name} {profile.last_name}
                 </h3>
                 {profile.headline && (
-                  <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">{profile.headline}</p>
+                  <p className="text-sm text-main-view-fg/80 mt-1.5 font-medium">{profile.headline}</p>
                 )}
-                <div className="flex flex-wrap gap-3 mt-2 text-xs text-blue-600 dark:text-blue-400">
+                <div className="flex flex-wrap gap-3 mt-2.5 text-xs text-main-view-fg/60">
                   {profile.location && (
                     <span className="flex items-center gap-1">
                       <MapPin size={14} />
@@ -117,7 +117,7 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
                 <Button
                   size="sm"
                   onClick={handleChatWithLead}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                  className="flex items-center gap-2"
                   title="Start prospecting this lead"
                 >
                   <MessageSquare size={16} />
@@ -177,22 +177,22 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
 
       {/* Posts Summary */}
       {posts.length > 0 && (
-        <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        <div className="p-4 bg-primary/12 border-2 border-primary/40 rounded-lg shadow-sm">
           <div
             className="flex items-center justify-between cursor-pointer"
             onClick={() => setShowPosts(!showPosts)}
           >
-            <h4 className="flex items-center gap-2 font-semibold text-green-900 dark:text-green-100">
-              <FileText size={16} />
+            <h4 className="flex items-center gap-2 font-semibold text-main-view-fg">
+              <FileText size={16} className="text-primary" />
               Recent Activity
             </h4>
-            <button className="text-green-700 dark:text-green-300 hover:text-green-900 dark:hover:text-green-100 transition-colors">
+            <button className="text-primary hover:text-primary/80 transition-colors">
               {showPosts ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
           </div>
 
           {!showPosts ? (
-            <p className="text-sm text-green-700 dark:text-green-300 mt-2">
+            <p className="text-sm text-main-view-fg/70 mt-2 font-medium">
               Successfully fetched {posts.length} recent {posts.length === 1 ? 'post' : 'posts'}
             </p>
           ) : (
@@ -229,7 +229,7 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
                         )}
                       </div>
                       {post.is_repost && (
-                        <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                        <div className="flex items-center gap-1 text-xs text-primary">
                           <Repeat2 size={14} />
                           <span>Repost</span>
                         </div>
@@ -264,19 +264,19 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
                   <div className="flex items-center gap-4 pt-3 border-t border-gray-100 dark:border-gray-700">
                     {post.reactions_count !== undefined && post.reactions_count > 0 && (
                       <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                        <ThumbsUp size={14} className="text-blue-600 dark:text-blue-400" />
+                        <ThumbsUp size={14} className="text-primary" />
                         <span>{post.reactions_count.toLocaleString()}</span>
                       </div>
                     )}
                     {post.comments_count !== undefined && post.comments_count > 0 && (
                       <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                        <MessageCircle size={14} className="text-green-600 dark:text-green-400" />
+                        <MessageCircle size={14} className="text-primary/70" />
                         <span>{post.comments_count.toLocaleString()}</span>
                       </div>
                     )}
                     {post.shares_count !== undefined && post.shares_count > 0 && (
                       <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                        <Share2 size={14} className="text-purple-600 dark:text-purple-400" />
+                        <Share2 size={14} className="text-primary/70" />
                         <span>{post.shares_count.toLocaleString()}</span>
                       </div>
                     )}
@@ -285,7 +285,7 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
                         href={post.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-auto flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                        className="ml-auto flex items-center gap-1 text-xs hover:underline"
                       >
                         <span>View on LinkedIn</span>
                         <ExternalLink size={12} />

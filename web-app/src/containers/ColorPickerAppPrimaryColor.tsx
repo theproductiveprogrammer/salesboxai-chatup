@@ -13,27 +13,27 @@ export function ColorPickerAppPrimaryColor() {
 
   const predefineappPrimaryBgColor: RgbaColor[] = [
     {
-      r: 219,
-      g: 88,
-      b: 44,
+      r: 86,
+      g: 23,
+      b: 126,
       a: 1,
     },
     {
-      r: 120,
-      g: 44,
-      b: 220,
+      r: 128,
+      g: 47,
+      b: 124,
       a: 1,
     },
     {
-      r: 219,
-      g: 167,
-      b: 44,
+      r: 77,
+      g: 8,
+      b: 106,
       a: 1,
     },
     {
-      r: 46,
-      g: 158,
-      b: 57,
+      r: 70,
+      g: 2,
+      b: 104,
       a: 1,
     },
   ]

@@ -73,7 +73,7 @@
   }
 
   a {
-    @apply !text-accent;
+    @apply !text-primary font-medium hover:underline underline-offset-2 transition-colors;
   }
 
   ::-ms-reveal {

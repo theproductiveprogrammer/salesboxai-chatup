@@ -15,29 +15,29 @@ export function ColorPickerAppDestructiveColor() {
 
   const predefineAppDestructiveBgColor: RgbaColor[] = [
     isDark
-      ? { r: 144, g: 60, b: 60, a: 1 }
+      ? { r: 217, g: 123, b: 166, a: 1 }
       : {
           r: 217,
-          g: 95,
-          b: 95,
+          g: 123,
+          b: 166,
           a: 1,
         },
     {
-      r: 220,
-      g: 100,
-      b: 45,
+      r: 236,
+      g: 147,
+      b: 186,
+      a: 1,
+    },
+    {
+      r: 198,
+      g: 99,
+      b: 146,
       a: 1,
     },
     {
       r: 180,
-      g: 45,
-      b: 120,
-      a: 1,
-    },
-    {
-      r: 150,
-      g: 45,
-      b: 180,
+      g: 85,
+      b: 130,
       a: 1,
     },
   ]

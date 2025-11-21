@@ -27,6 +27,12 @@ export function ColorPickerAppMainView() {
           b: 255,
           a: 1,
         },
+    {
+      r: 246,
+      g: 246,
+      b: 247,
+      a: 1,
+    },
   ]
 
   return (

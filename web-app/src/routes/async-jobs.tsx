@@ -254,38 +254,38 @@ function AsyncJobsPage() {
         )
       case JobType.LEAD_PROSPECTING:
         // Simplified view with link to Prospecting page
-        const statusColor = job.status === JobStatus.RUNNING ? 'text-blue-500' :
-                           job.status === JobStatus.SUCCESS ? 'text-green-500' :
-                           job.status === JobStatus.FAILED || job.status === JobStatus.ERROR ? 'text-red-500' :
-                           'text-gray-500'
+        const statusColor = job.status === JobStatus.RUNNING ? 'text-primary bg-primary/10' :
+                           job.status === JobStatus.SUCCESS ? 'text-primary bg-accent/30' :
+                           job.status === JobStatus.FAILED || job.status === JobStatus.ERROR ? 'text-destructive bg-destructive/10' :
+                           'text-main-view-fg/60 bg-main-view-fg/5'
         const statusLabel = job.status === JobStatus.RUNNING ? 'Running' :
                            job.status === JobStatus.SUCCESS ? 'Complete' :
                            job.status === JobStatus.FAILED || job.status === JobStatus.ERROR ? 'Failed' :
                            job.status === JobStatus.CANCELLED ? 'Cancelled' : job.status
         return (
-          <Card key={job.id} className="transition-all duration-200 hover:shadow-md border border-gray-200 dark:border-gray-700">
-            <CardContent className="p-4">
+          <Card key={job.id} className="transition-all duration-200 hover:shadow-lg border-l-[5px] border-primary/60 border border-border">
+            <CardContent className="p-5 bg-primary/[0.02]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700">
-                    <IconTargetArrow className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div className="p-2 rounded-full bg-accent/20">
+                    <IconTargetArrow className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 className="font-semibold text-main-view-fg">
                       {job.title}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-main-view-fg/70">
                       {job.message || 'Lead prospecting in progress'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline" className={cn('border-current', statusColor)}>
+                  <Badge variant="outline" className={cn('border-none font-medium', statusColor)}>
                     {statusLabel}
                   </Badge>
                   <Link to={route.prospecting}>
-                    <Button variant="default" size="sm">
-                      <IconExternalLink className="h-4 w-4 mr-1" />
+                    <Button variant="default" size="sm" className="gap-2">
+                      <IconExternalLink className="h-4 w-4" />
                       View Details
                     </Button>
                   </Link>
@@ -306,12 +306,12 @@ function AsyncJobsPage() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-main-view">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b">
+      <div className="flex items-center justify-between px-6 py-5 border-b border-border/50 bg-gradient-to-b from-main-view to-transparent">
         <div>
-          <h1 className="text-2xl font-bold">Jobs</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-main-view-fg">Jobs</h1>
+          <p className="text-main-view-fg/70 text-sm">
             Monitor and manage your background jobs
           </p>
         </div>
@@ -321,11 +321,12 @@ function AsyncJobsPage() {
             size="sm"
             onClick={refreshJobs}
             disabled={refreshing}
+            className="gap-2"
           >
             <IconRefresh className={cn("h-4 w-4", refreshing && "animate-spin")} />
             Refresh
           </Button>
-          <Button size="sm">
+          <Button size="sm" className="gap-2">
             <IconPlus className="h-4 w-4" />
             New Job
           </Button>
@@ -333,10 +334,10 @@ function AsyncJobsPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="p-6 border-b space-y-4">
+      <div className="px-6 py-4 border-b border-border/50 space-y-4">
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-sm">
-            <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-main-view-fg/50" />
             <Input
               placeholder="Search jobs..."
               value={searchTerm}
@@ -410,22 +411,22 @@ function AsyncJobsPage() {
       </div>
 
       {/* Jobs List */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto px-6 py-6">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <IconLoader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">Loading jobs...</span>
+            <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2 text-main-view-fg/70">Loading jobs...</span>
           </div>
         ) : filteredJobs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-32 text-main-view-fg/60">
             <IconAlertCircle className="h-8 w-8 mb-2" />
-            <p>No jobs found</p>
+            <p className="font-medium">No jobs found</p>
             {searchTerm && (
-              <p className="text-sm">Try adjusting your search or filters</p>
+              <p className="text-sm mt-1">Try adjusting your search or filters</p>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5 max-w-4xl mx-auto pb-6">
             {filteredJobs.map(renderJobWidget)}
             {hasMore && (
               <div className="flex justify-center pt-4">
@@ -433,10 +434,11 @@ function AsyncJobsPage() {
                   variant="default"
                   onClick={() => loadJobs(false)}
                   disabled={refreshing}
+                  className="gap-2"
                 >
                   {refreshing ? (
                     <>
-                      <IconLoader2 className="h-4 w-4 animate-spin mr-2" />
+                      <IconLoader2 className="h-4 w-4 animate-spin" />
                       Loading...
                     </>
                   ) : (
