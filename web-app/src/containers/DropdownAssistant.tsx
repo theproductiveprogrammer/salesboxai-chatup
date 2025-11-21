@@ -33,10 +33,10 @@ const DropdownAssistant = () => {
   return (
     <>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <div className="flex items-center justify-between gap-2 bg-main-view-fg/5 py-1 hover:bg-main-view-fg/8 px-2 rounded-sm">
+        <div className="flex items-center justify-between gap-2 bg-primary/8 py-1 hover:bg-primary/12 px-2 rounded-sm">
           <DropdownMenuTrigger asChild>
             <button className="font-medium cursor-pointer flex items-center gap-1.5 relative z-20 max-w-40">
-              <div className="text-main-view-fg/80 flex items-center gap-1">
+              <div className="text-primary flex items-center gap-1">
                 {selectedAssistant?.avatar && (
                   <span className="shrink-0 w-4 h-4 relative flex items-center justify-center">
                     <AvatarEmoji
@@ -53,7 +53,7 @@ const DropdownAssistant = () => {
             </button>
           </DropdownMenuTrigger>
           <div
-            className="size-5 cursor-pointer relative z-10 flex items-center justify-center rounded hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out "
+            className="size-5 cursor-pointer relative z-10 flex items-center justify-center rounded hover:bg-primary/10 transition-all duration-200 ease-in-out "
             onClick={() => {
               if (selectedAssistant) {
                 setEditingAssistantId(selectedAssistant.id)
@@ -63,7 +63,7 @@ const DropdownAssistant = () => {
           >
             <IconSettings
               size={16}
-              className="text-main-view-fg/50"
+              className="text-primary/70"
               title="Edit Assistant"
             />
           </div>

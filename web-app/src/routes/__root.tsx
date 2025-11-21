@@ -139,7 +139,7 @@ const AppLayout = () => {
             {/* Main Content Panel */}
             <ResizablePanel defaultSize={100 - leftPanelSize} minSize={60}>
               <div className="h-full p-1 pl-0">
-                <div className="bg-main-view text-main-view-fg border border-main-view-fg/5 w-full h-full rounded-lg overflow-hidden">
+                <div className="bg-gradient-to-br from-main-view via-accent/[0.02] to-primary/[0.03] text-main-view-fg border border-main-view-fg/5 w-full h-full rounded-lg overflow-hidden">
                   <Outlet />
                 </div>
               </div>
@@ -157,7 +157,7 @@ const AppLayout = () => {
                 isLeftPanelOpen && 'w-full md:w-[calc(100%-198px)]'
               )}
             >
-              <div className="bg-main-view text-main-view-fg border border-main-view-fg/5 w-full rounded-lg overflow-hidden">
+              <div className="bg-gradient-to-br from-main-view via-accent/[0.02] to-primary/[0.03] text-main-view-fg border border-main-view-fg/5 w-full rounded-lg overflow-hidden">
                 <Outlet />
               </div>
             </div>

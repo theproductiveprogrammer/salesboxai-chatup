@@ -12,7 +12,7 @@ const HeaderPage = ({ children }: HeaderPageProps) => {
   return (
     <div
       className={cn(
-        'h-10 pl-18 text-main-view-fg flex items-center shrink-0 border-b border-main-view-fg/5',
+        'h-10 pl-18 text-main-view-fg flex items-center shrink-0 border-b border-border/10 bg-gradient-to-r from-primary/[0.06] via-accent/[0.05] to-primary/[0.06]',
         IS_MACOS && !open ? 'pl-18' : 'pl-4',
         children === undefined && 'border-none'
       )}
@@ -20,12 +20,12 @@ const HeaderPage = ({ children }: HeaderPageProps) => {
       <div className="flex items-center w-full gap-2">
         {!open && (
           <button
-            className="size-5 cursor-pointer flex items-center justify-center rounded hover:bg-main-view-fg/10 transition-all duration-200 ease-in-out data-[state=open]:bg-main-view-fg/10"
+            className="size-5 cursor-pointer flex items-center justify-center rounded hover:bg-primary/10 transition-all duration-200 ease-in-out data-[state=open]:bg-primary/10"
             onClick={() => setLeftPanel(!open)}
           >
             <IconLayoutSidebar
               size={18}
-              className="text-main-view-fg relative z-20"
+              className="text-primary relative z-20"
             />
           </button>
         )}
