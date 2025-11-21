@@ -33,6 +33,7 @@ import ErrorDialog from '@/containers/dialogs/ErrorDialog'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { startAutoRefresh, stopAutoRefresh } from '@/services/auth'
 import { LoginDialog } from '@/containers/LoginDialog'
+import { SplashScreen } from '@/containers/SplashScreen'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -189,8 +190,10 @@ function RootLayout() {
   const router = useRouterState()
   const { isAuthenticated, loadStoredCredentials } = useSalesboxAuth()
   const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [showSplashScreen, setShowSplashScreen] = useState(false)
   const [authInitialized, setAuthInitialized] = useState(false)
   const authInitStarted = useRef(false)
+  const isFirstLoginPrompt = useRef(true) // Track first login prompt per app launch
 
   const isLocalAPIServerLogsRoute =
     router.location.pathname === route.localApiServerlogs ||
@@ -217,10 +220,15 @@ function RootLayout() {
     initAuth()
   }, []) // Empty deps - only run once on mount
 
-  // Show login dialog if not authenticated after initialization
+  // Show splash screen or login dialog if not authenticated after initialization
   useEffect(() => {
     if (authInitialized && !isAuthenticated) {
-      setShowLoginDialog(true)
+      // Show splash screen on first login prompt of this launch, dialog for subsequent prompts
+      if (isFirstLoginPrompt.current) {
+        setShowSplashScreen(true)
+      } else {
+        setShowLoginDialog(true)
+      }
     }
   }, [authInitialized, isAuthenticated])
 
@@ -253,11 +261,22 @@ function RootLayout() {
         <LoadModelErrorDialog />
         <ErrorDialog />
         <OutOfContextPromiseModal />
-        <LoginDialog
-          open={showLoginDialog}
-          onOpenChange={setShowLoginDialog}
-          onSuccess={() => setShowLoginDialog(false)}
-        />
+
+        {/* Show splash screen on app launch, otherwise show login dialog */}
+        {showSplashScreen ? (
+          <SplashScreen
+            onSuccess={() => {
+              isFirstLoginPrompt.current = false
+              setShowSplashScreen(false)
+            }}
+          />
+        ) : (
+          <LoginDialog
+            open={showLoginDialog}
+            onOpenChange={setShowLoginDialog}
+            onSuccess={() => setShowLoginDialog(false)}
+          />
+        )}
       </TranslationProvider>
     </Fragment>
   )
