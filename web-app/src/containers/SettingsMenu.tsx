@@ -15,16 +15,16 @@ const SettingsMenu = () => {
     hasSubMenu?: boolean
   }> = [
     {
+      title: 'common:profile',
+      route: route.settings.privacy,
+    },
+    {
       title: 'common:general',
       route: route.settings.general,
     },
     {
       title: 'common:appearance',
       route: route.settings.appearance,
-    },
-    {
-      title: 'common:profile',
-      route: route.settings.privacy,
     },
     {
       title: 'common:keyboardShortcuts',

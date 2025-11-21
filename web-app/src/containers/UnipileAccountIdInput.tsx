@@ -41,7 +41,9 @@ export function UnipileAccountIdInput() {
       }
     } catch (error) {
       setStatus('error')
-      setMessage(error instanceof Error ? error.message : 'Failed to save Account ID')
+      setMessage(
+        error instanceof Error ? error.message : 'Failed to save Account ID'
+      )
     } finally {
       setIsLoading(false)
     }
@@ -63,7 +65,7 @@ export function UnipileAccountIdInput() {
           value={accountId}
           onChange={(e) => setAccountId(e.target.value)}
           className="flex-1 text-sm"
-          placeholder="Enter your Unipile Account ID"
+          placeholder="Enter your Linkedin Account ID"
           disabled={isLoading}
         />
         <Button
@@ -77,9 +79,11 @@ export function UnipileAccountIdInput() {
       </div>
 
       {status !== 'idle' && message && (
-        <div className={`flex items-center gap-2 text-sm ${
-          status === 'success' ? 'text-green-600' : 'text-destructive'
-        }`}>
+        <div
+          className={`flex items-center gap-2 text-sm ${
+            status === 'success' ? 'text-green-600' : 'text-destructive'
+          }`}
+        >
           {status === 'success' ? (
             <CheckCircle size={14} />
           ) : (

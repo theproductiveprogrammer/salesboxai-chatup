@@ -4,37 +4,37 @@ import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
 
 export function KeyboardShortcutsProvider() {
-  const { open, setLeftPanel } = useLeftPanel()
-  const router = useRouter()
+	const { open, setLeftPanel } = useLeftPanel()
+	const router = useRouter()
 
-  // Toggle Sidebar (⌘/Ctrl B)
-  useKeyboardShortcut({
-    key: 'b',
-    usePlatformMetaKey: true,
-    callback: () => {
-      setLeftPanel(!open)
-    },
-  })
+	// Toggle Sidebar (⌘/Ctrl B)
+	useKeyboardShortcut({
+		key: 'b',
+		usePlatformMetaKey: true,
+		callback: () => {
+			setLeftPanel(!open)
+		},
+	})
 
-  // New Chat (⌘/Ctrl N)
-  useKeyboardShortcut({
-    key: 'n',
-    usePlatformMetaKey: true,
-    excludeRoutes: [route.home],
-    callback: () => {
-      router.navigate({ to: route.home })
-    },
-  })
+	// New Chat (⌘/Ctrl N)
+	useKeyboardShortcut({
+		key: 'n',
+		usePlatformMetaKey: true,
+		excludeRoutes: [route.home],
+		callback: () => {
+			router.navigate({ to: route.home })
+		},
+	})
 
-  // Go to Settings (⌘/Ctrl ,)
-  useKeyboardShortcut({
-    key: ',',
-    usePlatformMetaKey: true,
-    callback: () => {
-      router.navigate({ to: route.settings.general })
-    },
-  })
+	// Go to Settings (⌘/Ctrl ,)
+	useKeyboardShortcut({
+		key: ',',
+		usePlatformMetaKey: true,
+		callback: () => {
+			router.navigate({ to: route.settings.privacy })
+		},
+	})
 
-  // This component doesn't render anything
-  return null
+	// This component doesn't render anything
+	return null
 }
