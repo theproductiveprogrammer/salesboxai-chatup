@@ -3,7 +3,11 @@ import { Briefcase, GraduationCap, MapPin, Users, FileText, ChevronDown, Chevron
 import { Button } from '@/components/ui/button'
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
-import { useLeadContext } from '@/hooks/useLeadContext'
+import { useSBAgentContext } from '@/hooks/useSBAgentContext'
+import { useThreads } from '@/hooks/useThreads'
+import { useAssistant } from '@/hooks/useAssistant'
+import { useModelProvider } from '@/hooks/useModelProvider'
+import { defaultModel } from '@/lib/models'
 
 interface LinkedInProfileDisplayProps {
   result: any
@@ -12,7 +16,10 @@ interface LinkedInProfileDisplayProps {
 
 export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplayProps) {
   const router = useRouter()
-  const { setLeadContext } = useLeadContext()
+  const { setContext } = useSBAgentContext()
+  const { createThread } = useThreads()
+  const { assistants } = useAssistant()
+  const { selectedProvider } = useModelProvider()
   // The result structure is: result.output.profile and result.output.posts
   const output = result?.output
   const [showPosts, setShowPosts] = useState(false)
@@ -50,27 +57,44 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
     const linkedinUrl = getLinkedInUrl()
 
     try {
-      // Set lead context before navigation
-      setLeadContext({
-        name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
-        linkedin: linkedinUrl,
-        id: input?.leadId || input?.id,
-        title: profile.headline,
+      // Create a new thread first
+      const selectedAssistant = assistants[0] // Use first assistant
+      const newThread = await createThread(
+        {
+          id: defaultModel(selectedProvider),
+          provider: selectedProvider,
+        },
+        '', // No initial prompt
+        selectedAssistant
+      )
+
+      // Set agent context for this new thread
+      setContext(newThread.id, {
+        lead_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+        lead_linkedin: linkedinUrl,
+        lead_id: input?.leadId || input?.id,
+        lead_title: profile.headline,
+        lead_email: profile.email,
+        lead_company: profile.company_name,
+        account_id: null,
+        account_name: null,
+        opportunity_id: null,
       })
 
       // Pre-fill with Prospect Lead prompt
       const leadData = formatLeadForPrompt()
       const message = `Please start prospecting: ${leadData}`
 
-      // Navigate to home (New Chat) with pre-filled message
+      // Navigate to the new thread with pre-filled message
       await router.navigate({
-        to: route.home,
+        to: route.threadsDetail,
+        params: { threadId: newThread.id },
         search: { message },
       })
 
-      console.log('Successfully navigated to new chat with pre-filled message')
+      console.log('Successfully created thread and navigated with agent context:', newThread.id)
     } catch (error) {
-      console.error('Error navigating to chat:', error)
+      console.error('Error creating thread and navigating to chat:', error)
     }
   }
 

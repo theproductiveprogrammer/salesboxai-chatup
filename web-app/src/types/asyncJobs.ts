@@ -2,6 +2,8 @@
  * AsyncJob types and interfaces for managing background jobs
  */
 
+import type { SBAgentContext } from './agent'
+
 export enum AsyncJobStatus {
   RUNNING = 'RUNNING',
   SUCCESS = 'SUCCESS',
@@ -121,18 +123,8 @@ export interface ProspectingTouch {
   status: string // SENT, FAILED
 }
 
-export interface ProspectingInput {
-  leadContext: {
-    id?: number
-    linkedin?: string
-    name?: string
-    email?: string
-    title?: string
-    company?: string
-  }
-  botId?: number
-  maxTouches?: number
-}
+// ProspectingInput is now SBAgentContext (matches backend LeadProspectingJobDataDTO.input)
+export type ProspectingInput = SBAgentContext
 
 export interface ProspectingOutput {
   providerId?: string

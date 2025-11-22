@@ -1,27 +1,34 @@
 import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
+import { useSBAgentContext } from '@/hooks/useSBAgentContext'
 import { isTokenExpired } from '@/lib/jwt'
+import type { SBAgentContext } from '@/types/agent'
 
 /**
  * Service for making authenticated API calls to SalesboxAI using JWT tokens
+ * Automatically handles X-SBAgent-Context header for thread-specific agent context
  */
 
 export interface SalesboxApiResponse<T = any> {
   data?: T
   error?: string
   status: number
+  agentContext?: SBAgentContext | null
 }
 
 /**
  * Makes an authenticated request to SalesboxAI API using JWT token
+ * Automatically includes X-SBAgent-Context header if threadId is provided and context exists
  * @param endpoint - The API endpoint (e.g., '/users', '/models')
  * @param options - Fetch options (method, body, etc.)
- * @returns Promise with the API response
+ * @param threadId - Optional thread ID for agent context
+ * @returns Promise with the API response including updated agent context
  */
 export async function callSalesboxApi<T = any>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  threadId?: string
 ): Promise<SalesboxApiResponse<T>> {
   // Get the JWT token and endpoint from the store
   const { token, isAuthenticated, logout } = useSalesboxAuth.getState()
@@ -43,6 +50,15 @@ export async function callSalesboxApi<T = any>(
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
     ...(options.headers as Record<string, string>),
+  }
+
+  // Add agent context header if threadId is provided
+  if (threadId) {
+    const { getContext } = useSBAgentContext.getState()
+    const agentContext = getContext(threadId)
+    if (agentContext) {
+      headers['X-SBAgent-Context'] = JSON.stringify(agentContext)
+    }
   }
 
   try {
@@ -70,9 +86,27 @@ export async function callSalesboxApi<T = any>(
     }
 
     const data = await response.json()
+
+    // Parse and update agent context from response header if present
+    let agentContext: SBAgentContext | null = null
+    if (threadId) {
+      const contextHeader = response.headers.get('X-SBAgent-Context')
+      if (contextHeader) {
+        try {
+          agentContext = JSON.parse(contextHeader) as SBAgentContext
+          // Update the context store for this thread
+          const { setContext } = useSBAgentContext.getState()
+          setContext(threadId, agentContext)
+        } catch (error) {
+          console.warn('Failed to parse X-SBAgent-Context header:', error)
+        }
+      }
+    }
+
     return {
       data,
       status: response.status,
+      agentContext,
     }
   } catch (error) {
     console.error('Error calling SalesboxAI API:', error)

@@ -1,35 +1,35 @@
 import { callSalesboxApi } from './salesboxApi'
-import type { LeadContext } from '@/hooks/useLeadContext'
 
-export interface SystemPromptRequest {
-  leadContext?: LeadContext | null
-}
-
-export interface AgentSystemPromptResDTO {
+export interface TextSummaryResDTO {
   text?: string
   error?: string
-  leadContext?: LeadContext | null
 }
 
 export interface SystemPromptResponse {
   systemPrompt: string
-  leadContext?: LeadContext | null
 }
 
 /**
  * Fetches the system prompt from the backend
- * @param leadContext - Optional lead context to include in the prompt
- * @returns Object containing the system prompt and resolved lead context
+ * Agent context is automatically included via X-SBAgent-Context header if threadId is provided
+ * @param threadId - Thread ID for agent context
+ * @param userMsg - Optional user message for context resolution
+ * @returns Object containing the system prompt
  */
 export async function getSystemPrompt(
-  leadContext?: LeadContext | null
+  threadId: string,
+  userMsg?: string
 ): Promise<SystemPromptResponse> {
-  const response = await callSalesboxApi<AgentSystemPromptResDTO>('/mcp/agent-system-prompt', {
-    method: 'POST',
-    body: JSON.stringify({
-      leadContext: leadContext || null,
-    }),
-  })
+  const response = await callSalesboxApi<TextSummaryResDTO>(
+    '/mcp/agent-system-prompt',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        userMsg: userMsg || '',
+      }),
+    },
+    threadId // Pass threadId for automatic agent context handling
+  )
 
   if (response.error) {
     console.error('Failed to fetch system prompt:', response.error)
@@ -43,6 +43,5 @@ export async function getSystemPrompt(
 
   return {
     systemPrompt: response.data?.text || '',
-    leadContext: response.data?.leadContext || null
   }
 }

@@ -25,14 +25,21 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { invoke } from '@tauri-apps/api/core'
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
-import { useLeadContext } from '@/hooks/useLeadContext'
+import { useSBAgentContext } from '@/hooks/useSBAgentContext'
+import { useThreads } from '@/hooks/useThreads'
+import { useAssistant } from '@/hooks/useAssistant'
+import { useModelProvider } from '@/hooks/useModelProvider'
+import { defaultModel } from '@/lib/models'
 
 export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   job,
   onAction,
 }) => {
   const router = useRouter()
-  const { setLeadContext } = useLeadContext()
+  const { setContext } = useSBAgentContext()
+  const { createThread } = useThreads()
+  const { assistants } = useAssistant()
+  const { selectedProvider } = useModelProvider()
 
   console.log('DiscoverLeadsJobWidget - job:', job)
   console.log('DiscoverLeadsJobWidget - job.status:', job.status)
@@ -91,28 +98,43 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
     }
 
     try {
-      // Set lead context before navigation
-      setLeadContext({
-        name: getLeadDisplayName(lead),
-        linkedin: linkedinUrl,
-        email: lead.email,
-        id: lead.id,
-        company: lead.company,
-        title: lead.title,
+      // Create a new thread first
+      const selectedAssistant = assistants[0] // Use first assistant
+      const newThread = await createThread(
+        {
+          id: defaultModel(selectedProvider),
+          provider: selectedProvider,
+        },
+        '', // No initial prompt
+        selectedAssistant
+      )
+
+      // Set agent context for this new thread
+      setContext(newThread.id, {
+        lead_name: getLeadDisplayName(lead),
+        lead_linkedin: linkedinUrl,
+        lead_email: lead.email,
+        lead_id: lead.id,
+        lead_company: lead.company,
+        lead_title: lead.title,
+        account_id: null,
+        account_name: null,
+        opportunity_id: null,
       })
 
       // Pre-fill message for the user to edit/submit
       const message = `Please get detailed information about this lead: ${linkedinUrl}`
 
-      // Navigate to home (New Chat) with pre-filled message
+      // Navigate to the new thread with pre-filled message
       await router.navigate({
-        to: route.home,
+        to: route.threadsDetail,
+        params: { threadId: newThread.id },
         search: { message },
       })
 
-      console.log('Successfully navigated to new chat with pre-filled message')
+      console.log('Successfully created thread and navigated with agent context:', newThread.id)
     } catch (error) {
-      console.error('Error navigating to chat:', error)
+      console.error('Error creating thread and navigating to chat:', error)
     }
   }
 

@@ -23,7 +23,7 @@ import { useTranslation } from '@/i18n/react-i18next-compat'
 import { useChat } from '@/hooks/useChat'
 import { useSmallScreen } from '@/hooks/useMediaQuery'
 import { useTools } from '@/hooks/useTools'
-import { useLeadContext } from '@/hooks/useLeadContext'
+import { useSBAgentContext } from '@/hooks/useSBAgentContext'
 import { usePrompt } from '@/hooks/usePrompt'
 import { Button } from '@/components/ui/button'
 
@@ -58,23 +58,24 @@ function ThreadDetail() {
   const isSmallScreen = useSmallScreen()
   useTools()
 
-  const { leadContext, setLeadContext } = useLeadContext()
+  const { getContext } = useSBAgentContext()
   const { setPrompt } = usePrompt()
 
   const handleProspectLead = () => {
-    if (!leadContext) return
+    const agentContext = getContext(threadId)
+    if (!agentContext) return
 
-    // Build lead data string like LinkedInProfileDisplay does
+    // Build lead data string
     const parts: string[] = []
 
-    if (leadContext.name) {
-      parts.push(leadContext.name)
+    if (agentContext.lead_name) {
+      parts.push(agentContext.lead_name)
     }
-    if (leadContext.linkedin) {
-      parts.push(leadContext.linkedin)
+    if (agentContext.lead_linkedin) {
+      parts.push(agentContext.lead_linkedin)
     }
-    if (leadContext.email) {
-      parts.push(leadContext.email)
+    if (agentContext.lead_email) {
+      parts.push(agentContext.lead_email)
     }
 
     const leadData = parts.join(' - ')
@@ -131,14 +132,8 @@ function ThreadDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId, currentThreadId, assistants])
 
-  // Restore lead context from thread when thread loads
-  useEffect(() => {
-    if (thread?.leadContext) {
-      console.log('[ThreadDetail] Restoring lead context from thread:', thread.leadContext)
-      setLeadContext(thread.leadContext)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [threadId, thread?.leadContext])
+  // Note: Agent context is now managed per-thread in useSBAgentContext
+  // and persisted automatically via Zustand's persist middleware
 
   useEffect(() => {
     // DISABLED: Extensions are disabled, messages are persisted via Zustand
@@ -367,17 +362,20 @@ function ThreadDetail() {
       <HeaderPage>
         <div className="flex items-center justify-between w-full pr-2">
           <DropdownAssistant />
-          {leadContext && (leadContext.id || leadContext.linkedin) && (
-            <Button
-              size="sm"
-              onClick={handleProspectLead}
-              className="gap-1.5 bg-primary hover:bg-primary/90"
-              variant="default"
-            >
-              <UserPlus size={14} />
-              Prospect Lead
-            </Button>
-          )}
+          {(() => {
+            const agentContext = getContext(threadId)
+            return agentContext && (agentContext.lead_id || agentContext.lead_linkedin) && (
+              <Button
+                size="sm"
+                onClick={handleProspectLead}
+                className="gap-1.5 bg-primary hover:bg-primary/90"
+                variant="default"
+              >
+                <UserPlus size={14} />
+                Prospect Lead
+              </Button>
+            )
+          })()}
         </div>
       </HeaderPage>
       <div className="flex flex-col h-[calc(100%-40px)] ">

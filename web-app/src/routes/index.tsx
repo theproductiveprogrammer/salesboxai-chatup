@@ -25,7 +25,6 @@ import { useEffect } from 'react'
 import { useThreads } from '@/hooks/useThreads'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { usePrompt } from '@/hooks/usePrompt'
-import { useLeadContext } from '@/hooks/useLeadContext'
 
 export const Route = createFileRoute(route.home as any)({
   component: Index,
@@ -41,7 +40,6 @@ function Index() {
   const { setCurrentThreadId } = useThreads()
   const { user } = useSalesboxAuth()
   const { setPrompt } = usePrompt()
-  const { leadContext } = useLeadContext()
   useTools()
 
   const userName = user?.name || user?.username || 'there'
@@ -49,28 +47,6 @@ function Index() {
   useEffect(() => {
     setCurrentThreadId(undefined)
   }, [setCurrentThreadId])
-
-  // Helper function to format lead context for prompt
-  const formatLeadForPrompt = (): string => {
-    if (!leadContext) return ''
-
-    // Build a readable representation of the lead
-    const parts: string[] = []
-
-    if (leadContext.name) {
-      if (leadContext.id) {
-        parts.push(`${leadContext.name}[id:${leadContext.id}]`)
-      } else {
-        parts.push(leadContext.name)
-      }
-    } else if (leadContext.id) {
-      parts.push(`[id:${leadContext.id}]`)
-    }
-    if (leadContext.linkedin) parts.push(leadContext.linkedin)
-    if (leadContext.email) parts.push(leadContext.email)
-
-    return parts.join(' - ')
-  }
 
   const suggestedActions = [
     {
@@ -137,11 +113,10 @@ function Index() {
                   key={index}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border/20 transition-all ${action.bgColor} cursor-pointer opacity-80 hover:opacity-100`}
                   onClick={() => {
-                    // Replace {{lead}} placeholder with actual lead data
-                    const leadData = formatLeadForPrompt()
+                    // Replace {{lead}} placeholder with empty string (user will fill in)
                     const filledPrompt = action.prompt.replace(
                       /\{\{lead\}\}/g,
-                      leadData
+                      ''
                     )
                     setPrompt(filledPrompt)
 

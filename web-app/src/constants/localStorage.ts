@@ -17,6 +17,7 @@ export const localStorageKey = {
   toolApproval: 'tool-approval',
   toolAvailability: 'tool-availability',
   mcpGlobalPermissions: 'mcp-global-permissions',
+  agentContext: 'agent-context',
   lastUsedModel: 'last-used-model',
   lastUsedAssistant: 'last-used-assistant',
   favoriteModels: 'favorite-models',

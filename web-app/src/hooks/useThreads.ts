@@ -4,7 +4,6 @@ import { ulid } from 'ulidx'
 import { deleteThread, updateThread } from '@/services/threads'
 import { Fzf } from 'fzf'
 import { sep } from '@tauri-apps/api/path'
-import type { LeadContext } from './useLeadContext'
 
 type ThreadState = {
   threads: Record<string, Thread>
@@ -28,7 +27,6 @@ type ThreadState = {
   getFilteredThreads: (searchTerm: string) => Thread[]
   updateCurrentThreadAssistant: (assistant: Assistant) => void
   updateThreadTimestamp: (threadId: string) => void
-  updateThreadLeadContext: (threadId: string, leadContext: LeadContext | null) => void
   searchIndex: Fzf<any> | null
 }
 
@@ -199,7 +197,15 @@ export const useThreads = create<ThreadState>()(
       title: title ?? 'New Thread',
       model,
       updated: Date.now() / 1000,
-      assistants: assistant ? [assistant] : [],
+      assistants: assistant ? [{
+        id: assistant.id,
+        name: assistant.name,
+        instructions: assistant.instructions,
+        model: {
+          id: model.id,
+          engine: model.provider,
+        },
+      }] : [],
     }
 
     console.log('[useThreads] Creating thread:', {
@@ -232,17 +238,34 @@ export const useThreads = create<ThreadState>()(
     set((state) => {
       if (!state.currentThreadId) return { ...state }
       const currentThread = state.getCurrentThread()
-      if (currentThread)
-        updateThread({
-          ...currentThread,
-          assistants: [{ ...assistant, model: currentThread.model }],
-        })
+      if (!currentThread) return { ...state }
+
+      updateThread({
+        ...currentThread,
+        assistants: [{
+          id: assistant.id,
+          name: assistant.name,
+          instructions: assistant.instructions,
+          model: {
+            id: currentThread.model?.id ?? '*',
+            engine: currentThread.model?.provider ?? 'llamacpp',
+          },
+        }],
+      })
       return {
         threads: {
           ...state.threads,
           [state.currentThreadId as string]: {
             ...state.threads[state.currentThreadId as string],
-            assistants: [assistant],
+            assistants: [{
+              id: assistant.id,
+              name: assistant.name,
+              instructions: assistant.instructions,
+              model: {
+                id: currentThread.model?.id ?? '*',
+                engine: currentThread.model?.provider ?? 'llamacpp',
+              },
+            }],
             updated: Date.now() / 1000,
           },
         },
@@ -261,24 +284,6 @@ export const useThreads = create<ThreadState>()(
             ...state.threads[state.currentThreadId as string],
             model,
           },
-        },
-      }
-    })
-  },
-  updateThreadLeadContext: (threadId, leadContext) => {
-    set((state) => {
-      const thread = state.threads[threadId]
-      if (!thread) return state
-      const updatedThread = {
-        ...thread,
-        leadContext,
-        updated: Date.now() / 1000,
-      }
-      updateThread(updatedThread)
-      return {
-        threads: {
-          ...state.threads,
-          [threadId]: updatedThread,
         },
       }
     })

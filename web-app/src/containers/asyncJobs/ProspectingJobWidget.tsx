@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AsyncJob, AsyncJobStatus, ProspectingOutput, ProspectingTouch } from '@/types/asyncJobs'
+import { AsyncJob, AsyncJobStatus, ProspectingInput, ProspectingOutput, ProspectingTouch } from '@/types/asyncJobs'
 import { Button } from '@/components/ui/button'
 import {
   MapPin,
@@ -15,7 +15,11 @@ import {
 } from 'lucide-react'
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
-import { useLeadContext } from '@/hooks/useLeadContext'
+import { useSBAgentContext } from '@/hooks/useSBAgentContext'
+import { useThreads } from '@/hooks/useThreads'
+import { useAssistant } from '@/hooks/useAssistant'
+import { useModelProvider } from '@/hooks/useModelProvider'
+import { defaultModel } from '@/lib/models'
 import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
@@ -28,14 +32,17 @@ interface ProspectingJobWidgetProps {
 
 export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps) {
   const router = useRouter()
-  const { setLeadContext } = useLeadContext()
+  const { setContext } = useSBAgentContext()
+  const { createThread } = useThreads()
+  const { assistants } = useAssistant()
+  const { selectedProvider } = useModelProvider()
   const { endpoint } = useSalesboxEndpoint()
   const [isSkipping, setIsSkipping] = useState(false)
 
   // Parse the job result to get prospecting data
   const input = job.input as any
   const result = (job.result as any)?.output as ProspectingOutput | undefined
-  const leadContext = input?.leadContext
+  const agentContext = input as ProspectingInput | undefined
 
   // Check if job is in waiting state
   const isInWaitingState = () => {
@@ -46,7 +53,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
   // Handler to skip wait by calling prospect-lead again
   const handleSkipWait = async () => {
-    if (!endpoint || !leadContext) return
+    if (!endpoint || !agentContext) return
 
     const { token, isAuthenticated } = useSalesboxAuth.getState()
     if (!isAuthenticated || !token) {
@@ -62,16 +69,10 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
           'accept': 'application/json',
           'content-type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'X-SBAgent-Context': JSON.stringify(agentContext),
         },
         body: JSON.stringify({
-          leadContext: {
-            name: leadContext.name,
-            linkedin: leadContext.linkedin,
-            email: leadContext.email,
-            id: leadContext.id,
-            company: leadContext.company,
-            title: leadContext.title,
-          }
+          userMsg: 'Skip wait and continue prospecting'
         })
       })
 
@@ -104,7 +105,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
   // Get LinkedIn URL for the lead
   const getLinkedInUrl = (): string | null => {
-    if (leadContext?.linkedin) return leadContext.linkedin
+    if (agentContext?.lead_linkedin) return agentContext.lead_linkedin
     // Check if job title contains a LinkedIn URL
     if (job.title && job.title.includes('linkedin.com/in/')) {
       const match = job.title.match(/(https?:\/\/[^\s\(]+linkedin\.com\/in\/[^\s\(]+)/)
@@ -115,7 +116,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
   // Get lead display info
   const getLeadDisplayName = (): string => {
-    if (leadContext?.name) return leadContext.name
+    if (agentContext?.lead_name) return agentContext.lead_name
     const parts: string[] = []
     if (result?.profile?.first_name) parts.push(result.profile.first_name)
     if (result?.profile?.last_name) parts.push(result.profile.last_name)
@@ -189,20 +190,45 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
   // Handler to navigate to chat with lead context
   const handleChatWithLead = async () => {
-    if (leadContext) {
-      setLeadContext({
-        name: getLeadDisplayName(),
-        linkedin: leadContext.linkedin,
-        email: leadContext.email,
-        id: leadContext.id,
-        company: leadContext.company,
-        title: leadContext.title,
-      })
+    if (agentContext) {
+      try {
+        // Create a new thread first
+        const selectedAssistant = assistants[0] // Use first assistant
+        const newThread = await createThread(
+          {
+            id: defaultModel(selectedProvider),
+            provider: selectedProvider,
+          },
+          '', // No initial prompt
+          selectedAssistant
+        )
 
-      await router.navigate({
-        to: route.home,
-        search: { message: `Please continue prospecting: ${getLeadDisplayName()}` },
-      })
+        // Set agent context for this new thread
+        setContext(newThread.id, {
+          lead_name: getLeadDisplayName(),
+          lead_linkedin: agentContext.lead_linkedin || null,
+          lead_email: agentContext.lead_email || null,
+          lead_id: agentContext.lead_id || null,
+          lead_company: agentContext.lead_company || null,
+          lead_title: agentContext.lead_title || null,
+          account_id: agentContext.account_id || null,
+          account_name: agentContext.account_name || null,
+          opportunity_id: agentContext.opportunity_id || null,
+        })
+
+        const message = `Please continue prospecting: ${getLeadDisplayName()}`
+
+        // Navigate to the new thread with pre-filled message
+        await router.navigate({
+          to: route.threadsDetail,
+          params: { threadId: newThread.id },
+          search: { message },
+        })
+
+        console.log('Successfully created thread and navigated with agent context:', newThread.id)
+      } catch (error) {
+        console.error('Error creating thread and navigating to chat:', error)
+      }
     }
   }
 
@@ -245,16 +271,16 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                     </a>
                   )}
                 </div>
-                {(result?.profile?.headline || leadContext?.title) && (
+                {(result?.profile?.headline || agentContext?.lead_title) && (
                   <p className="text-sm text-main-view-fg/70 mt-0.5 truncate">
-                    {result?.profile?.headline || leadContext?.title}
+                    {result?.profile?.headline || agentContext?.lead_title}
                   </p>
                 )}
                 <div className="flex flex-wrap gap-3 mt-2 text-xs text-main-view-fg/60">
-                  {(result?.profile?.location || leadContext?.company) && (
+                  {(result?.profile?.location || agentContext?.lead_company) && (
                     <span className="flex items-center gap-1">
                       <MapPin size={12} />
-                      {result?.profile?.location || leadContext?.company}
+                      {result?.profile?.location || agentContext?.lead_company}
                     </span>
                   )}
                   {result?.networkDistance && (
@@ -294,7 +320,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
                     </span>
                   )}
                 </div>
-                {leadContext && (
+                {agentContext && (
                   <div className="flex items-center gap-2">
                     {isInWaitingState() && (
                       <Button

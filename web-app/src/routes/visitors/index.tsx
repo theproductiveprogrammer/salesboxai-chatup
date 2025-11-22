@@ -19,7 +19,11 @@ import {
 import type { ParsedVisitorConversation } from '@/types/visitors'
 import { route } from '@/constants/routes'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
-import { useLeadContext } from '@/hooks/useLeadContext'
+import { useSBAgentContext } from '@/hooks/useSBAgentContext'
+import { useThreads } from '@/hooks/useThreads'
+import { useAssistant } from '@/hooks/useAssistant'
+import { useModelProvider } from '@/hooks/useModelProvider'
+import { defaultModel } from '@/lib/models'
 
 export const Route = createFileRoute('/visitors/')({
   component: VisitorsPage,
@@ -28,7 +32,10 @@ export const Route = createFileRoute('/visitors/')({
 function VisitorsPage() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { setLeadContext } = useLeadContext()
+  const { setContext } = useSBAgentContext()
+  const { createThread } = useThreads()
+  const { assistants } = useAssistant()
+  const { selectedProvider } = useModelProvider()
   const [visitors, setVisitors] = useState<ParsedVisitorConversation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,26 +77,43 @@ function VisitorsPage() {
     }
 
     try {
-      // Set lead context before navigation
-      setLeadContext({
-        name: info.visitorName,
-        linkedin: info.linkedinUrl,
-        id: info.leadId,
-        company: info.companyName,
+      // Create a new thread first
+      const selectedAssistant = assistants[0] // Use first assistant
+      const newThread = await createThread(
+        {
+          id: defaultModel(selectedProvider),
+          provider: selectedProvider,
+        },
+        '', // No initial prompt
+        selectedAssistant
+      )
+
+      // Set agent context for this new thread
+      setContext(newThread.id, {
+        lead_name: info.visitorName || null,
+        lead_linkedin: info.linkedinUrl || null,
+        lead_email: null,
+        lead_id: info.leadId ? parseInt(info.leadId, 10) : null,
+        lead_company: info.companyName || null,
+        lead_title: null,
+        account_id: info.accountId ? parseInt(info.accountId, 10) : null,
+        account_name: null,
+        opportunity_id: null,
       })
 
       // Pre-fill message for the user to edit/submit
       const message = `Please get detailed information about this lead: ${info.linkedinUrl}`
 
-      // Navigate to home (New Chat) with pre-filled message
+      // Navigate to the new thread with pre-filled message
       await router.navigate({
-        to: route.home,
+        to: route.threadsDetail,
+        params: { threadId: newThread.id },
         search: { message },
       })
 
-      console.log('Successfully navigated to new chat with pre-filled message')
+      console.log('Successfully created thread and navigated with agent context:', newThread.id)
     } catch (error) {
-      console.error('Error navigating to chat:', error)
+      console.error('Error creating thread and navigating to chat:', error)
     }
   }
 

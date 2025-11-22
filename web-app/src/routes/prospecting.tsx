@@ -162,8 +162,8 @@ function ProspectingPage() {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase()
       const title = job.title?.toLowerCase() || ''
-      const leadName = (job.input as any)?.leadContext?.name?.toLowerCase() || ''
-      const leadCompany = (job.input as any)?.leadContext?.company?.toLowerCase() || ''
+      const leadName = (job.input as any)?.lead_name?.toLowerCase() || ''
+      const leadCompany = (job.input as any)?.lead_company?.toLowerCase() || ''
       if (!title.includes(searchLower) && !leadName.includes(searchLower) && !leadCompany.includes(searchLower)) {
         return false
       }

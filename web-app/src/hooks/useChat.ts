@@ -5,7 +5,7 @@ import { useThreads } from './useThreads'
 import { useAppState } from './useAppState'
 import { useMessages } from './useMessages'
 import { useRouter } from '@tanstack/react-router'
-import { useLeadContext } from './useLeadContext'
+import { useSBAgentContext } from './useSBAgentContext'
 import { defaultModel } from '@/lib/models'
 import { route } from '@/constants/routes'
 import {
@@ -47,7 +47,7 @@ export const useChat = () => {
   } = useAppState()
   const { assistants, currentAssistant } = useAssistant()
   const { updateProvider } = useModelProvider()
-  const { leadContext, setLeadContext } = useLeadContext()
+  const { getContext } = useSBAgentContext()
 
   const { approvedTools, showApprovalModal, allowAllMCPPermissions } =
     useToolApproval()
@@ -62,7 +62,6 @@ export const useChat = () => {
     getCurrentThread: retrieveThread,
     createThread,
     updateThreadTimestamp,
-    updateThreadLeadContext,
   } = useThreads()
   const { getMessages, addMessage } = useMessages()
   const { setModelLoadError } = useModelLoad()
@@ -249,24 +248,17 @@ export const useChat = () => {
           updateLoadingModel(false)
         }
 
-        const { systemPrompt, leadContext: resolvedLeadContext } = await getSystemPrompt(leadContext)
+        // Fetch system prompt (agent context is automatically included via headers)
+        const { systemPrompt } = await getSystemPrompt(activeThread.id, message)
+        const agentContext = getContext(activeThread.id)
+
         console.log('[useChat] Sending message with system prompt:', {
-          hasLeadContext: !!leadContext,
-          leadId: leadContext?.id,
-          resolvedLeadContextId: resolvedLeadContext?.id,
+          threadId: activeThread.id,
+          hasAgentContext: !!agentContext,
+          leadId: agentContext?.lead_id,
           systemPromptLength: systemPrompt?.length || 0,
           systemPromptPreview: systemPrompt?.substring(0, 200)
         })
-
-        // Update global lead context if backend resolved it
-        if (resolvedLeadContext?.id) {
-          setLeadContext(resolvedLeadContext)
-        }
-
-        // Store lead context with current thread
-        if (activeThread.id && resolvedLeadContext) {
-          updateThreadLeadContext(activeThread.id, resolvedLeadContext)
-        }
 
         const builder = new CompletionMessagesBuilder(
           messages,
@@ -598,7 +590,7 @@ export const useChat = () => {
       setPrompt,
       selectedModel,
       currentAssistant,
-      leadContext,
+      getContext,
       tools,
       updateLoadingModel,
       getDisabledToolsForThread,
