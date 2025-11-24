@@ -16,8 +16,7 @@ interface LinkedInProfileDisplayProps {
 
 export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplayProps) {
   const router = useRouter()
-  const { setContext } = useSBAgentContext()
-  const { createThread } = useThreads()
+  const { setPendingContext } = useSBAgentContext()
   const { assistants } = useAssistant()
   const { selectedProvider } = useModelProvider()
   // The result structure is: result.output.profile and result.output.posts
@@ -57,19 +56,8 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
     const linkedinUrl = getLinkedInUrl()
 
     try {
-      // Create a new thread first
-      const selectedAssistant = assistants[0] // Use first assistant
-      const newThread = await createThread(
-        {
-          id: defaultModel(selectedProvider),
-          provider: selectedProvider,
-        },
-        '', // No initial prompt
-        selectedAssistant
-      )
-
-      // Set agent context for this new thread
-      setContext(newThread.id, {
+      // Set pending context that will be attached when user sends message
+      setPendingContext({
         lead_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
         lead_linkedin: linkedinUrl,
         lead_id: input?.leadId || input?.id,
@@ -85,16 +73,15 @@ export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplay
       const leadData = formatLeadForPrompt()
       const message = `Please start prospecting: ${leadData}`
 
-      // Navigate to the new thread with pre-filled message
+      // Navigate to home with pre-filled message
       await router.navigate({
-        to: route.threadsDetail,
-        params: { threadId: newThread.id },
+        to: route.home,
         search: { message },
       })
 
-      console.log('Successfully created thread and navigated with agent context:', newThread.id)
+      console.log('Successfully set pending context and navigated to home with message')
     } catch (error) {
-      console.error('Error creating thread and navigating to chat:', error)
+      console.error('Error navigating to chat:', error)
     }
   }
 

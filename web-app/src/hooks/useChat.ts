@@ -66,6 +66,7 @@ export const useChat = () => {
   const { getMessages, addMessage } = useMessages()
   const { setModelLoadError } = useModelLoad()
   const router = useRouter()
+  const { getPendingContext, setContext, clearPendingContext } = useSBAgentContext()
 
   const provider = useMemo(() => {
     return getProviderByName(selectedProvider)
@@ -90,6 +91,15 @@ export const useChat = () => {
         prompt,
         selectedAssistant
       )
+
+      // Check for pending context and attach it to the new thread
+      const pendingContext = getPendingContext()
+      if (pendingContext) {
+        setContext(currentThread.id, pendingContext)
+        clearPendingContext()
+        console.log('[useChat] Attached pending context to thread:', currentThread.id)
+      }
+
       router.navigate({
         to: route.threadsDetail,
         params: { threadId: currentThread.id },
@@ -104,6 +114,9 @@ export const useChat = () => {
     selectedModel?.id,
     selectedProvider,
     selectedAssistant,
+    getPendingContext,
+    setContext,
+    clearPendingContext,
   ])
 
   const restartModel = useCallback(

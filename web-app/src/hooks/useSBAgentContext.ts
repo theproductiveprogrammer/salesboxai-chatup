@@ -11,6 +11,9 @@ type SBAgentContextStore = {
   // Map of threadId -> agent context
   contexts: Record<string, SBAgentContext>
 
+  // Pending context for new threads (before thread is created)
+  pendingContext: SBAgentContext | null
+
   // Get context for a specific thread
   getContext: (threadId: string) => SBAgentContext | null
 
@@ -25,12 +28,22 @@ type SBAgentContextStore = {
 
   // Clear all contexts
   clearAllContexts: () => void
+
+  // Set pending context (for use before thread creation)
+  setPendingContext: (context: SBAgentContext) => void
+
+  // Get pending context
+  getPendingContext: () => SBAgentContext | null
+
+  // Clear pending context
+  clearPendingContext: () => void
 }
 
 export const useSBAgentContext = create<SBAgentContextStore>()(
   persist(
     (set, get) => ({
       contexts: {},
+      pendingContext: null,
 
       getContext: (threadId: string) => {
         return get().contexts[threadId] || null
@@ -70,6 +83,18 @@ export const useSBAgentContext = create<SBAgentContextStore>()(
 
       clearAllContexts: () => {
         set({ contexts: {} })
+      },
+
+      setPendingContext: (context: SBAgentContext) => {
+        set({ pendingContext: context })
+      },
+
+      getPendingContext: () => {
+        return get().pendingContext
+      },
+
+      clearPendingContext: () => {
+        set({ pendingContext: null })
       },
     }),
     {

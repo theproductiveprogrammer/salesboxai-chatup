@@ -32,8 +32,7 @@ interface ProspectingJobWidgetProps {
 
 export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps) {
   const router = useRouter()
-  const { setContext } = useSBAgentContext()
-  const { createThread } = useThreads()
+  const { setPendingContext } = useSBAgentContext()
   const { assistants } = useAssistant()
   const { selectedProvider } = useModelProvider()
   const { endpoint } = useSalesboxEndpoint()
@@ -192,19 +191,8 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
   const handleChatWithLead = async () => {
     if (agentContext) {
       try {
-        // Create a new thread first
-        const selectedAssistant = assistants[0] // Use first assistant
-        const newThread = await createThread(
-          {
-            id: defaultModel(selectedProvider),
-            provider: selectedProvider,
-          },
-          '', // No initial prompt
-          selectedAssistant
-        )
-
-        // Set agent context for this new thread
-        setContext(newThread.id, {
+        // Set pending context that will be attached when user sends message
+        setPendingContext({
           lead_name: getLeadDisplayName(),
           lead_linkedin: agentContext.lead_linkedin || null,
           lead_email: agentContext.lead_email || null,
@@ -218,16 +206,15 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
         const message = `Please continue prospecting: ${getLeadDisplayName()}`
 
-        // Navigate to the new thread with pre-filled message
+        // Navigate to home with pre-filled message
         await router.navigate({
-          to: route.threadsDetail,
-          params: { threadId: newThread.id },
+          to: route.home,
           search: { message },
         })
 
-        console.log('Successfully created thread and navigated with agent context:', newThread.id)
+        console.log('Successfully set pending context and navigated to home with message')
       } catch (error) {
-        console.error('Error creating thread and navigating to chat:', error)
+        console.error('Error navigating to chat:', error)
       }
     }
   }
@@ -254,7 +241,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold text-main-view-fg truncate">
                     {getLeadDisplayName()}
@@ -299,7 +286,7 @@ export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps)
               </div>
 
               {/* Status and actions */}
-              <div className="flex flex-col items-end gap-2">
+              <div className="flex flex-col items-end gap-2 shrink-0">
                 <div className="flex items-center gap-2">
                   {job.status === AsyncJobStatus.RUNNING && (
                     <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-primary/10 text-primary font-medium rounded-full">

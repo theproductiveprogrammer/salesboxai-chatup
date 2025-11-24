@@ -15,7 +15,7 @@ export function UnipileAccountIdInput() {
   const handleSave = async () => {
     if (!accountId.trim()) {
       setStatus('error')
-      setMessage('Please enter a Unipile Account ID')
+      setMessage('Please enter a Linkedin Account ID')
       return
     }
 
@@ -52,7 +52,7 @@ export function UnipileAccountIdInput() {
   if (!isAuthenticated) {
     return (
       <div className="text-sm text-main-view-fg/70">
-        Please sign in to configure Unipile Account ID
+        Please sign in to configure Linkedin Account ID
       </div>
     )
   }

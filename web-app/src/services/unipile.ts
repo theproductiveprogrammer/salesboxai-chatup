@@ -14,7 +14,7 @@ export async function setUnipileAccountId(
   accountId: string
 ): Promise<SetUnipileAccountIdResponse> {
   const response = await callSalesboxApi<SetUnipileAccountIdResponse>(
-    '/mcp/set-unipile-account-id',
+    '/mcp/set-linkedin-account-id',
     {
       method: 'POST',
       body: JSON.stringify({ unipileAccountId: accountId }),
