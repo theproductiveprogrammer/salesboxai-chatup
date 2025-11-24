@@ -4,10 +4,6 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
 import { useSBAgentContext } from '@/hooks/useSBAgentContext'
-import { useThreads } from '@/hooks/useThreads'
-import { useAssistant } from '@/hooks/useAssistant'
-import { useModelProvider } from '@/hooks/useModelProvider'
-import { defaultModel } from '@/lib/models'
 
 interface LinkedInProfileDisplayProps {
   result: any
@@ -17,8 +13,6 @@ interface LinkedInProfileDisplayProps {
 export function LinkedInProfileDisplay({ result, input }: LinkedInProfileDisplayProps) {
   const router = useRouter()
   const { setPendingContext } = useSBAgentContext()
-  const { assistants } = useAssistant()
-  const { selectedProvider } = useModelProvider()
   // The result structure is: result.output.profile and result.output.posts
   const output = result?.output
   const [showPosts, setShowPosts] = useState(false)

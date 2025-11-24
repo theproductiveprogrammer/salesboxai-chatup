@@ -26,10 +26,6 @@ import { invoke } from '@tauri-apps/api/core'
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
 import { useSBAgentContext } from '@/hooks/useSBAgentContext'
-import { useThreads } from '@/hooks/useThreads'
-import { useAssistant } from '@/hooks/useAssistant'
-import { useModelProvider } from '@/hooks/useModelProvider'
-import { defaultModel } from '@/lib/models'
 
 export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
   job,
@@ -37,8 +33,6 @@ export const DiscoverLeadsJobWidget: React.FC<AsyncJobWidgetProps> = ({
 }) => {
   const router = useRouter()
   const { setPendingContext } = useSBAgentContext()
-  const { assistants } = useAssistant()
-  const { selectedProvider } = useModelProvider()
 
   console.log('DiscoverLeadsJobWidget - job:', job)
   console.log('DiscoverLeadsJobWidget - job.status:', job.status)

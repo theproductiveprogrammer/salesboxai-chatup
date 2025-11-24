@@ -20,10 +20,6 @@ import type { ParsedVisitorConversation } from '@/types/visitors'
 import { route } from '@/constants/routes'
 import { formatRelativeTime } from '@/utils/formatRelativeTime'
 import { useSBAgentContext } from '@/hooks/useSBAgentContext'
-import { useThreads } from '@/hooks/useThreads'
-import { useAssistant } from '@/hooks/useAssistant'
-import { useModelProvider } from '@/hooks/useModelProvider'
-import { defaultModel } from '@/lib/models'
 
 export const Route = createFileRoute('/visitors/')({
   component: VisitorsPage,
@@ -33,8 +29,6 @@ function VisitorsPage() {
   const { t } = useTranslation()
   const router = useRouter()
   const { setPendingContext } = useSBAgentContext()
-  const { assistants } = useAssistant()
-  const { selectedProvider } = useModelProvider()
   const [visitors, setVisitors] = useState<ParsedVisitorConversation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

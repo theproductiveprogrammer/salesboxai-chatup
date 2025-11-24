@@ -16,10 +16,6 @@ import {
 import { useRouter } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
 import { useSBAgentContext } from '@/hooks/useSBAgentContext'
-import { useThreads } from '@/hooks/useThreads'
-import { useAssistant } from '@/hooks/useAssistant'
-import { useModelProvider } from '@/hooks/useModelProvider'
-import { defaultModel } from '@/lib/models'
 import { useSalesboxEndpoint } from '@/hooks/useSalesboxEndpoint'
 import { useSalesboxAuth } from '@/hooks/useSalesboxAuth'
 import { fetch as fetchTauri } from '@tauri-apps/plugin-http'
@@ -33,8 +29,6 @@ interface ProspectingJobWidgetProps {
 export default function ProspectingJobWidget({ job }: ProspectingJobWidgetProps) {
   const router = useRouter()
   const { setPendingContext } = useSBAgentContext()
-  const { assistants } = useAssistant()
-  const { selectedProvider } = useModelProvider()
   const { endpoint } = useSalesboxEndpoint()
   const [isSkipping, setIsSkipping] = useState(false)
 
