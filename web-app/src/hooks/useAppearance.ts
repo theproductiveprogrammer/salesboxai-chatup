@@ -24,11 +24,7 @@ interface AppearanceState {
   appLeftPanelTextColor: string
   setChatWidth: (size: ChatWidth) => void
   setFontSize: (size: FontSize) => void
-  setAppBgColor: (color: RgbaColor) => void
-  setAppMainViewBgColor: (color: RgbaColor) => void
-  setAppPrimaryBgColor: (color: RgbaColor) => void
-  setAppAccentBgColor: (color: RgbaColor) => void
-  setAppDestructiveBgColor: (color: RgbaColor) => void
+  // Color setters removed - colors are now fixed to brand defaults
   resetAppearance: () => void
 }
 
@@ -43,7 +39,7 @@ export const fontSizeOptions = [
 ]
 
 // Default appearance settings
-const APPEARANCE_VERSION = 4 // Increment this to force a reset to new defaults
+const APPEARANCE_VERSION = 5 // Increment this to force a reset to new defaults
 const defaultFontSize: FontSize = '15px'
 const defaultAppBgColor: RgbaColor = {
   r: 25,
@@ -289,6 +285,9 @@ export const useAppearance = create<AppearanceState>()(
           set({ fontSize: size })
         },
 
+        // Color setters have been removed - colors are now fixed to brand defaults
+        // This prevents inconsistencies between development and production environments
+        /*
         setAppBgColor: (color: RgbaColor) => {
           // Get the current theme state
           const { isDark } = useTheme.getState()
@@ -552,6 +551,7 @@ export const useAppearance = create<AppearanceState>()(
             appDestructiveTextColor: textColor,
           })
         },
+        */
       }
     },
     {

@@ -1,14 +1,6 @@
 import { useEffect } from 'react'
 import { useAppearance } from '@/hooks/useAppearance'
 import { useTheme } from '@/hooks/useTheme'
-import {
-  isDefaultColor,
-  getDefaultTextColor,
-  isDefaultColorMainView,
-  isDefaultColorPrimary,
-  isDefaultColorAccent,
-  isDefaultColorDestructive,
-} from '@/hooks/useAppearance'
 
 /**
  * AppearanceProvider ensures appearance settings are applied on every page load
@@ -178,111 +170,8 @@ export function AppearanceProvider() {
     appDestructiveTextColor,
   ])
 
-  // Update appearance when theme changes
-  useEffect(() => {
-    // Get the current appearance state
-    const {
-      appBgColor,
-      appMainViewBgColor,
-      appPrimaryBgColor,
-      appAccentBgColor,
-      appDestructiveBgColor,
-      setAppBgColor,
-      setAppMainViewBgColor,
-      setAppPrimaryBgColor,
-      setAppAccentBgColor,
-      setAppDestructiveBgColor,
-    } = useAppearance.getState()
-
-    // If using default background color, update it when theme changes
-    if (isDefaultColor(appBgColor)) {
-      // This will trigger the appropriate updates for both background and text color
-      setAppBgColor(appBgColor)
-    } else {
-      // If using custom background, just update the text color if needed
-      const textColor = isDefaultColor(appBgColor)
-        ? getDefaultTextColor(isDark)
-        : appLeftPanelTextColor
-
-      document.documentElement.style.setProperty(
-        '--app-left-panel-fg',
-        textColor
-      )
-    }
-
-    // If using default background color, update it when theme changes
-    if (isDefaultColorMainView(appMainViewBgColor)) {
-      // This will trigger the appropriate updates for both background and text color
-      setAppMainViewBgColor(appMainViewBgColor)
-    } else {
-      // If using custom background, just update the text color if needed
-      const textColorMainView = isDefaultColor(appMainViewBgColor)
-        ? getDefaultTextColor(isDark)
-        : appMainViewTextColor
-
-      document.documentElement.style.setProperty(
-        '--app-main-view-fg',
-        textColorMainView
-      )
-    }
-
-    // If using default primary color, update it when theme changes
-    if (isDefaultColorPrimary(appPrimaryBgColor)) {
-      // This will trigger the appropriate updates for both background and text color
-      setAppPrimaryBgColor(appPrimaryBgColor)
-    } else {
-      // If using custom background, just update the text color if needed
-      const textColorPrimary = isDefaultColorPrimary(appPrimaryBgColor)
-        ? getDefaultTextColor(isDark)
-        : appPrimaryTextColor
-
-      document.documentElement.style.setProperty(
-        '--app-primary-fg',
-        textColorPrimary
-      )
-    }
-
-    // If using default accent color, update it when theme changes
-    if (isDefaultColorAccent(appAccentBgColor)) {
-      // This will trigger the appropriate updates for both background and text color
-      setAppAccentBgColor(appAccentBgColor)
-    } else {
-      // If using custom background, just update the text color if needed
-      const textColorAccent = isDefaultColorAccent(appAccentBgColor)
-        ? getDefaultTextColor(isDark)
-        : appAccentTextColor
-
-      document.documentElement.style.setProperty(
-        '--app-accent-fg',
-        textColorAccent
-      )
-    }
-
-    // If using default destructive color, update it when theme changes
-    if (isDefaultColorDestructive(appDestructiveBgColor)) {
-      // This will trigger the appropriate updates for both background and text color
-      setAppDestructiveBgColor(appDestructiveBgColor)
-    } else {
-      // If using custom background, just update the text color if needed
-      const textColorDestructive = isDefaultColorDestructive(
-        appDestructiveBgColor
-      )
-        ? getDefaultTextColor(isDark)
-        : appDestructiveTextColor
-
-      document.documentElement.style.setProperty(
-        '--app-destructive-fg',
-        textColorDestructive
-      )
-    }
-  }, [
-    isDark,
-    appLeftPanelTextColor,
-    appMainViewTextColor,
-    appPrimaryTextColor,
-    appAccentTextColor,
-    appDestructiveTextColor,
-  ])
+  // Color customization removed - colors are now fixed to brand defaults
+  // The first useEffect above already handles applying colors from state to CSS variables
 
   return null
 }

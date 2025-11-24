@@ -2,15 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { route } from '@/constants/routes'
 import SettingsMenu from '@/containers/SettingsMenu'
 import HeaderPage from '@/containers/HeaderPage'
-import { ColorPickerAppBgColor } from '@/containers/ColorPickerAppBgColor'
-import { ColorPickerAppMainView } from '@/containers/ColorPickerAppMainView'
 import { Card, CardItem } from '@/containers/Card'
 import { useTranslation } from '@/i18n/react-i18next-compat'
 import { ThemeSwitcher } from '@/containers/ThemeSwitcher'
 import { FontSizeSwitcher } from '@/containers/FontSizeSwitcher'
-import { ColorPickerAppPrimaryColor } from '@/containers/ColorPickerAppPrimaryColor'
-import { ColorPickerAppAccentColor } from '@/containers/ColorPickerAppAccentColor'
-import { ColorPickerAppDestructiveColor } from '@/containers/ColorPickerAppDestructiveColor'
 import { useAppearance } from '@/hooks/useAppearance'
 import { useCodeblock } from '@/hooks/useCodeblock'
 import { Button } from '@/components/ui/button'
@@ -19,6 +14,8 @@ import { LineNumbersSwitcher } from '@/containers/LineNumbersSwitcher'
 import { CodeBlockExample } from '@/containers/CodeBlockExample'
 import { toast } from 'sonner'
 import { ChatWidthSwitcher } from '@/containers/ChatWidthSwitcher'
+
+// Color picker imports removed - colors are now fixed to brand defaults
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const Route = createFileRoute(route.settings.appearance as any)({
@@ -52,36 +49,8 @@ function Appareances() {
                 actions={<FontSizeSwitcher />}
               />
 
-              <CardItem
-                title={t('settings:appearance.windowBackground')}
-                description={t('settings:appearance.windowBackgroundDesc')}
-                className="flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-y-2"
-                actions={<ColorPickerAppBgColor />}
-              />
-              <CardItem
-                title={t('settings:appearance.appMainView')}
-                description={t('settings:appearance.appMainViewDesc')}
-                className="flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-y-2"
-                actions={<ColorPickerAppMainView />}
-              />
-              <CardItem
-                title={t('settings:appearance.primary')}
-                description={t('settings:appearance.primaryDesc')}
-                className="flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-y-2"
-                actions={<ColorPickerAppPrimaryColor />}
-              />
-              <CardItem
-                title={t('settings:appearance.accent')}
-                description={t('settings:appearance.accentDesc')}
-                className="flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-y-2"
-                actions={<ColorPickerAppAccentColor />}
-              />
-              <CardItem
-                title={t('settings:appearance.destructive')}
-                description={t('settings:appearance.destructiveDesc')}
-                className="flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-y-2"
-                actions={<ColorPickerAppDestructiveColor />}
-              />
+              {/* Color customization removed - colors are now fixed to brand defaults */}
+
               <CardItem
                 title={t('settings:appearance.resetToDefault')}
                 description={t('settings:appearance.resetToDefaultDesc')}
