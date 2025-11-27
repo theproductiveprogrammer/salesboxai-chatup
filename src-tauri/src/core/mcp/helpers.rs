@@ -1065,27 +1065,27 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
         }
     }
 
-    // Build the MCP server configuration using SSE transport
-    // Connect directly to core port 6991 to avoid nginx SSE buffering issues
+    // Build the MCP server configuration using Streamable HTTP transport
+    // Connect directly to core port 6991 to avoid nginx issues
     // Extract host from api_endpoint and use direct port
-    let mcp_sse_url = if api_endpoint.contains("localhost") || api_endpoint.contains("127.0.0.1") {
+    let mcp_url = if api_endpoint.contains("localhost") || api_endpoint.contains("127.0.0.1") {
         // For local development, connect directly to core port
-        "http://localhost:6991/mcp/sse".to_string()
+        "http://localhost:6991/mcp".to_string()
     } else {
         // For production, use the configured endpoint
-        format!("{}/mcp/sse", api_endpoint.replace("/core", ""))
+        format!("{}/mcp", api_endpoint.replace("/core", ""))
     };
 
     let config = serde_json::json!({
-        "type": "sse",
-        "url": mcp_sse_url,
+        "type": "http",
+        "url": mcp_url,
         "headers": {
             "Authorization": format!("Bearer {}", jwt_token)
         },
         "active": true
     });
 
-    log::info!("Connecting to SalesboxAI MCP server via SSE at {}", mcp_sse_url);
+    log::info!("Connecting to SalesboxAI MCP server via Streamable HTTP at {}", mcp_url);
 
     // Start the server using the existing MCP infrastructure
     match start_mcp_server_with_restart(
