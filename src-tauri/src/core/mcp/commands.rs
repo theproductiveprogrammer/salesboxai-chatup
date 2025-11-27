@@ -8,7 +8,7 @@ use tokio::sync::oneshot;
 
 use super::{
     constants::{DEFAULT_MCP_CONFIG, MCP_TOOL_CALL_TIMEOUT},
-    helpers::{restart_active_mcp_servers, start_mcp_server_with_restart, stop_mcp_servers},
+    helpers::{restart_active_mcp_servers, start_mcp_server_with_restart, stop_mcp_servers, schedule_mcp_reconnect},
 };
 use crate::core::{app::commands::get_jan_data_folder_path, state::AppState};
 use crate::core::{
@@ -253,82 +253,168 @@ pub async fn get_tools(state: State<'_, AppState>) -> Result<Vec<ToolWithServer>
 /// 1. Locks the MCP servers mutex to access server connections
 /// 2. Searches through all servers for one containing the named tool
 /// 3. When found, calls the tool on that server with the provided arguments
-/// 4. Supports cancellation via cancellation_token
-/// 5. Returns error if no server has the requested tool
+/// 4. If the call fails with a transport error, triggers reconnection and retries once
+/// 5. Supports cancellation via cancellation_token
+/// 6. Returns error if no server has the requested tool
 #[tauri::command]
 pub async fn call_tool(
+    app: AppHandle,
     state: State<'_, AppState>,
     tool_name: String,
     arguments: Option<Map<String, Value>>,
     cancellation_token: Option<String>,
 ) -> Result<CallToolResult, String> {
-    // Set up cancellation if token is provided
-    let (cancel_tx, cancel_rx) = oneshot::channel::<()>();
-    
-    if let Some(token) = &cancellation_token {
-        let mut cancellations = state.tool_call_cancellations.lock().await;
-        cancellations.insert(token.clone(), cancel_tx);
-    }
+    // Use a loop to handle retry without recursion (Rust async recursion requires boxing)
+    let max_attempts = 2; // Initial attempt + 1 retry
+    let mut attempt = 0;
+    let mut last_error: Option<String> = None;
+    let mut reconnect_server: Option<String> = None;
 
-    let servers = state.mcp_servers.lock().await;
+    while attempt < max_attempts {
+        attempt += 1;
 
-    // Iterate through servers and find the first one that contains the tool
-    for (_, service) in servers.iter() {
-        let tools = match service.list_all_tools().await {
-            Ok(tools) => tools,
-            Err(_) => continue, // Skip this server if we can't list tools
-        };
-
-        if !tools.iter().any(|t| t.name == tool_name) {
-            continue; // Tool not found in this server, try next
+        // If we need to reconnect from a previous failed attempt
+        if let Some(server_name) = reconnect_server.take() {
+            log::info!("Attempting reconnection for server {} before retry", server_name);
+            if let Err(reconnect_err) = schedule_mcp_reconnect(&app, &state, &server_name).await {
+                log::error!("Failed to reconnect MCP server {}: {}", server_name, reconnect_err);
+                return Err(format!(
+                    "Error calling tool {}: {} (reconnection failed: {})",
+                    tool_name,
+                    last_error.unwrap_or_default(),
+                    reconnect_err
+                ));
+            }
+            log::info!("Reconnected successfully, retrying tool call {}", tool_name);
         }
 
-        println!("Found tool {} in server", tool_name);
-
-        // Call the tool with timeout and cancellation support
-        let tool_call = service.call_tool(CallToolRequestParam {
-            name: tool_name.clone().into(),
-            arguments,
-        });
-
-        // Race between timeout, tool call, and cancellation
-        let result = if cancellation_token.is_some() {
-            tokio::select! {
-                result = timeout(MCP_TOOL_CALL_TIMEOUT, tool_call) => {
-                    match result {
-                        Ok(call_result) => call_result.map_err(|e| e.to_string()),
-                        Err(_) => Err(format!(
-                            "Tool call '{}' timed out after {} seconds",
-                            tool_name,
-                            MCP_TOOL_CALL_TIMEOUT.as_secs()
-                        )),
-                    }
-                }
-                _ = cancel_rx => {
-                    Err(format!("Tool call '{}' was cancelled", tool_name))
-                }
+        // Set up cancellation if token is provided (only on first attempt)
+        let cancel_rx = if attempt == 1 {
+            if let Some(token) = &cancellation_token {
+                let (cancel_tx, cancel_rx) = oneshot::channel::<()>();
+                let mut cancellations = state.tool_call_cancellations.lock().await;
+                cancellations.insert(token.clone(), cancel_tx);
+                Some(cancel_rx)
+            } else {
+                None
             }
         } else {
-            match timeout(MCP_TOOL_CALL_TIMEOUT, tool_call).await {
-                Ok(call_result) => call_result.map_err(|e| e.to_string()),
-                Err(_) => Err(format!(
-                    "Tool call '{}' timed out after {} seconds",
-                    tool_name,
-                    MCP_TOOL_CALL_TIMEOUT.as_secs()
-                )),
-            }
+            None
         };
 
-        // Clean up cancellation token
-        if let Some(token) = &cancellation_token {
-            let mut cancellations = state.tool_call_cancellations.lock().await;
-            cancellations.remove(token);
+        let servers = state.mcp_servers.lock().await;
+        log::info!("Attempt {}: servers in map: {:?}", attempt, servers.keys().collect::<Vec<_>>());
+
+        // Iterate through servers and find the first one that contains the tool
+        for (server_name, service) in servers.iter() {
+            log::info!("Checking server {} for tool {}", server_name, tool_name);
+            let tools = match service.list_all_tools().await {
+                Ok(tools) => tools,
+                Err(e) => {
+                    let err_str = e.to_string();
+                    log::warn!("Failed to list tools from server {}: {}", server_name, err_str);
+                    // If this looks like a transport error and we can retry, schedule reconnect
+                    if attempt < max_attempts && is_transport_error(&err_str) {
+                        log::info!("Transport error detected for server {}, will attempt reconnection", server_name);
+                        reconnect_server = Some(server_name.clone());
+                        last_error = Some(err_str);
+                        drop(servers); // Release lock before reconnect loop
+                        break; // Break inner loop to trigger reconnect in outer loop
+                    }
+                    continue; // Skip this server if we can't list tools
+                }
+            };
+
+            if !tools.iter().any(|t| t.name == tool_name) {
+                continue; // Tool not found in this server, try next
+            }
+
+            log::info!("Found tool {} in server {}", tool_name, server_name);
+
+            // Clone for potential retry
+            let arguments_clone = arguments.clone();
+            let server_name_for_retry = server_name.clone();
+
+            // Call the tool with timeout and cancellation support
+            let tool_call = service.call_tool(CallToolRequestParam {
+                name: tool_name.clone().into(),
+                arguments: arguments_clone,
+            });
+
+            // Race between timeout, tool call, and cancellation
+            let result = if let Some(cancel_rx) = cancel_rx {
+                tokio::select! {
+                    result = timeout(MCP_TOOL_CALL_TIMEOUT, tool_call) => {
+                        match result {
+                            Ok(call_result) => call_result.map_err(|e| e.to_string()),
+                            Err(_) => Err(format!(
+                                "Tool call '{}' timed out after {} seconds",
+                                tool_name,
+                                MCP_TOOL_CALL_TIMEOUT.as_secs()
+                            )),
+                        }
+                    }
+                    _ = cancel_rx => {
+                        Err(format!("Tool call '{}' was cancelled", tool_name))
+                    }
+                }
+            } else {
+                match timeout(MCP_TOOL_CALL_TIMEOUT, tool_call).await {
+                    Ok(call_result) => call_result.map_err(|e| e.to_string()),
+                    Err(_) => Err(format!(
+                        "Tool call '{}' timed out after {} seconds",
+                        tool_name,
+                        MCP_TOOL_CALL_TIMEOUT.as_secs()
+                    )),
+                }
+            };
+
+            // Clean up cancellation token
+            if let Some(token) = &cancellation_token {
+                let mut cancellations = state.tool_call_cancellations.lock().await;
+                cancellations.remove(token);
+            }
+
+            // Check if result is a transport error that warrants retry
+            if let Err(ref err) = result {
+                if attempt < max_attempts && is_transport_error(err) {
+                    log::info!("Transport error on tool call, will attempt reconnection for server {}", server_name_for_retry);
+                    reconnect_server = Some(server_name_for_retry);
+                    last_error = Some(err.clone());
+                    drop(servers); // Release lock before reconnect loop
+                    break; // Break inner loop to trigger reconnect in outer loop
+                }
+            }
+
+            return result;
         }
 
-        return result;
+        // If no reconnect scheduled (tool not found), exit the loop
+        if reconnect_server.is_none() {
+            break;
+        }
     }
 
     Err(format!("Tool {} not found", tool_name))
+}
+
+/// Check if an error string indicates a transport/connection error
+fn is_transport_error(error: &str) -> bool {
+    let transport_indicators = [
+        "Transport",
+        "transport",
+        "connection",
+        "Connection",
+        "HTTP",
+        "status client error",
+        "status server error",
+        "network",
+        "Network",
+        "refused",
+        "reset",
+        "closed",
+    ];
+    transport_indicators.iter().any(|indicator| error.contains(indicator))
 }
 
 /// Cancels a running tool call by its cancellation token

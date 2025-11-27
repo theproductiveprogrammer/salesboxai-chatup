@@ -960,6 +960,94 @@ pub async fn should_restart_server(
     }
 }
 
+/// Reconnect a specific MCP server after detecting a transport error
+/// This is used by call_tool to recover from server restarts
+pub async fn schedule_mcp_reconnect<R: Runtime>(
+    app: &AppHandle<R>,
+    state: &tauri::State<'_, crate::core::state::AppState>,
+    server_name: &str,
+) -> Result<(), String> {
+    log::info!("Scheduling reconnection for MCP server: {}", server_name);
+
+    // Get the stored config for this server
+    let config = {
+        let active_servers = state.mcp_active_servers.lock().await;
+        log::info!("Active servers in store: {:?}", active_servers.keys().collect::<Vec<_>>());
+        active_servers.get(server_name).cloned()
+    };
+
+    let config = match config {
+        Some(c) => {
+            log::info!("Found config for {}: type={:?}, url={:?}",
+                server_name,
+                c.get("type"),
+                c.get("url"));
+            c
+        }
+        None => {
+            log::error!("No stored config found for MCP server {}", server_name);
+            return Err(format!(
+                "No stored config found for MCP server {}",
+                server_name
+            ));
+        }
+    };
+
+    // Mark server as not connected to prevent monitoring task from interfering
+    {
+        let mut connected = state.mcp_successfully_connected.lock().await;
+        connected.insert(server_name.to_string(), false);
+    }
+
+    // Remove existing server connection
+    {
+        let mut servers = state.mcp_servers.lock().await;
+        if let Some(service) = servers.remove(server_name) {
+            log::info!("Stopping existing connection for {}", server_name);
+            match service {
+                RunningServiceEnum::NoInit(s) => {
+                    let _ = s.cancel().await;
+                }
+                RunningServiceEnum::WithInit(s) => {
+                    let _ = s.cancel().await;
+                }
+            }
+        } else {
+            log::info!("No existing connection found for {} to remove", server_name);
+        }
+    }
+
+    // Delay to allow server to fully restart (core restart can take 45+ seconds)
+    log::info!("Waiting 10 seconds for server to be ready before reconnecting {}", server_name);
+    sleep(Duration::from_millis(10000)).await;
+
+    // Reconnect using the stored config
+    log::info!("Reconnecting MCP server: {} with config", server_name);
+    match schedule_mcp_start_task(
+        app.clone(),
+        state.mcp_servers.clone(),
+        server_name.to_string(),
+        config,
+    )
+    .await {
+        Ok(_) => {
+            // Verify the server was added
+            let servers = state.mcp_servers.lock().await;
+            if servers.contains_key(server_name) {
+                log::info!("MCP server {} reconnected successfully and is in servers map", server_name);
+            } else {
+                log::error!("MCP server {} reconnect returned Ok but server not in map!", server_name);
+                return Err(format!("Server {} not in map after reconnect", server_name));
+            }
+            Ok(())
+        }
+        Err(e) => {
+            log::error!("Failed to reconnect MCP server {}: {}", server_name, e);
+            Err(e)
+        }
+    }
+}
+
 /// Start the built-in SalesboxAI MCP server if API key is configured
 /// This server is hidden from the UI and provides lead discovery/CRM tools
 pub async fn start_builtin_salesbox_mcp<R: Runtime>(
@@ -1088,12 +1176,13 @@ pub async fn start_builtin_salesbox_mcp<R: Runtime>(
     log::info!("Connecting to SalesboxAI MCP server via Streamable HTTP at {}", mcp_url);
 
     // Start the server using the existing MCP infrastructure
+    // Use higher max_restarts (10) for builtin server since we know it should always be available
     match start_mcp_server_with_restart(
         app.clone(),
         servers_state,
         "salesboxai-builtin".to_string(),
         config,
-        Some(3),
+        Some(10),
     )
     .await
     {
